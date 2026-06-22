@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import kurisuLogo from './assets/logo.png';
-import AuthScreen from './components/screens/AuthScreen';
+import WelcomeScreen from './components/screens/WelcomeScreen';
 import MainLayout from './components/layout/MainLayout';
 import { useBootstrap } from './hooks/useBootstrap';
 
@@ -44,7 +44,7 @@ function App() {
   }, [isReady]);
 
   const appContent = useMemo(
-    () => (authSnapshot.status !== 'connected' ? <AuthScreen /> : <MainLayout />),
+    () => (authSnapshot.status !== 'connected' ? <WelcomeScreen /> : <MainLayout />),
     [authSnapshot.status],
   );
 

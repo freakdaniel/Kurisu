@@ -40,7 +40,7 @@ public static class ProviderPresetCatalog
 
         new ProviderPreset(
             Id: "anthropic",
-            Name: "Anthropic (compat)",
+            Name: "Anthropic",
             Description: "Claude 3.5/3.7/4 models served via OpenAI-Compatible endpoint.",
             Family: "openai-compatible",
             DefaultBaseUrl: "https://api.anthropic.com/v1",
@@ -49,7 +49,7 @@ public static class ProviderPresetCatalog
             Capabilities: ["tools", "reasoning"],
             Popularity: 95,
             DocsUrl: "https://docs.anthropic.com/en/docs/about-claude/models",
-            ModelsSourceUrl: null,  // Anthropic's OpenAI-compat does not expose /models — fall back to hardcoded list.
+            ModelsSourceUrl: null,
             ModelsSourceHeaders: null),
 
         new ProviderPreset(

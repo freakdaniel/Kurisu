@@ -23,6 +23,8 @@
     "i18next": "^25.6.0",
     "katex": "^0.16.45",
     "lucide-react": "^0.400.0",
+    "ogl": "^1.0.11",
+    "postprocessing": "^6.39.1",
     "prism-react-renderer": "^2.4.1",
     "prismjs": "^1.30.0",
     "react": "^18.3.1",
@@ -32,7 +34,8 @@
     "rehype-katex": "^7.0.1",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
-    "tailwind-merge": "^3.5.0"
+    "tailwind-merge": "^3.5.0",
+    "three": "^0.184.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
