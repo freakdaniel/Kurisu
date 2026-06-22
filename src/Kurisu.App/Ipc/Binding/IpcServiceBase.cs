@@ -23,7 +23,7 @@ public abstract class IpcServiceBase
     /// </summary>
     protected ILogger Logger { get; }
 
-    private readonly Lazy<IReadOnlyDictionary<string, MethodBinding>> _invokeBindings;
+    private readonly Lazy<IReadOnlyDictionary<string, InvokeBinding>> _invokeBindings;
     private readonly Lazy<IReadOnlyList<EventBinding>> _eventBindings;
     private int _eventsRegistered;
 
@@ -42,9 +42,15 @@ public abstract class IpcServiceBase
     {
         Services = services;
         Logger = services.GetRequiredService<ILoggerFactory>().CreateLogger("Kurisu.App.Ipc");
-        _invokeBindings = new Lazy<IReadOnlyDictionary<string, MethodBinding>>(() => CreateInvokeBindings());
+        _invokeBindings = new Lazy<IReadOnlyDictionary<string, InvokeBinding>>(() => CreateInvokeBindings());
         _eventBindings = new Lazy<IReadOnlyList<EventBinding>>(() => CreateEventBindings());
     }
+
+    /// <summary>
+    /// Gets the registered invoke bindings keyed by channel. Transports consume
+    /// this to wire each channel to the underlying RPC mechanism.
+    /// </summary>
+    public IReadOnlyDictionary<string, InvokeBinding> InvokeBindings => _invokeBindings.Value;
 
     /// <summary>
     /// Executes an invoke-style IPC call for the specified channel.
@@ -60,8 +66,8 @@ public abstract class IpcServiceBase
         }
 
         Logger.LogDebug("IPC invoke received: {Channel}", channel);
-        var argument = binding.ParameterType is null ? null : Deserialize(payloadJson, binding.ParameterType);
-        var result = await InvokeAsync(binding.Method, argument).ConfigureAwait(false);
+        var argument = binding.DeserializeArgument(payloadJson);
+        var result = await binding.InvokeAsync(this, argument).ConfigureAwait(false);
         Logger.LogDebug("IPC invoke completed: {Channel}", channel);
         return result;
     }
@@ -91,7 +97,7 @@ public abstract class IpcServiceBase
     protected internal static string SerializePayload(object? payload)
         => JsonSerializer.Serialize(payload, JsonOptions);
 
-    private IReadOnlyDictionary<string, MethodBinding> CreateInvokeBindings()
+    private IReadOnlyDictionary<string, InvokeBinding> CreateInvokeBindings()
     {
         var methods = GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
         return methods
@@ -99,7 +105,7 @@ public abstract class IpcServiceBase
             .Where(entry => entry.Invoke is not null)
             .ToDictionary(
                 entry => entry.Invoke!.Channel,
-                entry => new MethodBinding(entry.Method, GetSingleParameterType(entry.Method)),
+                entry => new InvokeBinding(entry.Invoke.Channel, entry.Method, GetSingleParameterType(entry.Method)),
                 StringComparer.Ordinal);
     }
 
@@ -141,36 +147,6 @@ public abstract class IpcServiceBase
         return parameters.Length == 1 ? parameters[0].ParameterType : null;
     }
 
-    private static object? Deserialize(string? payloadJson, Type targetType)
-    {
-        var json = string.IsNullOrWhiteSpace(payloadJson)
-            ? "{}"
-            : payloadJson;
-
-        if (targetType == typeof(string))
-        {
-            return JsonSerializer.Deserialize<string>(json, JsonOptions) ?? string.Empty;
-        }
-
-        return JsonSerializer.Deserialize(json, targetType, JsonOptions);
-    }
-
-    private async Task<object?> InvokeAsync(MethodInfo method, object? argument)
-    {
-        var args = argument is null ? Array.Empty<object?>() : [argument];
-        var result = method.Invoke(this, args);
-
-        if (result is Task task)
-        {
-            await task.ConfigureAwait(false);
-            return task.GetType().GetProperty("Result")?.GetValue(task);
-        }
-
-        return result;
-    }
-
-    private sealed record MethodBinding(MethodInfo Method, Type? ParameterType);
-
     private sealed record EventBinding(string Channel, MethodInfo Method, Type PayloadType)
     {
         public void Register(IpcServiceBase owner, Action<string, object?> emit)
@@ -187,5 +163,57 @@ public abstract class IpcServiceBase
     private sealed class EventEmitter<T>(string channel, Action<string, object?> emit)
     {
         public void Emit(T payload) => emit(channel, payload);
+    }
+}
+
+/// <summary>
+/// Describes a single invoke-style IPC binding exposed by an
+/// <see cref="IpcServiceBase"/>-derived service.
+/// </summary>
+/// <param name="Channel">The transport channel name.</param>
+/// <param name="Method">The reflected method to invoke.</param>
+/// <param name="ParameterType">The expected request type, or null when the method takes no payload.</param>
+public sealed record InvokeBinding(string Channel, MethodInfo Method, Type? ParameterType)
+{
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+    };
+
+    /// <summary>
+    /// Invokes the underlying method on <paramref name="owner"/>, awaiting its task if necessary.
+    /// </summary>
+    /// <param name="owner">The IPC service instance that owns the bound method.</param>
+    /// <param name="argument">The deserialized payload to pass to the method.</param>
+    public async Task<object?> InvokeAsync(object owner, object? argument)
+    {
+        var args = argument is null ? Array.Empty<object?>() : [argument];
+        var result = Method.Invoke(owner, args);
+        if (result is Task task)
+        {
+            await task.ConfigureAwait(false);
+            return task.GetType().GetProperty("Result")?.GetValue(task);
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Deserializes the supplied JSON payload to the method's expected parameter type.
+    /// </summary>
+    public object? DeserializeArgument(string? payloadJson)
+    {
+        if (ParameterType is null)
+        {
+            return null;
+        }
+
+        var json = string.IsNullOrWhiteSpace(payloadJson) ? "{}" : payloadJson;
+        if (ParameterType == typeof(string))
+        {
+            return JsonSerializer.Deserialize<string>(json, JsonOptions) ?? string.Empty;
+        }
+        return JsonSerializer.Deserialize(json, ParameterType, JsonOptions);
     }
 }

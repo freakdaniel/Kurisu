@@ -7,7 +7,9 @@ using Kurisu.App.Ipc;
 namespace Kurisu.App.AppHost;
 
 /// <summary>
-/// Coordinates renderer messaging over InfiniFrame web messages.
+/// Wires <see cref="DesktopIpcService"/> channels to the InfiniFrame window
+/// using the v2 typed envelope protocol and pushes events back to the renderer
+/// as envelope messages.
 /// </summary>
 public sealed class InfiniFrameDesktopBridgeService(
     DesktopIpcService desktopIpcService,
@@ -17,14 +19,16 @@ public sealed class InfiniFrameDesktopBridgeService(
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
     private int _initialized;
+    private int _eventsRegistered;
 
     /// <summary>
-    /// Attaches the active window and registers outbound event relays.
+    /// Registers per-channel post handlers on the window, wires up event push
+    /// from <see cref="DesktopIpcService"/>, and registers the open-external
+    /// message handler used by the renderer's link interception.
     /// </summary>
     /// <param name="window">The active window.</param>
     public void Initialize(IInfiniFrameWindow window)
@@ -36,180 +40,189 @@ public sealed class InfiniFrameDesktopBridgeService(
             return;
         }
 
+        RegisterBuiltInHandlers(window);
+        RegisterIpcPostHandlers(window);
+        RegisterEventPush(window);
+    }
+
+    private void RegisterBuiltInHandlers(IInfiniFrameWindow window)
+    {
+        window.RegisterWebMessageGetHandler(InfiniFrameInterop.OpenExternalMessageId, (_, payload) =>
+            HandleOpenExternal(payload));
+
+        window.RegisterWebMessagePostHandler(InfiniFrameInterop.ReadyMessageId, (_, _) => { });
+    }
+
+    private void RegisterIpcPostHandlers(IInfiniFrameWindow window)
+    {
+        foreach (var binding in desktopIpcService.InvokeBindings.Values)
+        {
+            window.RegisterWebMessagePostHandler(binding.Channel, (_, payload) =>
+                HandleIpcPostAsync(window, binding, payload));
+        }
+
+        logger.LogInformation(
+            "Registered {Count} IPC post handlers on InfiniFrame window",
+            desktopIpcService.InvokeBindings.Count);
+    }
+
+    private async Task HandleIpcPostAsync(IInfiniFrameWindow window, InvokeBinding binding, string? payload)
+    {
+        var requestId = ExtractRequestId(payload);
+        var innerPayload = ExtractInnerPayload(payload);
+        try
+        {
+            var result = await desktopIpcService
+                .InvokeChannelAsync(binding.Channel, innerPayload)
+                .ConfigureAwait(false);
+            var dataJson = JsonSerializer.Serialize(result, JsonOptions);
+            SendGetResponse(window, requestId, dataJson, error: null);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "IPC post failed for {Channel}", binding.Channel);
+            SendGetResponse(window, requestId, dataJson: null, exception.Message);
+        }
+    }
+
+    private string? HandleOpenExternal(string? payload)
+    {
+        var url = ExtractUrl(payload);
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            return JsonSerializer.Serialize(new { opened = false }, JsonOptions);
+        }
+
+        var opened = windowBridge.OpenExternalUrl(url);
+        return JsonSerializer.Serialize(new { opened }, JsonOptions);
+    }
+
+    private void RegisterEventPush(IInfiniFrameWindow window)
+    {
+        if (Interlocked.Exchange(ref _eventsRegistered, 1) != 0)
+        {
+            return;
+        }
+
         desktopIpcService.RegisterEventChannels((channel, payload) =>
         {
-            _ = PublishAsync(new OutboundMessage
-            {
-                Type = "event",
-                Channel = channel,
-                Payload = payload
-            });
+            PublishEvent(window, channel, payload);
         });
     }
 
-    /// <summary>
-    /// Handles an incoming renderer message.
-    /// </summary>
-    /// <param name="window">The active window.</param>
-    /// <param name="message">The serialized message.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    public async Task HandleWebMessageAsync(IInfiniFrameWindow window, string message)
+    private void PublishEvent(IInfiniFrameWindow window, string channel, object? payload)
     {
-        Initialize(window);
-
-        if (string.IsNullOrWhiteSpace(message))
-        {
-            return;
-        }
-
-        InboundMessage? inbound;
         try
         {
-            inbound = JsonSerializer.Deserialize<InboundMessage>(message, JsonOptions);
-        }
-        catch (JsonException exception)
-        {
-            logger.LogWarning(exception, "Ignoring invalid renderer bridge message");
-            return;
-        }
-
-        if (inbound is null || string.IsNullOrWhiteSpace(inbound.Type))
-        {
-            return;
-        }
-
-        switch (inbound.Type)
-        {
-            case "invoke":
-                await HandleInvokeAsync(inbound).ConfigureAwait(false);
-                break;
-            case "command":
-                await HandleCommandAsync(inbound).ConfigureAwait(false);
-                break;
-            default:
-                logger.LogDebug("Ignoring unsupported bridge message type {Type}", inbound.Type);
-                break;
-        }
-    }
-
-    private async Task HandleInvokeAsync(InboundMessage inbound)
-    {
-        if (string.IsNullOrWhiteSpace(inbound.RequestId) || string.IsNullOrWhiteSpace(inbound.Channel))
-        {
-            return;
-        }
-
-        try
-        {
-            var payloadJson = inbound.Payload?.GetRawText();
-            var result = await desktopIpcService.InvokeChannelAsync(inbound.Channel, payloadJson).ConfigureAwait(false);
-            await PublishAsync(new OutboundMessage
-            {
-                Type = "response",
-                RequestId = inbound.RequestId,
-                Channel = inbound.Channel,
-                Payload = result
-            }).ConfigureAwait(false);
+            var dataJson = JsonSerializer.Serialize(payload, JsonOptions);
+            var envelope = InfiniFrameInterop.CreateEnvelope(channel, dataJson);
+            window.SendWebMessage(envelope);
         }
         catch (Exception exception)
         {
-            logger.LogError(exception, "Renderer invoke failed for {Channel}", inbound.Channel);
-            await PublishAsync(new OutboundMessage
-            {
-                Type = "response",
-                RequestId = inbound.RequestId,
-                Channel = inbound.Channel,
-                Error = exception.Message
-            }).ConfigureAwait(false);
+            logger.LogError(exception, "Failed to publish event {Channel} to renderer", channel);
         }
     }
 
-    private async Task HandleCommandAsync(InboundMessage inbound)
+    private static void SendGetResponse(IInfiniFrameWindow window, string? requestId, string? dataJson, string? error)
     {
-        object? result = null;
-        string? error = null;
+        if (string.IsNullOrEmpty(requestId))
+        {
+            return;
+        }
 
         try
         {
-            switch (inbound.Command)
+            var envelope = string.IsNullOrEmpty(error)
+                ? InfiniFrameInterop.CreateGetSuccessResponse(requestId, dataJson ?? "null")
+                : InfiniFrameInterop.CreateGetErrorResponse(requestId, error);
+            window.SendWebMessage(envelope);
+        }
+        catch
+        {
+            // The renderer will time out and surface its own error.
+        }
+    }
+
+    private static string? ExtractRequestId(string? payload)
+    {
+        if (string.IsNullOrWhiteSpace(payload))
+        {
+            return null;
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(payload);
+            if (document.RootElement.ValueKind != JsonValueKind.Object)
             {
-                case "window:minimize":
-                    windowBridge.Minimize();
-                    result = new { ok = true };
-                    break;
-                case "window:toggle-maximize":
-                    windowBridge.ToggleMaximize();
-                    result = new { ok = true };
-                    break;
-                case "window:begin-drag":
-                    windowBridge.BeginDrag();
-                    result = new { ok = true };
-                    break;
-                case "window:begin-resize":
-                    windowBridge.BeginResize(inbound.Edge ?? string.Empty);
-                    result = new { ok = true };
-                    break;
-                case "window:close":
-                    windowBridge.Close();
-                    result = new { ok = true };
-                    break;
-                case "external:open":
-                    result = new { opened = windowBridge.OpenExternalUrl(inbound.Url ?? string.Empty) };
-                    break;
-                default:
-                    error = $"Unsupported command '{inbound.Command}'.";
-                    break;
+                return null;
+            }
+            if (document.RootElement.TryGetProperty("requestId", out var idElement) &&
+                idElement.ValueKind == JsonValueKind.String)
+            {
+                return idElement.GetString();
             }
         }
-        catch (Exception exception)
+        catch (JsonException)
         {
-            logger.LogError(exception, "Renderer command failed for {Command}", inbound.Command);
-            error = exception.Message;
         }
 
-        if (!string.IsNullOrWhiteSpace(inbound.RequestId))
+        return null;
+    }
+
+    private static string? ExtractInnerPayload(string? payload)
+    {
+        if (string.IsNullOrWhiteSpace(payload))
         {
-            await PublishAsync(new OutboundMessage
+            return payload;
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(payload);
+            if (document.RootElement.ValueKind == JsonValueKind.Object &&
+                document.RootElement.TryGetProperty("payload", out var inner))
             {
-                Type = "response",
-                RequestId = inbound.RequestId,
-                Channel = inbound.Command ?? string.Empty,
-                Payload = result,
-                Error = error
-            }).ConfigureAwait(false);
+                return inner.ValueKind switch
+                {
+                    JsonValueKind.Null => "null",
+                    JsonValueKind.String => inner.GetString(),
+                    _ => inner.GetRawText()
+                };
+            }
         }
+        catch (JsonException)
+        {
+        }
+
+        return payload;
     }
 
-    private Task PublishAsync(OutboundMessage message)
-        => windowBridge.PublishAsync(JsonSerializer.Serialize(message, JsonOptions));
-
-    private sealed class InboundMessage
+    private static string ExtractUrl(string? payload)
     {
-        public string Type { get; set; } = string.Empty;
+        if (string.IsNullOrWhiteSpace(payload))
+        {
+            return string.Empty;
+        }
 
-        public string RequestId { get; set; } = string.Empty;
+        try
+        {
+            using var document = JsonDocument.Parse(payload);
+            if (document.RootElement.ValueKind != JsonValueKind.Object)
+            {
+                return string.Empty;
+            }
+            if (document.RootElement.TryGetProperty("url", out var urlElement) &&
+                urlElement.ValueKind == JsonValueKind.String)
+            {
+                return urlElement.GetString() ?? string.Empty;
+            }
+        }
+        catch (JsonException)
+        {
+        }
 
-        public string Channel { get; set; } = string.Empty;
-
-        public JsonElement? Payload { get; set; }
-
-        public string Command { get; set; } = string.Empty;
-
-        public string Url { get; set; } = string.Empty;
-
-        public string Edge { get; set; } = string.Empty;
-    }
-
-    private sealed class OutboundMessage
-    {
-        public string Type { get; set; } = string.Empty;
-
-        public string RequestId { get; set; } = string.Empty;
-
-        public string Channel { get; set; } = string.Empty;
-
-        public object? Payload { get; set; }
-
-        public string? Error { get; set; }
+        return string.Empty;
     }
 }

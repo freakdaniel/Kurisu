@@ -79,10 +79,6 @@ internal static class Program
                     includePhysicalFallback: true,
                     physicalWwwrootPath: wwwrootPath,
                     setStartUrl: true)
-                .RegisterWebMessageReceivedHandler((IInfiniFrameWindow currentWindow, string message) =>
-                {
-                    _ = bridge.HandleWebMessageAsync(currentWindow, message);
-                })
                 .Build(serviceProvider);
 
             bridge.Initialize(window);
