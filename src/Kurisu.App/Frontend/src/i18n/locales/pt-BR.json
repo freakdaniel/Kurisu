@@ -1,0 +1,190 @@
+{
+  "app": {
+    "workspace": "Espaço de trabalho",
+    "initializing": "Inicializando..."
+  },
+  "modes": {
+    "title": "Modo código",
+    "code": "Código"
+  },
+  "status": {
+    "connected": "IPC conectado",
+    "local": "Modo local"
+  },
+  "top": {
+    "settings": "Configurações",
+    "directConnect": "Remote connect",
+    "chats": "Chats",
+    "coder": "Coder"
+  },
+  "sidebar": {
+    "newChat": "Novo Chat",
+    "searchPlaceholder": "Pesquisar",
+    "recent": "Conversas recentes",
+    "otherProjects": "Outros",
+    "noSessionsFound": "Nenhuma sessão encontrada",
+    "startTypingSearch": "Digite para pesquisar...",
+    "collapseSidebar": "Recolher barra lateral",
+    "expandSidebar": "Expandir barra lateral",
+    "now": "agora",
+    "minutesAgo": "min",
+    "hoursAgo": "h",
+    "daysAgo": "d",
+    "weeksAgo": "sem"
+  },
+  "chat": {
+    "newChat": "Novo chat",
+    "welcomeTitle": "O que vamos criar?",
+    "chatModeWelcomeTitle": "O que você quer saber?",
+    "sessionsAvailable": "sessões disponíveis",
+    "promptPlaceholder": "Descreva a tarefa que deseja trabalhar...",
+    "chatModePromptPlaceholder": "O que você quer saber?",
+    "demoResponse": "Recebi sua solicitação: \"{{prompt}}\". Esta é uma resposta de demonstração.",
+    "disclaimer": "Kurisu é IA e pode cometer erros. Verifique mudanças, comandos e respostas importantes",
+    "contextUsed": "Usados {{used}} / {{total}} tokens",
+    "contextCompression": "Kurisu comprimirá automaticamente o contexto ao exceder o limite",
+    "projectPicker": {
+      "noProject": "Sem projeto",
+      "searchPlaceholder": "Pesquisar projetos",
+      "addProject": "Adicionar novo projeto",
+      "noProjectsFound": "Nenhum projeto encontrado"
+    },
+    "approval": {
+      "title": "Aprovação necessária",
+      "allowOnce": "Permitir uma vez",
+      "alwaysAllow": "Permitir sempre",
+      "feedbackLabel": "Diga ao Kurisu o que ele deve fazer em vez disso",
+      "feedbackPlaceholder": "Exemplo: leia o arquivo primeiro e depois sugira uma alteração mais segura"
+    },
+    "reasoning": {
+      "timelineTitle": "Linha do tempo do raciocínio",
+      "finished": "Raciocínio concluído",
+      "thinking": "Pensando",
+      "reasoning": "Raciocínio",
+      "thoughtFor": "Pensou por {{duration}}",
+      "durationMilliseconds": "{{value}} ms",
+      "durationSeconds": "{{value}}s",
+      "durationMinutes": "{{minutes}}min",
+      "durationMinutesSeconds": "{{minutes}}min {{seconds}}s",
+      "workInProgress": "Trabalho em andamento",
+      "workCompleted": "Trabalho concluído",
+      "closePanel": "Fechar painel de raciocínio"
+    },
+    "tasks": {
+      "completed": "Concluído",
+      "inProgress": "Em andamento",
+      "pending": "Pendente",
+      "stopped": "Interrompido",
+      "progress": "{{completed}} de {{total}} concluídos",
+      "owner": "Responsável: {{owner}}",
+      "blockedBy": "Bloqueado por: {{blockedBy}}"
+    },
+    "message": {
+      "loading": "Carregando…",
+      "copy": "Copiar",
+      "copyCode": "Copiar código",
+      "copyMessage": "Copiar mensagem",
+      "copyRaw": "Copiar texto bruto",
+      "copyRawMessage": "Copiar texto bruto da mensagem",
+      "copied": "Copiado",
+      "info": "Informações da mensagem",
+      "timeUnavailable": "Horário indisponível",
+      "exportTable": "Exportar tabela",
+      "attachFile": "Anexar arquivo"
+    }
+  },
+  "titlebar": {
+    "appName": "Kurisu",
+    "minimize": "Minimizar",
+    "maximize": "Maximizar",
+    "close": "Fechar",
+    "toggleSidebar": "Alternar barra lateral"
+  },
+  "search": {
+    "placeholder": "Filtrar sessões por nome...",
+    "close": "Fechar pesquisa",
+    "noResults": "Nenhuma sessão encontrada",
+    "startTyping": "Digite para pesquisar..."
+  },
+  "directConnect": {
+    "title": "Remote connect",
+    "subtitle": "Local protected API for external clients and live session events.",
+    "online": "online",
+    "starting": "starting",
+    "offline": "offline",
+    "refresh": "Refresh",
+    "baseUrl": "URL",
+    "token": "Token",
+    "sse": "SSE",
+    "curl": "curl",
+    "unavailable": "Unavailable",
+    "copyFailed": "Could not copy to clipboard",
+    "sessions": "Direct sessions",
+    "sessionsHint": "Create connections for external clients or close inactive ones.",
+    "create": "Create",
+    "noSessions": "No direct-connect sessions yet",
+    "noWorkingDir": "No working directory",
+    "closeSession": "Close session"
+  },
+  "auth": {
+    "welcomeTitle": "Bem-vindo ao Kurisu",
+    "welcomeSubtitle": "Conecte agentes de IA para criar projetos e resolver tarefas",
+    "signInWithKurisu": "Entrar com Kurisu",
+    "connecting": "Conectando...",
+    "apiKeyPlaceholder": "Digite sua chave API",
+    "orUseApiKeyPrefix": "Ou",
+    "useApiKey": "usar OpenAI API Key",
+    "orUseKurisuAccountPrefix": "Ou",
+    "useKurisuAccount": "usar conta Kurisu"
+  },
+  "hero": {
+    "kicker": "Arquitetura de desktop Kurisu-first",
+    "chatTitle": "Uma interface de código sobre o runtime kurisu.",
+    "chatSubtitle": "Mantém a compatibilidade com o kurisu intacta, fazendo com que a navegação por sessões, contexto e histórico pareça nativa na área de trabalho.",
+    "codeTitle": "Uma cabine de codificação moldada pelo núcleo kurisu e pela ergonomia nível Claude.",
+    "codeSubtitle": "Use Claude como referência de UX para orquestração de ferramentas, não como autoridade de runtime."
+  },
+  "tools": {
+    "agent": "Agente",
+    "listDir": "Listar diretório",
+    "readFile": "Ler arquivo",
+    "writeFile": "Escrever arquivo",
+    "editFile": "Editar arquivo",
+    "shell": "Shell",
+    "search": "Pesquisar",
+    "findFiles": "Encontrar arquivos",
+    "think": "Pensar",
+    "memory": "Memória",
+    "webSearch": "Pesquisa na web",
+    "tool": "Ferramenta",
+    "thinking": "Pensando…",
+    "wittyLoadingPhrases": [
+      "Estou com sorte",
+      "Enviando maravilhas...",
+      "Reticulando splines...",
+      "Aquecendo os hamsters da IA...",
+      "Gerando réplica espirituosa...",
+      "Preparando bytes frescos...",
+      "Um momento, otimizando o humor...",
+      "Compilando brilhantismo...",
+      "Resolvendo dependências... e crises existenciais...",
+      "Convertendo café em código..."
+    ],
+    "toolCalls_one": "{{count}} chamada de ferramenta",
+    "toolCalls_other": "{{count}} chamadas de ferramenta",
+    "statusCompleted": "CONCLUÍDO",
+    "statusFailed": "FALHOU",
+    "statusPending": "EM EXECUÇÃO",
+    "todo": "Tarefas",
+    "webFetch": "Buscar URL",
+    "askUser": "Perguntar ao usuário",
+    "planMode": "Modo de plano"
+  },
+  "composer": {
+    "currentMode": "Superfície atual",
+    "chatPlaceholder": "Descreva a implementação, migração ou tarefa de sessão que você deseja resolver.",
+    "codePlaceholder": "Peça integração de runtime, trabalho IPC, implementação de renderizador ou endurecimento de compatibilidade com kurisu.",
+    "chatAction": "Iniciar sessão de código",
+    "codeAction": "Abrir fluxo de trabalho de código"
+  }
+}

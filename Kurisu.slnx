@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Kurisu.Core/Kurisu.Core.csproj" />
+    <Project Path="src/Kurisu.App/Kurisu.App.csproj" />
+    <Project Path="src/Kurisu.IpcGen/Kurisu.IpcGen.csproj" />
+    <Project Path="src/Kurisu.Tests/Kurisu.Tests.csproj" />
+  </Folder>
+</Solution>

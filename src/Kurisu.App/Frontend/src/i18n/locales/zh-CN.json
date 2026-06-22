@@ -1,0 +1,190 @@
+{
+  "app": {
+    "workspace": "工作区",
+    "initializing": "初始化中..."
+  },
+  "modes": {
+    "title": "代码模式",
+    "code": "代码"
+  },
+  "status": {
+    "connected": "IPC 已连接",
+    "local": "本地模式"
+  },
+  "top": {
+    "settings": "设置",
+    "directConnect": "Remote connect",
+    "chats": "Chats",
+    "coder": "Coder"
+  },
+  "sidebar": {
+    "newChat": "新聊天",
+    "searchPlaceholder": "搜索",
+    "recent": "最近对话",
+    "otherProjects": "其他",
+    "noSessionsFound": "未找到会话",
+    "startTypingSearch": "开始输入以搜索...",
+    "collapseSidebar": "收起侧边栏",
+    "expandSidebar": "展开侧边栏",
+    "now": "现在",
+    "minutesAgo": "分钟",
+    "hoursAgo": "小时",
+    "daysAgo": "天",
+    "weeksAgo": "周"
+  },
+  "chat": {
+    "newChat": "新聊天",
+    "welcomeTitle": "我们要创建什么？",
+    "chatModeWelcomeTitle": "你想知道什么？",
+    "sessionsAvailable": "个会话可用",
+    "promptPlaceholder": "描述您要处理的任务...",
+    "chatModePromptPlaceholder": "你想知道什么？",
+    "demoResponse": "收到您的请求：\"{{prompt}}\"。这是一个演示回复。",
+    "disclaimer": "Kurisu是AI，可能会犯错。请验证重要的更改、命令和回答。",
+    "contextUsed": "已使用 {{used}} / {{total}} 令牌",
+    "contextCompression": "超出限制时Kurisu将自动压缩上下文",
+    "projectPicker": {
+      "noProject": "无项目",
+      "searchPlaceholder": "搜索项目",
+      "addProject": "添加新项目",
+      "noProjectsFound": "未找到项目"
+    },
+    "approval": {
+      "title": "需要确认",
+      "allowOnce": "仅允许一次",
+      "alwaysAllow": "始终允许",
+      "feedbackLabel": "告诉 Kurisu 改为执行什么",
+      "feedbackPlaceholder": "例如：先读取文件，再提出更安全的修改建议"
+    },
+    "reasoning": {
+      "timelineTitle": "推理时间线",
+      "finished": "思考已完成",
+      "thinking": "思考中",
+      "reasoning": "推理",
+      "thoughtFor": "思考了 {{duration}}",
+      "durationMilliseconds": "{{value}} 毫秒",
+      "durationSeconds": "{{value}}秒",
+      "durationMinutes": "{{minutes}}分",
+      "durationMinutesSeconds": "{{minutes}}分 {{seconds}}秒",
+      "workInProgress": "工作进行中",
+      "workCompleted": "工作已完成",
+      "closePanel": "关闭推理面板"
+    },
+    "tasks": {
+      "completed": "已完成",
+      "inProgress": "进行中",
+      "pending": "待处理",
+      "stopped": "已停止",
+      "progress": "已完成 {{completed}} / {{total}}",
+      "owner": "负责人：{{owner}}",
+      "blockedBy": "受阻于：{{blockedBy}}"
+    },
+    "message": {
+      "loading": "加载中…",
+      "copy": "复制",
+      "copyCode": "复制代码",
+      "copyMessage": "复制消息",
+      "copyRaw": "复制原始文本",
+      "copyRawMessage": "复制消息原始文本",
+      "copied": "已复制",
+      "info": "消息信息",
+      "timeUnavailable": "时间不可用",
+      "exportTable": "导出表格",
+      "attachFile": "附加文件"
+    }
+  },
+  "titlebar": {
+    "appName": "Kurisu",
+    "minimize": "最小化",
+    "maximize": "最大化",
+    "close": "关闭",
+    "toggleSidebar": "切换侧栏"
+  },
+  "search": {
+    "placeholder": "按名称筛选会话...",
+    "close": "关闭搜索",
+    "noResults": "未找到会话",
+    "startTyping": "开始输入以搜索..."
+  },
+  "directConnect": {
+    "title": "Remote connect",
+    "subtitle": "Local protected API for external clients and live session events.",
+    "online": "online",
+    "starting": "starting",
+    "offline": "offline",
+    "refresh": "Refresh",
+    "baseUrl": "URL",
+    "token": "Token",
+    "sse": "SSE",
+    "curl": "curl",
+    "unavailable": "Unavailable",
+    "copyFailed": "Could not copy to clipboard",
+    "sessions": "Direct sessions",
+    "sessionsHint": "Create connections for external clients or close inactive ones.",
+    "create": "Create",
+    "noSessions": "No direct-connect sessions yet",
+    "noWorkingDir": "No working directory",
+    "closeSession": "Close session"
+  },
+  "auth": {
+    "welcomeTitle": "欢迎使用 Kurisu",
+    "welcomeSubtitle": "连接 AI 智能体来创建项目和解决任务",
+    "signInWithKurisu": "使用 Kurisu 登录",
+    "connecting": "连接中...",
+    "apiKeyPlaceholder": "输入您的 API 密钥",
+    "orUseApiKeyPrefix": "或",
+    "useApiKey": "使用 OpenAI API Key",
+    "orUseKurisuAccountPrefix": "或",
+    "useKurisuAccount": "使用 Kurisu 账户"
+  },
+  "hero": {
+    "kicker": "Kurisu优先的桌面架构",
+    "chatTitle": "基于kurisu运行时的代码优先外壳。",
+    "chatSubtitle": "在保持kurisu兼容性的同时，让会话、上下文和历史导航在桌面上感觉更自然。",
+    "codeTitle": "以kurisu核心为基础，具有Claude级别人体工程学的设计编码驾驶舱。",
+    "codeSubtitle": "使用Claude作为工具编排的UX参考，而不是运行时权威。"
+  },
+  "tools": {
+    "agent": "智能体",
+    "listDir": "查看目录",
+    "readFile": "读取文件",
+    "writeFile": "写入文件",
+    "editFile": "编辑文件",
+    "shell": "终端",
+    "search": "搜索",
+    "findFiles": "查找文件",
+    "think": "思考",
+    "memory": "记忆",
+    "webSearch": "网页搜索",
+    "tool": "工具",
+    "thinking": "思考中…",
+    "wittyLoadingPhrases": [
+      "正在努力搬砖，请稍候...",
+      "老板在身后，快加载啊！",
+      "服务器正在深呼吸，准备放大招...",
+      "正在向服务器投喂咖啡...",
+      "正在赋能全链路，寻找关键抓手...",
+      "正在降本增效，优化加载路径...",
+      "只要我不写代码，代码就没有 Bug...",
+      "正在把 Bug 转化为 Feature...",
+      "正在试图理解去年的自己写了什么...",
+      "正在猿力觉醒中，请耐心等待..."
+    ],
+    "toolCalls_one": "{{count}} 次工具调用",
+    "toolCalls_other": "{{count}} 次工具调用",
+    "statusCompleted": "已完成",
+    "statusFailed": "失败",
+    "statusPending": "进行中",
+    "todo": "待办",
+    "webFetch": "抓取 URL",
+    "askUser": "询问用户",
+    "planMode": "计划模式"
+  },
+  "composer": {
+    "currentMode": "当前表面",
+    "chatPlaceholder": "描述您想要处理的实现、迁移或会话任务。",
+    "codePlaceholder": "请求运行时集成、IPC工作、渲染器实现或kurisu兼容性强化。",
+    "chatAction": "开始代码会话",
+    "codeAction": "打开代码工作流"
+  }
+}

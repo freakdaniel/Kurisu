@@ -1,0 +1,124 @@
+using Kurisu.Core.Models;
+
+namespace Kurisu.Core.Models;
+
+/// <summary>
+/// Represents the Desktop Session Event
+/// </summary>
+public sealed class DesktopSessionEvent
+{
+    /// <summary>
+    /// Gets or sets the session id
+    /// </summary>
+    public required string SessionId { get; init; }
+
+    /// <summary>
+    /// Gets or sets the kind
+    /// </summary>
+    public required DesktopSessionEventKind Kind { get; init; }
+
+    /// <summary>
+    /// Gets or sets the timestamp utc
+    /// </summary>
+    public required DateTime TimestampUtc { get; init; }
+
+    /// <summary>
+    /// Gets or sets the message
+    /// </summary>
+    public required string Message { get; init; }
+
+    /// <summary>
+    /// Gets or sets the working directory
+    /// </summary>
+    public string WorkingDirectory { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the git branch
+    /// </summary>
+    public string GitBranch { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the command name
+    /// </summary>
+    public string CommandName { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the tool name
+    /// </summary>
+    public string ToolName { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the tool call id
+    /// </summary>
+    public string ToolCallId { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the tool call group id
+    /// </summary>
+    public string ToolCallGroupId { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the tool arguments json
+    /// </summary>
+    public string ToolArgumentsJson { get; init; } = "{}";
+
+    /// <summary>
+    /// Gets or sets the status
+    /// </summary>
+    public string Status { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the content delta
+    /// </summary>
+    public string ContentDelta { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the content snapshot
+    /// </summary>
+    public string ContentSnapshot { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the thinking delta
+    /// </summary>
+    public string ThinkingDelta { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the thinking snapshot
+    /// </summary>
+    public string ThinkingSnapshot { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the agent name
+    /// </summary>
+    public string AgentName { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the tool output body
+    /// </summary>
+    public string ToolOutput { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the approval state
+    /// </summary>
+    public string ApprovalState { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the changed files
+    /// </summary>
+    public IReadOnlyList<string> ChangedFiles { get; init; } = [];
+
+    /// <summary>
+    /// Gets or sets the questions
+    /// </summary>
+    public IReadOnlyList<DesktopQuestionPrompt> Questions { get; init; } = [];
+
+    /// <summary>
+    /// Gets or sets the answers
+    /// </summary>
+    public IReadOnlyList<DesktopQuestionAnswer> Answers { get; init; } = [];
+
+    /// <summary>
+    /// Gets or sets the title
+    /// </summary>
+    public string Title { get; init; } = string.Empty;
+}
