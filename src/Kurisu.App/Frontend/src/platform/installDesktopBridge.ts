@@ -31,13 +31,10 @@ type HostWindow = Window & {
 const ENVELOPE_VERSION = 2 as const
 const RESPONSE_ID = '__infiniframe:get:response'
 const OPEN_EXTERNAL_ID = '__infiniframe:open:external'
+const HOST_WINDOW = window as HostWindow
+const EVENT_HANDLERS = new Map<string, Set<(payload: unknown) => void>>()
+const PENDING_REQUESTS = new Map<string, { resolve: (value: unknown) => void; reject: (reason: Error) => void }>()
 
-const hostWindow = window as HostWindow
-const eventHandlers = new Map<string, Set<(payload: unknown) => void>>()
-const pendingRequests = new Map<
-  string,
-  { resolve: (value: unknown) => void; reject: (reason: Error) => void }
->()
 let receiverInstalled = false
 let nextRequestId = 0
 
@@ -47,7 +44,7 @@ function ensureReceiver() {
   }
   receiverInstalled = true
 
-  const host = hostWindow.infiniframe?.host
+  const host = HOST_WINDOW.infiniframe?.host
   if (!host) {
     console.warn('InfiniFrame host bridge is unavailable; running in local-only mode.')
     return
@@ -70,7 +67,7 @@ function ensureReceiver() {
       return
     }
 
-    const handlers = eventHandlers.get(envelope.id)
+    const handlers = EVENT_HANDLERS.get(envelope.id)
     if (handlers && envelope.data !== undefined) {
       const payload = parseEnvelopeData(envelope.data)
       handlers.forEach((handler) => {
@@ -118,11 +115,11 @@ function handleGetResponse(envelope: Envelope) {
     return
   }
 
-  const pending = pendingRequests.get(response.requestId)
+  const pending = PENDING_REQUESTS.get(response.requestId)
   if (!pending) {
     return
   }
-  pendingRequests.delete(response.requestId)
+  PENDING_REQUESTS.delete(response.requestId)
 
   if (response.success) {
     const data = response.data
@@ -151,7 +148,7 @@ function parseEnvelopeData(data: unknown): unknown {
 }
 
 function sendInvoke(id: string, payload: unknown): Promise<unknown> {
-  const host = hostWindow.infiniframe?.host
+  const host = HOST_WINDOW.infiniframe?.host
   if (!host?.postData) {
     return Promise.reject(new Error('InfiniFrame host postData is unavailable.'))
   }
@@ -160,7 +157,7 @@ function sendInvoke(id: string, payload: unknown): Promise<unknown> {
   const requestId = `if-req-${++nextRequestId}`
 
   return new Promise((resolve, reject) => {
-    pendingRequests.set(requestId, {
+    PENDING_REQUESTS.set(requestId, {
       resolve: (value) => resolve(value),
       reject: (error) => reject(error)
     })
@@ -175,7 +172,7 @@ function sendInvoke(id: string, payload: unknown): Promise<unknown> {
     try {
       host.postData!(envelope)
     } catch (error) {
-      pendingRequests.delete(requestId)
+      PENDING_REQUESTS.delete(requestId)
       reject(error instanceof Error ? error : new Error(String(error)))
     }
   })
@@ -184,15 +181,15 @@ function sendInvoke(id: string, payload: unknown): Promise<unknown> {
 function subscribe<T>(id: string, callback: (payload: T) => void): () => void {
   ensureReceiver()
   const handlers =
-    eventHandlers.get(id) ?? new Set<(payload: unknown) => void>()
+    EVENT_HANDLERS.get(id) ?? new Set<(payload: unknown) => void>()
   const wrapped = callback as (payload: unknown) => void
   handlers.add(wrapped)
-  eventHandlers.set(id, handlers)
+  EVENT_HANDLERS.set(id, handlers)
 
   return () => {
     handlers.delete(wrapped)
     if (handlers.size === 0) {
-      eventHandlers.delete(id)
+      EVENT_HANDLERS.delete(id)
     }
   }
 }

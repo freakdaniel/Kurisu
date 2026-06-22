@@ -79,14 +79,10 @@ public abstract class IpcServiceBase
     public void RegisterEventChannels(Action<string, object?> emit)
     {
         if (Interlocked.Exchange(ref _eventsRegistered, 1) == 1)
-        {
             return;
-        }
 
         foreach (var binding in _eventBindings.Value)
-        {
             binding.Register(this, emit);
-        }
     }
 
     /// <summary>
@@ -100,13 +96,19 @@ public abstract class IpcServiceBase
     private IReadOnlyDictionary<string, InvokeBinding> CreateInvokeBindings()
     {
         var methods = GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        return methods
-            .Select(method => (Method: method, Invoke: method.GetCustomAttribute<IpcInvokeAttribute>()))
-            .Where(entry => entry.Invoke is not null)
-            .ToDictionary(
-                entry => entry.Invoke!.Channel,
-                entry => new InvokeBinding(entry.Invoke.Channel, entry.Method, GetSingleParameterType(entry.Method)),
-                StringComparer.Ordinal);
+        var bindings = new Dictionary<string, InvokeBinding>(StringComparer.Ordinal);
+        foreach (var method in methods)
+        {
+            var invoke = method.GetCustomAttribute<IpcInvokeAttribute>();
+            if (invoke is null)
+                continue;
+
+            bindings[invoke.Channel] = new InvokeBinding(
+                invoke.Channel,
+                method,
+                GetSingleParameterType(method));
+        }
+        return bindings;
     }
 
     private IReadOnlyList<EventBinding> CreateEventBindings()
@@ -125,9 +127,7 @@ public abstract class IpcServiceBase
             if (parameters.Length != 1 ||
                 !parameters[0].ParameterType.IsGenericType ||
                 parameters[0].ParameterType.GetGenericTypeDefinition() != typeof(Action<>))
-            {
                 continue;
-            }
 
             bindings.Add(new EventBinding(
                 evt.Channel,
@@ -205,15 +205,12 @@ public sealed record InvokeBinding(string Channel, MethodInfo Method, Type? Para
     public object? DeserializeArgument(string? payloadJson)
     {
         if (ParameterType is null)
-        {
             return null;
-        }
 
         var json = string.IsNullOrWhiteSpace(payloadJson) ? "{}" : payloadJson;
         if (ParameterType == typeof(string))
-        {
             return JsonSerializer.Deserialize<string>(json, JsonOptions) ?? string.Empty;
-        }
+            
         return JsonSerializer.Deserialize(json, ParameterType, JsonOptions);
     }
 }

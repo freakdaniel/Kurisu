@@ -57,8 +57,11 @@ public sealed class InfiniFrameDesktopBridgeService(
     {
         foreach (var binding in desktopIpcService.InvokeBindings.Values)
         {
-            window.RegisterWebMessagePostHandler(binding.Channel, (_, payload) =>
-                HandleIpcPostAsync(window, binding, payload));
+            var capturedBinding = binding;
+            window.RegisterWebMessagePostHandler(capturedBinding.Channel, (currentWindow, payload) =>
+            {
+                _ = HandleIpcPostAsync(window, capturedBinding, payload);
+            });
         }
 
         logger.LogInformation(

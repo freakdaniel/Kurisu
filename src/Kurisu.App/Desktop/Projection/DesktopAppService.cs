@@ -18,6 +18,7 @@ namespace Kurisu.App.Desktop;
 /// <param name="followupProjectionService">The followup projection service</param>
 /// <param name="extensionProjectionService">The extension projection service</param>
 /// <param name="sessionProjectionService">The session projection service</param>
+/// <param name="providerModelLister">The provider model lister</param>
 public sealed class DesktopAppService(
     ILocaleStateService localeStateService,
     IDesktopBootstrapProjectionService bootstrapProjectionService,
