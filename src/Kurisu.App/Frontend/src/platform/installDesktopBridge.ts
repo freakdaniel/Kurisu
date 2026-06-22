@@ -224,6 +224,11 @@ bridge.openExternalUrl = (url: string) =>
 window.kurisuDesktop = bridge
 ensureExternalLinkInterception(bridge)
 
+export function installDesktopBridge(): void {
+  window.kurisuDesktop = bridge
+  ensureExternalLinkInterception(bridge)
+}
+
 function ensureExternalLinkInterception(activeBridge: DesktopBridge) {
   const isExternalUrl = (value: string) => {
     try {

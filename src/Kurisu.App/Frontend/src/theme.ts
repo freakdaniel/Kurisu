@@ -5,8 +5,20 @@ const config: ThemeConfig = {
   useSystemColorMode: false,
 }
 
+const fontStack = `'Google Sans Variable', 'Google Sans', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', system-ui, -apple-system, 'Segoe UI', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', sans-serif`
+
+const monoStack = `'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace`
+
 export const theme = extendTheme({
   config,
+  fonts: {
+    heading: fontStack,
+    body: fontStack,
+    mono: monoStack,
+  },
+  letterSpacings: {
+    heading: '-0.01em',
+  },
   colors: {
     brand: {
       50: '#f0effe',

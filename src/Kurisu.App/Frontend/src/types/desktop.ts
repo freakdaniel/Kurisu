@@ -2,10 +2,11 @@ import type {
   AppBootstrapPayload as GeneratedAppBootstrapPayload,
   DesktopQuestionAnswer,
   DesktopQuestionPrompt,
-  DesktopStateChangedEvent,
-  DesktopSessionEvent as GeneratedDesktopSessionEvent,
+  DesktopSessionActivitySummary as GeneratedDesktopSessionActivitySummary,
   DesktopSessionDetail as GeneratedDesktopSessionDetail,
   DesktopSessionEntry as GeneratedDesktopSessionEntry,
+  DesktopSessionEvent as GeneratedDesktopSessionEvent,
+  DesktopStateChangedEvent,
   KurisuDesktopBridge,
   SessionPreview,
 } from './ipc.generated'
@@ -93,15 +94,21 @@ export type {
   StartDesktopSessionTurnRequest,
 } from './ipc.generated'
 
+export type DesktopSessionActivitySummary = Omit<GeneratedDesktopSessionActivitySummary, 'commandCount'> & {
+  commandCount: number
+  toolCount: number
+}
+
 export type DesktopSessionEntry =
   Omit<GeneratedDesktopSessionEntry, 'thinkingDurationMs'> & {
     thinkingDurationMs?: number
   }
 
 export type DesktopSessionDetail =
-  Omit<GeneratedDesktopSessionDetail, 'session' | 'entries'> & {
+  Omit<GeneratedDesktopSessionDetail, 'session' | 'entries' | 'summary'> & {
     session: SessionPreview
     entries: DesktopSessionEntry[]
+    summary: DesktopSessionActivitySummary
   }
 
 export type DesktopSessionEvent =

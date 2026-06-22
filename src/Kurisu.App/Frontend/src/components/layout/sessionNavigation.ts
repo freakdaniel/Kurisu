@@ -1,72 +1,31 @@
 import type { SessionPreview } from '@/types/desktop';
+import {
+  isProjectlessWorkingDirectory as isProjectlessWorkingDirectoryBase,
+  type SessionScopeOptions,
+} from '@/lib/paths';
+
+export type { SessionScopeOptions } from '@/lib/paths';
+export {
+  normalizePathKey,
+  pathStartsWith,
+  joinDesktopPath,
+  getProjectlessTempDirectory,
+  isTemporaryChatWorkingDirectory,
+  basename,
+} from '@/lib/paths';
 
 export type SessionNavigationMode = 'projects' | 'chats';
-
-interface SessionScopeOptions {
-  runtimeBaseDirectory?: string;
-  workspaceRoot?: string;
-}
 
 export interface ProjectGroup {
   name: string;
   sessions: SessionPreview[];
 }
 
-function getPathSeparator(basePath: string): string {
-  return basePath.includes('\\') ? '\\' : '/';
-}
-
-export function normalizePathKey(path: string): string {
-  return path.replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase();
-}
-
-export function pathStartsWith(path: string, root: string): boolean {
-  if (!path || !root) {
-    return false;
-  }
-
-  const normalizedPath = normalizePathKey(path);
-  const normalizedRoot = normalizePathKey(root);
-  return normalizedPath === normalizedRoot || normalizedPath.startsWith(`${normalizedRoot}/`);
-}
-
-export function joinDesktopPath(basePath: string, ...segments: string[]): string {
-  const separator = getPathSeparator(basePath);
-  const trimmedBase = basePath.replace(/[\\/]+$/, '');
-  const trimmedSegments = segments
-    .map((segment) => segment.replace(/^[\\/]+|[\\/]+$/g, ''))
-    .filter(Boolean);
-
-  return [trimmedBase, ...trimmedSegments].join(separator);
-}
-
-export function getProjectlessTempDirectory(
-  runtimeBaseDirectory: string,
-  workspaceRoot: string,
-): string {
-  const baseDirectory = runtimeBaseDirectory.trim() || workspaceRoot.trim();
-  return joinDesktopPath(baseDirectory, 'tmp', 'no-project');
-}
-
 export function isProjectlessWorkingDirectory(
   workingDirectory: string,
   options: SessionScopeOptions,
 ): boolean {
-  if (!workingDirectory.trim()) {
-    return false;
-  }
-
-  const projectlessRoot = getProjectlessTempDirectory(
-    options.runtimeBaseDirectory ?? '',
-    options.workspaceRoot ?? '',
-  );
-
-  if (projectlessRoot && pathStartsWith(workingDirectory, projectlessRoot)) {
-    return true;
-  }
-
-  return /(?:^|[\\/])tmp[\\/]no-project(?:[\\/]|$)/i.test(workingDirectory) ||
-    /(?:^|[\\/])(?:aionui-)?kurisu-temp-[^\\/]+(?:[\\/]|$)/i.test(workingDirectory);
+  return isProjectlessWorkingDirectoryBase(workingDirectory, options);
 }
 
 export function isProjectlessSession(

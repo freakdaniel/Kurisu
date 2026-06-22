@@ -1,105 +1,11 @@
-import type {
-  AppBootstrapPayload,
-  DesktopMode,
-} from './types/desktop'
-
-export type ViewId = 'home' | 'search' | 'customize' | 'chats' | 'projects' | 'artifacts'
-
-export type IconName =
-  | 'menu'
-  | 'split'
-  | 'back'
-  | 'forward'
-  | 'plus'
-  | 'search'
-  | 'customize'
-  | 'chats'
-  | 'projects'
-  | 'folder'
-  | 'artifacts'
-  | 'write'
-  | 'learn'
-  | 'code'
-  | 'spark'
-  | 'ghost'
-  | 'chevronLeft'
-  | 'paperclip'
-  | 'settings'
-  | 'wand'
-  | 'cpu'
-
-export type NavItem = {
-  id: ViewId
-  label: string
-  icon: IconName
-}
-
-export type QuickAction = {
-  label: string
-  icon: IconName
-}
-
-export type LocaleCopy = {
-  appLabel: string
-  newChat: string
-  search: string
-  customize: string
-  chats: string
-  projects: string
-  artifacts: string
-  recents: string
-  allConversations: string
-  rootViewTitle: string
-  rootViewSubtitle: string
-  homeGreeting: string
-  homeLead: string
-  homeModeDescriptions: Record<DesktopMode, string>
-  composerPlaceholder: Record<DesktopMode, string>
-  modelLabel: string
-  sendLabel: string
-  sendingLabel: string
-  sessionHostLabel: string
-  sessionCreatedLabel: string
-  sessionUpdatedLabel: string
-  transcriptLabel: string
-  quickActions: QuickAction[]
-  bridgeStatus: { connected: string; local: string }
-  chatSurfaceTitle: string
-  chatSurfaceSubtitle: string
-  emptySearch: string
-  customizeTitle: string
-  customizeSubtitle: string
-  customizeLibraryTitle: string
-  customizeDetailTitle: string
-  referenceFromKurisu: string
-  referenceFromClaude: string
-  desktopDecision: string
-  deliveryState: string
-  capabilityLanes: string
-  responsibilities: string
-  projectsTitle: string
-  projectsSubtitle: string
-  artifactsTitle: string
-  artifactsSubtitle: string
-  compatibilityGoals: string
-  runtimeProfileLabel: string
-  runtimeApprovalLabel: string
-  toolCatalogLabel: string
-  nativeHostLabel: string
-  currentLocale: string
-  workspaceTag: string
-  modeLabel: string
-  searchPlaceholder: string
-  settingsLayersLabel: string
-  surfaceDirectoriesLabel: string
-}
+import type { AppBootstrapPayload } from '@/types/desktop';
 
 const fallbackPaths = {
   workspaceRoot: '[workspace-root]',
   userKurisuRoot: '[user-home]/.kurisu',
   programDataRoot: '[program-data]/kurisu',
   projectHash: '[project-hash]',
-} as const
+} as const;
 
 export const fallbackBootstrap: AppBootstrapPayload = {
   productName: 'Kurisu Desktop',
@@ -271,4 +177,4 @@ export const fallbackBootstrap: AppBootstrapPayload = {
     },
   },
   kurisuProviderPresets: [],
-}
+};

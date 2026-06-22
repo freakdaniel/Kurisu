@@ -3,10 +3,12 @@ import { createRoot } from 'react-dom/client'
 import 'katex/dist/katex.min.css'
 import { theme } from './theme'
 import './index.css'
-import './platform/installDesktopBridge'
+import { installDesktopBridge } from './platform/installDesktopBridge'
 import App from './App.tsx'
 import { initI18n } from './i18n/index.ts'
 import { BootstrapProvider } from './hooks/useBootstrap.ts'
+
+installDesktopBridge()
 
 // Initialize i18n BEFORE rendering so the loading screen
 // already uses the correct system language

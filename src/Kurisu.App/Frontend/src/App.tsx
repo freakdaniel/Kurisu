@@ -2,10 +2,10 @@ import { VStack, Heading, Text, Center, Box, Image } from '@chakra-ui/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import kurisuLogo from './assets/logo.png';
-import WelcomeScreen from './components/screens/WelcomeScreen';
-import MainLayout from './components/layout/MainLayout';
-import { useBootstrap } from './hooks/useBootstrap';
+import kurisuLogo from '@/assets/logo.png';
+import { WelcomeScreen } from '@/features/welcome';
+import MainLayout from '@/components/layout/MainLayout';
+import { useBootstrap } from '@/hooks/useBootstrap';
 
 const SPLASH_MIN_VISIBLE_MS = 1200;
 

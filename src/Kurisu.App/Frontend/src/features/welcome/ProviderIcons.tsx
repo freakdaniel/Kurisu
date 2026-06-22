@@ -1,22 +1,22 @@
 import type { CSSProperties, ImgHTMLAttributes } from 'react';
 
-import openaiUrl from '../../../assets/brands/openai-icon.svg';
-import anthropicUrl from '../../../assets/brands/claude-ai-icon.svg';
-import openrouterUrl from '../../../assets/brands/openrouter-icon.svg';
-import deepseekUrl from '../../../assets/brands/deepseek-logo-icon.svg';
-import mistralUrl from '../../../assets/brands/mistral-ai-icon.svg';
-import togetherUrl from '../../../assets/brands/together-ai-icon.svg';
-import moonshotUrl from '../../../assets/brands/kimi-ai-icon.svg';
-import fireworksUrl from '../../../assets/brands/fireworks-ai-icon.svg';
-import huggingfaceUrl from '../../../assets/brands/huggingface-icon.svg';
-import vercelUrl from '../../../assets/brands/vercel-icon.svg';
-import ollamaUrl from '../../../assets/brands/ollama-icon.svg';
-import groqUrl from '../../../assets/brands/groq-icon.svg';
-import xaiUrl from '../../../assets/brands/grok-ai-icon.svg';
-import zaiUrl from '../../../assets/brands/z-ai-icon.svg';
-import customUrl from '../../../assets/brands/minimax-icon.svg';
-import requestyUrl from '../../../assets/brands/requesty-logo.svg';
-import litellmUrl from '../../../assets/brands/litellm.png';
+import openaiUrl from '@/assets/brands/openai-icon.svg';
+import anthropicUrl from '@/assets/brands/claude-ai-icon.svg';
+import openrouterUrl from '@/assets/brands/openrouter-icon.svg';
+import deepseekUrl from '@/assets/brands/deepseek-logo-icon.svg';
+import mistralUrl from '@/assets/brands/mistral-ai-icon.svg';
+import togetherUrl from '@/assets/brands/together-ai-icon.svg';
+import moonshotUrl from '@/assets/brands/kimi-ai-icon.svg';
+import fireworksUrl from '@/assets/brands/fireworks-ai-icon.svg';
+import huggingfaceUrl from '@/assets/brands/huggingface-icon.svg';
+import vercelUrl from '@/assets/brands/vercel-icon.svg';
+import ollamaUrl from '@/assets/brands/ollama-icon.svg';
+import groqUrl from '@/assets/brands/groq-icon.svg';
+import xaiUrl from '@/assets/brands/grok-ai-icon.svg';
+import zaiUrl from '@/assets/brands/z-ai-icon.svg';
+import customUrl from '@/assets/brands/minimax-icon.svg';
+import requestyUrl from '@/assets/brands/requesty-logo.svg';
+import litellmUrl from '@/assets/brands/litellm.png';
 
 import { needsLightTile } from './providerTheme';
 
