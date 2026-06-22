@@ -1,9 +1,13 @@
 import type { ProviderPresetSnapshot } from '@/types/ipc.generated';
 
+export type ApiKeyMode = 'idle' | 'editing' | 'confirming' | 'confirmed';
+
 export interface WelcomeState {
   step: number;
   presetId: string;
   apiKey: string;
+  apiKeyMode: ApiKeyMode;
+  lastConfirmedKey: string;
   baseUrl: string;
   model: string;
   availableModels: string[];

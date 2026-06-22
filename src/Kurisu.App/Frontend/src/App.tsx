@@ -8,11 +8,14 @@ import MainLayout from '@/components/layout/MainLayout';
 import { useBootstrap } from '@/hooks/useBootstrap';
 
 const SPLASH_MIN_VISIBLE_MS = 1200;
+const WOBBLE_DURATION_MS = 1100;
+const WOBBLE_DELAY_MS = 480;
 
 function App() {
   const { t } = useTranslation();
   const { authSnapshot, isReady } = useBootstrap();
   const [showSplash, setShowSplash] = useState(true);
+  const [wobbleDone, setWobbleDone] = useState(false);
   const splashVisibleAtRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -32,16 +35,20 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!isReady) {
-      return;
-    }
+    if (!isReady || !wobbleDone) return;
 
     const visibleSince = splashVisibleAtRef.current ?? Date.now();
     const elapsed = Date.now() - visibleSince;
     const delay = Math.max(0, SPLASH_MIN_VISIBLE_MS - elapsed);
     const timeoutId = window.setTimeout(() => setShowSplash(false), delay);
     return () => window.clearTimeout(timeoutId);
-  }, [isReady]);
+  }, [isReady, wobbleDone]);
+
+  useEffect(() => {
+    if (wobbleDone) return;
+    const safety = window.setTimeout(() => setWobbleDone(true), WOBBLE_DELAY_MS + WOBBLE_DURATION_MS + 250);
+    return () => window.clearTimeout(safety);
+  }, [wobbleDone]);
 
   const appContent = useMemo(
     () => (authSnapshot.status !== 'connected' ? <WelcomeScreen /> : <MainLayout />),
@@ -63,9 +70,9 @@ function App() {
             <Center h="100%">
               <VStack spacing={6}>
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.78, y: 18, rotate: -8 }}
-                  animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
-                  transition={{ duration: 0.62, ease: [0.22, 1, 0.36, 1] }}
+                  initial={{ opacity: 0, scale: 0.78, y: 18 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
                 >
                   <Box
                     aria-label="Kurisu"
@@ -79,7 +86,20 @@ function App() {
                       },
                     }}
                   >
-                    <Image src={kurisuLogo} alt="Kurisu" width="100%" height="100%" objectFit="contain" />
+                    <motion.div
+                      initial={{ rotate: 0 }}
+                      animate={{ rotate: [0, -12, 11, -8, 7, -4, 3, 0] }}
+                      transition={{
+                        duration: WOBBLE_DURATION_MS / 1000,
+                        delay: WOBBLE_DELAY_MS / 1000,
+                        times: [0, 0.14, 0.28, 0.42, 0.56, 0.7, 0.85, 1],
+                        ease: 'easeOut',
+                      }}
+                      onAnimationComplete={() => setWobbleDone(true)}
+                      style={{ transformOrigin: '50% 92%' }}
+                    >
+                      <Image src={kurisuLogo} alt="Kurisu" width="100%" height="100%" objectFit="contain" />
+                    </motion.div>
                   </Box>
                 </motion.div>
                 <motion.div

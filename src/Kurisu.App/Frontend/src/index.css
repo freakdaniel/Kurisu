@@ -36,6 +36,10 @@ html, body, #root {
   margin: 0;
   min-height: 100%;
   overflow: hidden;
+  /* WebKitGTK on Linux compositing: promote root to its own layer so the
+     entire app shares one backing store instead of repainting per-widget. */
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 code, pre, kbd, samp {
@@ -61,18 +65,31 @@ button, a {
 ::-webkit-scrollbar {
   width: 6px;
 }
-
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
   background: #46464f;
   border-radius: 3px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
   background: #72727f;
+}
+
+/* WebKitGTK compositor hints: avoid repainting/updating layers for
+   elements that don't actually animate. Without this, every motion.div
+   wrapper in framer-motion promotes to its own layer, which on the
+   Skia/Cairo backend overflows GPU memory and causes stutter. */
+@media (prefers-reduced-motion: no-preference) {
+  /* Only force a layer for elements that explicitly opt in via
+     [data-animate="transform"]. This keeps everything else on the
+     default layer. */
+  [data-animate='transform'] {
+    will-change: transform;
+  }
+  [data-animate='opacity'] {
+    will-change: opacity;
+  }
 }
 
 /* Spinner animation */

@@ -16,9 +16,34 @@ namespace Kurisu.App;
 
 internal static class Program
 {
+    private const string WebKitLinuxInitParameters = """
+    {
+      "enable-smooth-scrolling": true,
+      "enable-accelerated-2d-canvas": true,
+      "enable-mediasource": true,
+      "enable-resizable-text-areas": true,
+      "enable-webrtc": false,
+      "enable-page-cache": true,
+      "enable-fullscreen": true,
+      "enable-developer-extras": false,
+      "javascript-can-open-windows-automatically": false,
+      "enable-back-forward-navigation-gestures": true,
+      "enable-write-console-messages-to-stdout": true
+    }
+    """;
+
+    private static void ApplyWebKitGpuEnvironment()
+    {
+        if (!OperatingSystem.IsLinux()) return;
+        
+        Environment.SetEnvironmentVariable("WEBKIT_FORCE_COMPOSITING_MODE", "1");
+        Environment.SetEnvironmentVariable("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
+    }
+
     [STAThread]
     private static void Main(string[] args)
     {
+        ApplyWebKitGpuEnvironment();
         GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
         GCSettings.LatencyMode = GCLatencyMode.Interactive;
         if (AppContext.GetData("IsSingleFile") as bool? == true)
@@ -55,9 +80,7 @@ internal static class Program
             var wwwrootPath = Path.Combine(AppContext.BaseDirectory, "wwwroot");
             var indexPath = Path.Combine(wwwrootPath, "index.html");
             if (!File.Exists(indexPath))
-            {
                 throw new FileNotFoundException("Renderer entrypoint was not found", indexPath);
-            }
 
             logger.LogInformation("Starting InfiniFrame host");
             logger.LogInformation("Content root: {ContentRoot}", AppContext.BaseDirectory);
@@ -74,6 +97,8 @@ internal static class Program
                 .SetSize(new Size(1280, 720))
                 .SetMinSize(new Size(1200, 720))
                 .SetDevToolsEnabled(Debugger.IsAttached)
+                .SetSmoothScrollingEnabled()
+                .SetBrowserControlInitParameters(OperatingSystem.IsLinux() ? WebKitLinuxInitParameters : null)
                 .UseEmbeddedWwwrootAssets(
                     scheme: "app",
                     includePhysicalFallback: true,
@@ -137,6 +162,9 @@ internal static class Program
             @"   \ \_\ \_\ \____/\ \_\  \ \_\/\____/\ \____/",
             @"    \/_/\/_/\/___/  \/_/   \/_/\/___/  \/___/ ",
         ];
+
+        Console.Clear();
+        Console.CursorVisible = false;
 
         foreach (var line in lines)
         {

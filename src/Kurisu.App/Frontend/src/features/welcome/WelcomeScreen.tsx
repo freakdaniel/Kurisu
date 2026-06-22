@@ -7,7 +7,7 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, type Variants } from 'framer-motion';
 import {
   ArrowLeft,
   ArrowRight,
@@ -18,7 +18,12 @@ import {
 import { useTranslation } from 'react-i18next';
 import kurisuLogo from '@/assets/logo.png';
 import { useBootstrap } from '@/features/bootstrap';
-import { envVarFor, TOTAL_WELCOME_STEPS, type WelcomeState } from './welcomeState';
+import {
+  envVarFor,
+  TOTAL_WELCOME_STEPS,
+  type WelcomeState,
+  type ApiKeyMode,
+} from './welcomeState';
 import { Step1Landing } from './steps/Step1Landing';
 import { Step2Configure } from './steps/Step2Configure';
 import { Step3Review } from './steps/Step3Review';
@@ -29,6 +34,8 @@ const initialState = (presets: { id: string }[]): WelcomeState => {
     step: 0,
     presetId: openai?.id ?? presets[0]?.id ?? 'custom',
     apiKey: '',
+    apiKeyMode: 'idle',
+    lastConfirmedKey: '',
     baseUrl: '',
     model: '',
     availableModels: [],
@@ -36,6 +43,29 @@ const initialState = (presets: { id: string }[]): WelcomeState => {
     modelError: '',
     isSubmitting: false,
   };
+};
+
+const stepContainerVariants: Variants = {
+  enter: {
+    transition: { staggerChildren: 0.07, delayChildren: 0.04 },
+  },
+  center: {
+    transition: { staggerChildren: 0.07, delayChildren: 0.04 },
+  },
+  exit: {
+    transition: { staggerChildren: 0.04, staggerDirection: -1, when: 'afterChildren' },
+  },
+};
+
+const stepItemVariants: Variants = {
+  enter: { opacity: 0, y: 16 },
+  center: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -16 },
+};
+
+const stepItemTransition = {
+  duration: 0.4,
+  ease: [0.22, 1, 0.36, 1] as const,
 };
 
 export default function WelcomeScreen() {
@@ -49,7 +79,10 @@ export default function WelcomeScreen() {
 
   const [state, setState] = useState<WelcomeState>(() => initialState(presets));
 
-  const preset = useMemo(() => presets.find((p) => p.id === state.presetId), [presets, state.presetId]);
+  const preset = useMemo(
+    () => presets.find((p) => p.id === state.presetId),
+    [presets, state.presetId]
+  );
   const isCustom = state.presetId === 'custom';
   const envKey = envVarFor(preset);
 
@@ -57,67 +90,79 @@ export default function WelcomeScreen() {
     if (!preset) return;
     setState((s) => ({
       ...s,
-      baseUrl: preset.defaultBaseUrl ?? '',
-      model: preset.defaultModelId || s.model,
+      baseUrl: isCustom ? s.baseUrl : (preset.defaultBaseUrl ?? ''),
+      apiKey: '',
+      apiKeyMode: 'idle',
+      lastConfirmedKey: '',
       availableModels: [],
+      model: isCustom ? s.model : '',
       modelError: '',
+      isLoadingModels: false,
     }));
-  }, [preset]);
+  }, [preset, isCustom]);
 
-  useEffect(() => {
-    if (!preset || isCustom) return;
-    if (!state.apiKey) {
-      setState((s) => ({ ...s, availableModels: [], modelError: '' }));
-      return;
-    }
-    if (!window.kurisuDesktop?.listProviderModels) return;
-    let cancelled = false;
-    setState((s) => ({ ...s, isLoadingModels: true, modelError: '' }));
-    (async () => {
+  const setApiKey = useCallback((value: string) => {
+    setState((s) => {
+      if (s.apiKeyMode === 'confirming' || s.apiKeyMode === 'confirmed') return s;
+      const nextMode: ApiKeyMode = value.length > 0 ? 'editing' : 'idle';
+      return { ...s, apiKey: value, apiKeyMode: nextMode, modelError: '' };
+    });
+  }, []);
+
+  const fetchModels = useCallback(
+    async (apiKey: string): Promise<void> => {
+      if (!preset || isCustom || !window.kurisuDesktop?.listProviderModels) return;
+      setState((s) => ({ ...s, isLoadingModels: true, modelError: '' }));
       try {
         const result = await window.kurisuDesktop!.listProviderModels({
           presetId: preset.id,
-          apiKey: state.apiKey.trim(),
-          forceRefresh: false,
+          apiKey: apiKey.trim(),
+          forceRefresh: true,
         });
-        if (cancelled) return;
-        setState((s) => ({
-          ...s,
-          availableModels: result.models ?? [],
-          modelError: result.error ?? '',
-          model: !s.model && result.models && result.models.length > 0 ? result.models[0] : s.model,
-        }));
+        setState((s) => {
+          const models = result.models ?? [];
+          const error = result.error ?? '';
+          return {
+            ...s,
+            availableModels: models,
+            modelError: error,
+            model: !error && models.length > 0 ? models[0] : '',
+          };
+        });
       } catch (err) {
-        if (!cancelled) setState((s) => ({ ...s, modelError: String(err) }));
+        setState((s) => ({ ...s, modelError: String(err) }));
       } finally {
-        if (!cancelled) setState((s) => ({ ...s, isLoadingModels: false }));
+        setState((s) => ({ ...s, isLoadingModels: false }));
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [state.presetId, state.apiKey, isCustom, preset]);
+    },
+    [preset, isCustom]
+  );
 
-  const refreshModels = useCallback(async () => {
-    if (!preset || isCustom || !window.kurisuDesktop?.listProviderModels) return;
-    setState((s) => ({ ...s, isLoadingModels: true, modelError: '' }));
-    try {
-      const result = await window.kurisuDesktop.listProviderModels({
-        presetId: preset.id,
-        apiKey: state.apiKey.trim(),
-        forceRefresh: true,
-      });
-      setState((s) => ({
-        ...s,
-        availableModels: result.models ?? [],
-        modelError: result.error ?? '',
-      }));
-    } catch (err) {
-      setState((s) => ({ ...s, modelError: String(err) }));
-    } finally {
-      setState((s) => ({ ...s, isLoadingModels: false }));
-    }
-  }, [preset, isCustom, state.apiKey]);
+  const handleConfirmApiKey = useCallback(async () => {
+    if (isCustom) return;
+    const key = state.apiKey.trim();
+    if (!key) return;
+    setState((s) => ({
+      ...s,
+      apiKeyMode: 'confirming',
+      lastConfirmedKey: key,
+    }));
+    await fetchModels(key);
+    setState((s) => ({ ...s, apiKeyMode: 'confirmed' }));
+  }, [fetchModels, isCustom, state.apiKey]);
+
+  const handleCancelEdit = useCallback(() => {
+    setState((s) => {
+      if (s.apiKeyMode !== 'editing') return s;
+      const last = s.lastConfirmedKey;
+      const nextMode = last.length > 0 ? 'confirmed' : 'idle';
+      return { ...s, apiKey: last, apiKeyMode: nextMode, modelError: '' };
+    });
+  }, []);
+
+  const handleStartEdit = useCallback(() => {
+    setState((s) => ({ ...s, apiKeyMode: 'editing' }));
+  }, []);
 
   const canGoNext = useMemo(() => {
     if (state.step === 0) return true;
@@ -125,10 +170,11 @@ export default function WelcomeScreen() {
       if (!preset) return false;
       if (!state.apiKey.trim()) return false;
       if (!state.model.trim()) return false;
+      if (state.apiKeyMode === 'confirming' || state.apiKeyMode === 'editing') return false;
       return true;
     }
     return true;
-  }, [state.step, preset, state.apiKey, state.model]);
+  }, [state.step, preset, state.apiKey, state.model, state.apiKeyMode]);
 
   const handleConnect = useCallback(async () => {
     if (state.isSubmitting || !window.kurisuDesktop) return;
@@ -155,7 +201,18 @@ export default function WelcomeScreen() {
       });
       setState((s) => ({ ...s, isSubmitting: false }));
     }
-  }, [envKey, preset, setBootstrap, state.apiKey, state.baseUrl, state.isSubmitting, state.model, state.presetId, t, toast]);
+  }, [
+    envKey,
+    preset,
+    setBootstrap,
+    state.apiKey,
+    state.baseUrl,
+    state.isSubmitting,
+    state.model,
+    state.presetId,
+    t,
+    toast,
+  ]);
 
   const headerTitle = state.step === 1
     ? t('welcome.configureTitle')
@@ -233,100 +290,113 @@ export default function WelcomeScreen() {
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={state.step}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                variants={stepContainerVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                style={{ width: '100%' }}
               >
                 {state.step > 0 && (
-                  <Box mb={6} textAlign="center">
-                    <Heading size="md" color="white" mb={1.5}>{headerTitle}</Heading>
-                    {headerSubtitle && (
-                      <Text color="gray.400" fontSize="sm">{headerSubtitle}</Text>
-                    )}
-                  </Box>
+                  <motion.div variants={stepItemVariants} transition={stepItemTransition}>
+                    <Box mb={6} textAlign="center">
+                      <Heading size="md" color="white" mb={1.5}>{headerTitle}</Heading>
+                      {headerSubtitle && (
+                        <Text color="gray.400" fontSize="sm">{headerSubtitle}</Text>
+                      )}
+                    </Box>
+                  </motion.div>
                 )}
 
                 {state.step === 0 && (
-                  <Step1Landing onNext={() => setState((s) => ({ ...s, step: 1 }))} />
+                  <motion.div variants={stepItemVariants} transition={stepItemTransition}>
+                    <Step1Landing onNext={() => setState((s) => ({ ...s, step: 1 }))} />
+                  </motion.div>
                 )}
                 {state.step === 1 && (
-                  <Step2Configure
-                    presets={presets}
-                    presetId={state.presetId}
-                    onPresetChange={(presetId) => setState((s) => ({ ...s, presetId }))}
-                    apiKey={state.apiKey}
-                    onApiKeyChange={(apiKey) => setState((s) => ({ ...s, apiKey }))}
-                    baseUrl={state.baseUrl}
-                    onBaseUrlChange={(baseUrl) => setState((s) => ({ ...s, baseUrl }))}
-                    model={state.model}
-                    onModelChange={(model) => setState((s) => ({ ...s, model }))}
-                    availableModels={state.availableModels}
-                    isLoadingModels={state.isLoadingModels}
-                    modelError={state.modelError}
-                    isSubmitting={state.isSubmitting}
-                    onRefreshModels={() => { void refreshModels(); }}
-                  />
+                  <motion.div variants={stepItemVariants} transition={stepItemTransition}>
+                    <Step2Configure
+                      presets={presets}
+                      presetId={state.presetId}
+                      onPresetChange={(presetId) => setState((s) => ({ ...s, presetId }))}
+                      apiKey={state.apiKey}
+                      onApiKeyChange={setApiKey}
+                      apiKeyMode={state.apiKeyMode}
+                      lastConfirmedKey={state.lastConfirmedKey}
+                      onConfirmApiKey={() => { void handleConfirmApiKey(); }}
+                      onStartEdit={handleStartEdit}
+                      onCancelEdit={handleCancelEdit}
+                      baseUrl={state.baseUrl}
+                      onBaseUrlChange={(baseUrl) => setState((s) => ({ ...s, baseUrl }))}
+                      model={state.model}
+                      onModelChange={(model) => setState((s) => ({ ...s, model }))}
+                      modelError={state.modelError}
+                      isSubmitting={state.isSubmitting}
+                    />
+                  </motion.div>
                 )}
                 {state.step === 2 && (
-                  <Step3Review presets={presets} state={state} />
+                  <motion.div variants={stepItemVariants} transition={stepItemTransition}>
+                    <Step3Review presets={presets} state={state} />
+                  </motion.div>
                 )}
 
                 {state.step > 0 && (
-                  <HStack mt={8} justify="space-between">
-                    <Button
-                      variant="ghost"
-                      color="gray.400"
-                      leftIcon={<ArrowLeft size={16} />}
-                      onClick={() => setState((s) => ({ ...s, step: Math.max(0, s.step - 1) }))}
-                      isDisabled={state.isSubmitting}
-                      p={0}
-                      _hover={{ color: 'white', bg: 'transparent' }}
-                    >
-                      {t('welcome.back')}
-                    </Button>
+                  <motion.div variants={stepItemVariants} transition={stepItemTransition}>
+                    <HStack mt={8} justify="space-between">
+                      <Button
+                        variant="ghost"
+                        color="gray.400"
+                        leftIcon={<ArrowLeft size={16} />}
+                        onClick={() => setState((s) => ({ ...s, step: Math.max(0, s.step - 1) }))}
+                        isDisabled={state.isSubmitting}
+                        p={0}
+                        _hover={{ color: 'white', bg: 'transparent' }}
+                      >
+                        {t('welcome.back')}
+                      </Button>
 
-                    {state.step < TOTAL_WELCOME_STEPS - 1 ? (
-                      <Button
-                        rightIcon={<ArrowRight size={16} />}
-                        bg="brand.500"
-                        color="white"
-                        _hover={{ bg: 'brand.600' }}
-                        _active={{ bg: 'brand.700' }}
-                        onClick={() => canGoNext && setState((s) => ({ ...s, step: s.step + 1 }))}
-                        isDisabled={!canGoNext}
-                        borderRadius="full"
-                        h="40px"
-                        px={6}
-                      >
-                        {t('welcome.next')}
-                      </Button>
-                    ) : (
-                      <Button
-                        rightIcon={state.isSubmitting ? undefined : <Rocket size={16} />}
-                        bg="brand.500"
-                        color="white"
-                        _hover={{ bg: 'brand.600' }}
-                        _active={{ bg: 'brand.700' }}
-                        onClick={handleConnect}
-                        isDisabled={state.isSubmitting || !state.model.trim() || !state.apiKey.trim()}
-                        h="40px"
-                        px={6}
-                      >
-                        {state.isSubmitting ? (
-                          <HStack spacing={2}>
-                            <Loader2 size={16} className="animate-spin" />
-                            <Text>{t('auth.connecting')}</Text>
-                          </HStack>
-                        ) : (
-                          <HStack spacing={2}>
-                            <Plug size={16} />
-                            <Text>{t('welcome.connect')}</Text>
-                          </HStack>
-                        )}
-                      </Button>
-                    )}
-                  </HStack>
+                      {state.step < TOTAL_WELCOME_STEPS - 1 ? (
+                        <Button
+                          rightIcon={<ArrowRight size={16} />}
+                          bg="brand.500"
+                          color="white"
+                          _hover={{ bg: 'brand.600' }}
+                          _active={{ bg: 'brand.700' }}
+                          onClick={() => canGoNext && setState((s) => ({ ...s, step: s.step + 1 }))}
+                          isDisabled={!canGoNext}
+                          borderRadius="full"
+                          h="40px"
+                          px={6}
+                        >
+                          {t('welcome.next')}
+                        </Button>
+                      ) : (
+                        <Button
+                          rightIcon={state.isSubmitting ? undefined : <Rocket size={16} />}
+                          bg="brand.500"
+                          color="white"
+                          _hover={{ bg: 'brand.600' }}
+                          _active={{ bg: 'brand.700' }}
+                          onClick={handleConnect}
+                          isDisabled={state.isSubmitting || !state.model.trim() || !state.apiKey.trim()}
+                          h="40px"
+                          px={6}
+                        >
+                          {state.isSubmitting ? (
+                            <HStack spacing={2}>
+                              <Loader2 size={16} className="animate-spin" />
+                              <Text>{t('auth.connecting')}</Text>
+                            </HStack>
+                          ) : (
+                            <HStack spacing={2}>
+                              <Plug size={16} />
+                              <Text>{t('welcome.connect')}</Text>
+                            </HStack>
+                          )}
+                        </Button>
+                      )}
+                    </HStack>
+                  </motion.div>
                 )}
               </motion.div>
             </AnimatePresence>
