@@ -171,7 +171,7 @@ export default function Sidebar({
                   </HStack>
                 </Box>
                 <Box px={3} pb={3}>
-                  <VStack spacing={1.5} align="stretch">
+                  <VStack spacing={0} align="stretch">
                     <Button
                       leftIcon={<Plus size={15} />}
                       variant="ghost"
@@ -380,11 +380,7 @@ export default function Sidebar({
                         </VStack>
                       </Box>
                     ))}
-                    {visibleSessions.length === 0 && (
-                      <Text px={2} py={3} fontSize="sm" color="gray.500">
-                        {t('sidebar.noSessionsFound')}
-                      </Text>
-                    )}
+                    {visibleSessions.length === 0 && ("")}
                   </VStack>
                 </Box>
               </VStack>

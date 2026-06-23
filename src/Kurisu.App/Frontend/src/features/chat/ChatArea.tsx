@@ -288,8 +288,8 @@ export default function ChatArea({
                 <Flex h="100%" direction="column" align="center" justify="center" userSelect="none">
                   <img
                     src={newSessionLogo}
-                    alt="Qwen"
-                    style={{ height: '80px', width: '80px', opacity: 0.9, marginBottom: '16px' }}
+                    alt="WelcomeImg"
+                    style={{ height: '96px', width: '96px', opacity: 0.9, marginBottom: '16px' }}
                     draggable={false}
                   />
                   <Text fontSize="2xl" fontWeight="semibold" color="white" letterSpacing="tight">
