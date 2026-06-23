@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Options;
+using Kurisu.App.Desktop.Bridges;
 using Kurisu.Core.Models;
-using Kurisu.App.Options;
 
-namespace Kurisu.App.Desktop;
+namespace Kurisu.App.Desktop.State;
 
 /// <summary>
 /// Represents the Locale State Service
@@ -11,7 +11,7 @@ namespace Kurisu.App.Desktop;
 public sealed class LocaleStateService(IOptions<DesktopShellOptions> options) : ILocaleStateService
 {
     private readonly object _syncRoot = new();
-    private string _currentLocale = DesktopProjectionCatalog.DetectDefaultLocale(options.Value.DefaultLocale);
+    private string _currentLocale = DesktopSurfaceCatalog.DetectDefaultLocale(options.Value.DefaultLocale);
 
     /// <summary>
     /// Gets the current locale
@@ -36,7 +36,7 @@ public sealed class LocaleStateService(IOptions<DesktopShellOptions> options) : 
     {
         lock (_syncRoot)
         {
-            _currentLocale = DesktopProjectionCatalog.NormalizeLocale(locale);
+            _currentLocale = DesktopSurfaceCatalog.NormalizeLocale(locale);
             return new DesktopStateChangedEvent
             {
                 CurrentMode = DesktopMode.Code,

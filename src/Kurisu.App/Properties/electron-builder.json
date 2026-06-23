@@ -1,0 +1,38 @@
+{
+  "appId": "io.kurisu.desktop",
+  "productName": "Kurisu",
+  "directories": {
+    "output": "../../artifacts/electron"
+  },
+  "files": [
+    "**/*",
+    "wwwroot/**/*",
+    "logs/**/*"
+  ],
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    ]
+  },
+  "mac": {
+    "target": [
+      {
+        "target": "dmg",
+        "arch": ["arm64", "x64"]
+      }
+    ],
+    "category": "public.app-category.developer-tools"
+  },
+  "linux": {
+    "target": [
+      {
+        "target": "AppImage",
+        "arch": ["x64"]
+      }
+    ],
+    "category": "Development"
+  }
+}

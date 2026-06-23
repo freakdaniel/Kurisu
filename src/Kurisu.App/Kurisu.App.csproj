@@ -27,13 +27,12 @@
     <ProjectReference Include="..\Kurisu.Core\Kurisu.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
+  <PropertyGroup>
+    <ElectronSkipMigrationChecks>true</ElectronSkipMigrationChecks>
+  </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="InfiniLore.InfiniFrame" Version="0.13.1" />
-    <PackageReference Include="InfiniLore.InfiniFrame.Js" Version="0.13.1" />
+    <PackageReference Include="ElectronNET.Core" Version="0.5.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.3.0" />
     <PackageReference Include="Serilog" Version="4.4.0-dev-02437" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
@@ -69,7 +68,7 @@
   <PropertyGroup>
     <Title>Kurisu</Title>
     <Version>0.1.0</Version>
-    <Description>Native desktop shell for Kurisu with a fully local .NET runtime and React-based workspace.</Description>
+    <Description>Native desktop shell for AI with a fully local .NET runtime and React-based workspace.</Description>
     <Company>freakdaniel</Company>
   </PropertyGroup>
 
@@ -87,7 +86,7 @@
 
   <Target Name="BuildFrontend" BeforeTargets="Build" Inputs="Frontend\src\**\*;Frontend\index.html;Frontend\vite.config.ts;Frontend\tsconfig.json;Frontend\tsconfig.app.json" Outputs="wwwroot\index.html" Condition="Exists('Frontend\package.json') AND '$(SkipFrontend)' != 'true'">
     <Message Importance="high" Text="-&gt; Building Frontend (Vite)" />
-    <Exec Command="npm run build" WorkingDirectory="Frontend" />
+    <Exec Command="npm run build" WorkingDirectory="Frontend" EnvironmentVariables="KURISU_APP_TITLE=$(Title)" />
   </Target>
 
   <Target Name="PrepareDesktopRun" BeforeTargets="Run" DependsOnTargets="BuildFrontend;CopyFrontendDist" />

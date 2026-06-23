@@ -1,198 +1,24 @@
 import type { DesktopBridge, DesktopStateChangedEvent } from '@/types/desktop'
 import { kurisuDesktopChannels } from '@/types/ipc.generated'
 
-type Envelope = {
-  id: string
-  command: 'Post' | 'Get'
-  data?: unknown
-  version: 2
-  requestId?: string
-}
-
-type GetResponsePayload = {
-  requestId: string
-  success: boolean
-  data?: string
-  error?: string
-}
-
-type InfiniFrameHostBridge = {
-  postData?: (envelope: Envelope | string) => void
-  receiveCallback?: (callback: (message: string) => void) => unknown
-  getDataAsync?: (envelope: Envelope | string) => Promise<string>
-}
-
-type HostWindow = Window & {
-  infiniframe?: {
-    host?: InfiniFrameHostBridge
-  }
-}
-
-const ENVELOPE_VERSION = 2 as const
-const RESPONSE_ID = '__infiniframe:get:response'
-const OPEN_EXTERNAL_ID = '__infiniframe:open:external'
-const HOST_WINDOW = window as HostWindow
-const EVENT_HANDLERS = new Map<string, Set<(payload: unknown) => void>>()
-const PENDING_REQUESTS = new Map<string, { resolve: (value: unknown) => void; reject: (reason: Error) => void }>()
-
-let receiverInstalled = false
-let nextRequestId = 0
-
-function ensureReceiver() {
-  if (receiverInstalled) {
-    return
-  }
-  receiverInstalled = true
-
-  const host = HOST_WINDOW.infiniframe?.host
-  if (!host) {
-    console.warn('InfiniFrame host bridge is unavailable; running in local-only mode.')
-    return
-  }
-
-  host.receiveCallback?.((raw: string) => {
-    let envelope: Envelope
-    try {
-      const parsed: unknown = JSON.parse(raw)
-      if (!isEnvelope(parsed)) {
-        return
+declare global {
+  interface Window {
+    require: (module: 'electron') => {
+      ipcRenderer: {
+        send: (channel: string, ...args: unknown[]) => void
+        invoke: (channel: string, ...args: unknown[]) => Promise<unknown>
+        on: (channel: string, listener: (event: unknown, ...args: unknown[]) => void) => void
+        once: (channel: string, listener: (event: unknown, ...args: unknown[]) => void) => void
+        removeListener: (channel: string, listener: (...args: unknown[]) => void) => void
       }
-      envelope = parsed
-    } catch {
-      return
-    }
-
-    if (envelope.id === RESPONSE_ID) {
-      handleGetResponse(envelope)
-      return
-    }
-
-    const handlers = EVENT_HANDLERS.get(envelope.id)
-    if (handlers && envelope.data !== undefined) {
-      const payload = parseEnvelopeData(envelope.data)
-      handlers.forEach((handler) => {
-        try {
-          handler(payload)
-        } catch (error) {
-          console.error('InfiniFrame event handler threw', envelope.id, error)
-        }
-      })
-    }
-  })
-}
-
-function isEnvelope(value: unknown): value is Envelope {
-  if (typeof value !== 'object' || value === null) {
-    return false
-  }
-  const candidate = value as { id?: unknown; version?: unknown }
-  return (
-    typeof candidate.id === 'string' &&
-    candidate.version === ENVELOPE_VERSION
-  )
-}
-
-function isGetResponsePayload(value: unknown): value is GetResponsePayload {
-  if (typeof value !== 'object' || value === null) {
-    return false
-  }
-  const candidate = value as { requestId?: unknown; success?: unknown }
-  return (
-    typeof candidate.requestId === 'string' &&
-    typeof candidate.success === 'boolean'
-  )
-}
-
-function handleGetResponse(envelope: Envelope) {
-  if (envelope.data === undefined || envelope.data === null) {
-    return
-  }
-
-  const response = isGetResponsePayload(envelope.data)
-    ? envelope.data
-    : parseEnvelopeData(envelope.data)
-  if (!isGetResponsePayload(response)) {
-    return
-  }
-
-  const pending = PENDING_REQUESTS.get(response.requestId)
-  if (!pending) {
-    return
-  }
-  PENDING_REQUESTS.delete(response.requestId)
-
-  if (response.success) {
-    const data = response.data
-    pending.resolve(data === undefined || data === 'null' ? null : safeJsonParse(data))
-  } else {
-    pending.reject(new Error(response.error ?? 'Host returned an error.'))
-  }
-}
-
-function safeJsonParse(raw: string): unknown {
-  try {
-    return JSON.parse(raw)
-  } catch {
-    return raw
-  }
-}
-
-function parseEnvelopeData(data: unknown): unknown {
-  if (typeof data === 'string') {
-    if (data === 'null') {
-      return null
-    }
-    return safeJsonParse(data)
-  }
-  return data
-}
-
-function sendInvoke(id: string, payload: unknown): Promise<unknown> {
-  const host = HOST_WINDOW.infiniframe?.host
-  if (!host?.postData) {
-    return Promise.reject(new Error('InfiniFrame host postData is unavailable.'))
-  }
-
-  ensureReceiver()
-  const requestId = `if-req-${++nextRequestId}`
-
-  return new Promise((resolve, reject) => {
-    PENDING_REQUESTS.set(requestId, {
-      resolve: (value) => resolve(value),
-      reject: (error) => reject(error)
-    })
-
-    const envelope: Envelope = {
-      id,
-      command: 'Post',
-      data: { requestId, payload: payload ?? null },
-      version: ENVELOPE_VERSION
-    }
-
-    try {
-      host.postData!(envelope)
-    } catch (error) {
-      PENDING_REQUESTS.delete(requestId)
-      reject(error instanceof Error ? error : new Error(String(error)))
-    }
-  })
-}
-
-function subscribe<T>(id: string, callback: (payload: T) => void): () => void {
-  ensureReceiver()
-  const handlers =
-    EVENT_HANDLERS.get(id) ?? new Set<(payload: unknown) => void>()
-  const wrapped = callback as (payload: unknown) => void
-  handlers.add(wrapped)
-  EVENT_HANDLERS.set(id, handlers)
-
-  return () => {
-    handlers.delete(wrapped)
-    if (handlers.size === 0) {
-      EVENT_HANDLERS.delete(id)
     }
   }
 }
+
+const { ipcRenderer } = window.require('electron')
+
+const REPLY_SUFFIX = ':reply'
+const OPEN_EXTERNAL_CHANNEL = '__kurisu:open-external'
 
 const subscriptionChannels = new Set<string>([
   kurisuDesktopChannels.subscribeStateChanged,
@@ -201,27 +27,70 @@ const subscriptionChannels = new Set<string>([
   kurisuDesktopChannels.subscribeArenaEvents
 ])
 
+function invoke<T>(channel: string, payload?: unknown): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const replyChannel = channel + REPLY_SUFFIX
+
+    let settled = false
+    const cleanup = () => {
+      ipcRenderer.removeListener(replyChannel, onReply)
+    }
+
+    const timer = window.setTimeout(() => {
+      if (settled) return
+      settled = true
+      cleanup()
+      reject(new Error(`IPC timeout: ${channel}`))
+    }, 10_000)
+
+    const onReply = (_event: unknown, raw: unknown) => {
+      if (settled) return
+      settled = true
+      window.clearTimeout(timer)
+      cleanup()
+
+      const text = typeof raw === 'string' ? raw : JSON.stringify(raw ?? null)
+      try {
+        resolve(JSON.parse(text) as T)
+      } catch (error) {
+        reject(error instanceof Error ? error : new Error(String(error)))
+      }
+    }
+
+    ipcRenderer.once(replyChannel, onReply)
+    ipcRenderer.send(channel, payload === undefined ? null : JSON.stringify(payload))
+  })
+}
+
+function subscribe<T>(channel: string, callback: (payload: T) => void): () => void {
+  const handler = (_event: unknown, raw: unknown) => {
+    const text = typeof raw === 'string' ? raw : JSON.stringify(raw ?? null)
+    try {
+      callback(JSON.parse(text) as T)
+    } catch (error) {
+      console.error('Failed to parse IPC payload for', channel, error)
+    }
+  }
+  ipcRenderer.on(channel, handler)
+  return () => ipcRenderer.removeListener(channel, handler)
+}
+
 const bridgeEntries = Object.entries(kurisuDesktopChannels).map(([methodName, channel]) => {
   if (subscriptionChannels.has(channel)) {
     return [methodName, (callback: (payload: unknown) => void) => subscribe(channel, callback)]
   }
-  return [methodName, (payload?: unknown) => sendInvoke(channel, payload ?? null)]
+  return [methodName, (payload?: unknown) => invoke(channel, payload ?? null)]
 })
 
 const bridge = Object.fromEntries(bridgeEntries) as DesktopBridge
 bridge.setLocale = (locale: string) =>
-  sendInvoke(kurisuDesktopChannels.setLocale, { locale }) as Promise<DesktopStateChangedEvent>
+  invoke<DesktopStateChangedEvent>(kurisuDesktopChannels.setLocale, { locale })
+
 bridge.openExternalUrl = (url: string) =>
-  sendInvoke(OPEN_EXTERNAL_ID, { url })
-    .then((result) => {
-      if (!result || typeof result !== 'object') {
-        return false
-      }
-      return Boolean((result as { opened?: boolean }).opened)
-    })
+  invoke<{ opened: boolean }>(OPEN_EXTERNAL_CHANNEL, { url })
+    .then((result) => result?.opened ?? false)
     .catch(() => false)
 
-window.kurisuDesktop = bridge
 ensureExternalLinkInterception(bridge)
 
 export function installDesktopBridge(): void {
@@ -253,12 +122,14 @@ function ensureExternalLinkInterception(activeBridge: DesktopBridge) {
       target && typeof (target as Element).closest === 'function'
         ? (target as Element).closest('a[href]')
         : null
-    if (!anchor) {
+    if (!anchor)
+    {
       return
     }
 
     const href = anchor.getAttribute('href') || (anchor as HTMLAnchorElement).href
-    if (!isExternalUrl(href)) {
+    if (!isExternalUrl(href))
+    {
       return
     }
 

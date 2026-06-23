@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { buildPendingApprovalPresentations } from '@/lib/approvalRules';
 import type { AgentMode } from '@/types/ui';
 import { useBootstrap } from '@/hooks/useBootstrap';
-import kurisuLogo from '@/assets/logo.png';
+import newSessionLogo from '@/assets/stickers/mayuri_thinking.png'
 import { MessageList, ThinkingPanel } from '@/features/chat';
 import { Composer, ProjectPicker } from '@/features/chat/composer';
 import { useChatSession } from '@/features/chat/useChatSession';
@@ -287,9 +287,9 @@ export default function ChatArea({
               ) : (
                 <Flex h="100%" direction="column" align="center" justify="center" userSelect="none">
                   <img
-                    src={kurisuLogo}
+                    src={newSessionLogo}
                     alt="Qwen"
-                    style={{ height: '64px', width: '64px', opacity: 0.9, marginBottom: '16px' }}
+                    style={{ height: '80px', width: '80px', opacity: 0.9, marginBottom: '16px' }}
                     draggable={false}
                   />
                   <Text fontSize="2xl" fontWeight="semibold" color="white" letterSpacing="tight">

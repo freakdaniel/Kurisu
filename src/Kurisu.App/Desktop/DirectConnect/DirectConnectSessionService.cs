@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
+using Kurisu.App.Desktop.Bridges;
 using Kurisu.Core.Models;
 
 namespace Kurisu.App.Desktop.DirectConnect;
@@ -12,14 +13,14 @@ public sealed class DirectConnectSessionService : IDirectConnectSessionService, 
     private const int DefaultMaxEvents = 100;
     private const int MaxBufferedEventsPerSession = 512;
 
-    private readonly IDesktopSessionProjectionService projectionService;
+    private readonly ISessionBridge projectionService;
     private readonly ConcurrentDictionary<string, ManagedDirectConnectSession> sessions = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Initializes a new instance of <see cref="DirectConnectSessionService"/>.
     /// </summary>
     /// <param name="projectionService">The desktop session projection service.</param>
-    public DirectConnectSessionService(IDesktopSessionProjectionService projectionService)
+    public DirectConnectSessionService(ISessionBridge projectionService)
     {
         this.projectionService = projectionService;
         this.projectionService.SessionEvent += OnSessionEvent;

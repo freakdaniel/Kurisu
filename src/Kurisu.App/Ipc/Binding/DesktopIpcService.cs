@@ -1,11 +1,11 @@
 #pragma warning disable CS1591
 using Kurisu.App.AppHost;
-using Kurisu.App.Desktop;
+using Kurisu.App.Desktop.Bridges;
 using Kurisu.App.Desktop.DirectConnect;
 using Kurisu.App.Ipc.Attributes;
 using Kurisu.Core.Models;
 
-namespace Kurisu.App.Ipc;
+namespace Kurisu.App.Ipc.Binding;
 
 /// <summary>
 /// Represents the desktop IPC surface exposed to the renderer bridge.
@@ -17,7 +17,7 @@ namespace Kurisu.App.Ipc;
 /// <param name="desktopWindowBridge">The native window bridge.</param>
 public sealed class DesktopIpcService(
     IServiceProvider services,
-    IDesktopProjectionService desktopProjectionService,
+    IDesktopSurface desktopProjectionService,
     IDirectConnectSessionService directConnectSessionService,
     IDirectConnectServerHost directConnectServerHost,
     IDesktopWindowBridge desktopWindowBridge) : IpcServiceBase(services)
@@ -250,27 +250,19 @@ public sealed class DesktopIpcService(
         => desktopProjectionService.GetFollowupSuggestionsAsync(request);
 
     [IpcEvent("kurisu-desktop:app:state-changed")]
-    public void SubscribeStateChanged(Action<DesktopStateChangedEvent> emit)
-    {
-        desktopProjectionService.StateChanged += (_, state) => emit(state);
-    }
+    public void SubscribeStateChanged(Action<DesktopStateChangedEvent> emit) 
+        => desktopProjectionService.StateChanged += (_, state) => emit(state);
 
     [IpcEvent("kurisu-desktop:auth:changed")]
-    public void SubscribeAuthChanged(Action<AuthStatusSnapshot> emit)
-    {
-        desktopProjectionService.AuthChanged += (_, state) => emit(state);
-    }
+    public void SubscribeAuthChanged(Action<AuthStatusSnapshot> emit) 
+        => desktopProjectionService.AuthChanged += (_, state) => emit(state);
 
     [IpcEvent("kurisu-desktop:sessions:event")]
-    public void SubscribeSessionEvents(Action<DesktopSessionEvent> emit)
-    {
-        desktopProjectionService.SessionEvent += (_, sessionEvent) => emit(sessionEvent);
-    }
+    public void SubscribeSessionEvents(Action<DesktopSessionEvent> emit) 
+        => desktopProjectionService.SessionEvent += (_, sessionEvent) => emit(sessionEvent);
 
     [IpcEvent("kurisu-desktop:arena:event")]
-    public void SubscribeArenaEvents(Action<ArenaSessionEvent> emit)
-    {
-        desktopProjectionService.ArenaEvent += (_, arenaEvent) => emit(arenaEvent);
-    }
+    public void SubscribeArenaEvents(Action<ArenaSessionEvent> emit) 
+        => desktopProjectionService.ArenaEvent += (_, arenaEvent) => emit(arenaEvent);
 }
 #pragma warning restore CS1591

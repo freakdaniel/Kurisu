@@ -1,6 +1,6 @@
 using System.Reflection;
 using Kurisu.App.Ipc.Attributes;
-using Kurisu.App.Ipc;
+using Kurisu.App.Ipc.Binding;
 
 namespace Kurisu.IpcGen;
 

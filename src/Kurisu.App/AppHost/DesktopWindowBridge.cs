@@ -1,51 +1,49 @@
-using System.Diagnostics;
-using InfiniFrame;
-using Microsoft.Extensions.Logging;
+using ElectronNET.API;
+using ElectronNET.API.Entities;
 using Kurisu.Core.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Kurisu.App.AppHost;
 
 /// <summary>
-/// Defines access to the active native desktop window.
+/// Defines access to the active Electron desktop window.
 /// </summary>
 public interface IDesktopWindowBridge
 {
     /// <summary>
-    /// Attaches the active window instance.
+    /// Attaches the active Electron window instance.
     /// </summary>
-    /// <param name="window">The active window.</param>
-    void AttachWindow(IInfiniFrameWindow window);
+    void AttachWindow(BrowserWindow window);
 
     /// <summary>
-    /// Publishes a raw message to the renderer.
+    /// Returns the currently attached window or <c>null</c> when no window
+    /// has been registered yet. This is used for non-fatal pushes such as
+    /// event delivery.
     /// </summary>
-    /// <param name="message">The serialized message.</param>
-    Task PublishAsync(string message);
+    BrowserWindow? TryGetWindow();
 
     /// <summary>
-    /// Opens a project directory picker.
+    /// Opens a project directory picker using Electron's native dialog API.
     /// </summary>
-    /// <returns>The directory selection result.</returns>
     Task<SelectProjectDirectoryResult> SelectProjectDirectoryAsync();
 
     /// <summary>
     /// Opens the specified URL using the host operating system.
     /// </summary>
-    /// <param name="url">The URL to open.</param>
-    /// <returns><c>true</c> when the URL was opened.</returns>
     bool OpenExternalUrl(string url);
 }
 
 /// <summary>
-/// Provides access to the current InfiniFrame window for shell actions.
+/// Provides access to the current Electron window for shell actions such as
+/// picking a project directory and opening external links.
 /// </summary>
 public sealed class DesktopWindowBridge(ILogger<DesktopWindowBridge> logger) : IDesktopWindowBridge
 {
     private readonly object _sync = new();
-    private IInfiniFrameWindow? _window;
+    private BrowserWindow? _window;
 
     /// <inheritdoc />
-    public void AttachWindow(IInfiniFrameWindow window)
+    public void AttachWindow(BrowserWindow window)
     {
         lock (_sync)
         {
@@ -54,32 +52,42 @@ public sealed class DesktopWindowBridge(ILogger<DesktopWindowBridge> logger) : I
     }
 
     /// <inheritdoc />
-    public Task PublishAsync(string message)
+    public BrowserWindow? TryGetWindow()
     {
-        var window = GetWindow();
-        window.Invoke(() => window.SendWebMessage(message));
-        return Task.CompletedTask;
+        lock (_sync)
+        {
+            return _window;
+        }
     }
 
     /// <inheritdoc />
-    public Task<SelectProjectDirectoryResult> SelectProjectDirectoryAsync()
+    public async Task<SelectProjectDirectoryResult> SelectProjectDirectoryAsync()
     {
         var window = GetWindow();
-        var selectedPath = string.Empty;
-
-        window.Invoke(() =>
+        var options = new OpenDialogOptions
         {
-            selectedPath = window.ShowOpenFolder(
-                "Select project directory",
-                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments))
-                ?.FirstOrDefault() ?? string.Empty;
-        });
+            Title = "Select project directory",
+            DefaultPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            Properties = new[] { OpenDialogProperty.openDirectory }
+        };
 
-        return Task.FromResult(new SelectProjectDirectoryResult
+        string[]? selected;
+        try
         {
-            Cancelled = string.IsNullOrWhiteSpace(selectedPath),
-            SelectedPath = selectedPath
-        });
+            selected = await Electron.Dialog.ShowOpenDialogAsync(window, options).ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            logger.LogWarning(exception, "Failed to show open-folder dialog");
+            selected = Array.Empty<string>();
+        }
+
+        var path = selected is { Length: > 0 } ? selected[0] : string.Empty;
+        return new SelectProjectDirectoryResult
+        {
+            Cancelled = string.IsNullOrWhiteSpace(path),
+            SelectedPath = path
+        };
     }
 
     /// <inheritdoc />
@@ -89,17 +97,12 @@ public sealed class DesktopWindowBridge(ILogger<DesktopWindowBridge> logger) : I
             (uri.Scheme != Uri.UriSchemeHttp &&
              uri.Scheme != Uri.UriSchemeHttps &&
              uri.Scheme != Uri.UriSchemeMailto))
-        {
             return false;
-        }
 
         try
         {
-            Process.Start(new ProcessStartInfo(uri.AbsoluteUri)
-            {
-                UseShellExecute = true
-            });
-            return true;
+            var error = Electron.Shell.OpenExternalAsync(uri.AbsoluteUri).GetAwaiter().GetResult();
+            return string.IsNullOrEmpty(error);
         }
         catch (Exception exception)
         {
@@ -108,11 +111,11 @@ public sealed class DesktopWindowBridge(ILogger<DesktopWindowBridge> logger) : I
         }
     }
 
-    private IInfiniFrameWindow GetWindow()
+    private BrowserWindow GetWindow()
     {
         lock (_sync)
         {
-            return _window ?? throw new InvalidOperationException("Desktop window has not been attached yet.");
+            return _window ?? throw new InvalidOperationException("Electron window has not been attached yet.");
         }
     }
 }

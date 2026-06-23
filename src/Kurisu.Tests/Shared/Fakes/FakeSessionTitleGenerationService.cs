@@ -1,4 +1,4 @@
-using Kurisu.App.Desktop.Projection;
+using Kurisu.App.Desktop.Bridges;
 
 namespace Kurisu.Tests.Shared.Fakes;
 

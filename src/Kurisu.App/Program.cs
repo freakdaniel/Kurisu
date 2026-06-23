@@ -1,176 +1,67 @@
-using System.Diagnostics;
-using System.Drawing;
-using System.Reflection;
 using System.Runtime;
-using InfiniFrame;
-using Microsoft.Extensions.Configuration;
+using ElectronNET;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Kurisu.App.AppHost;
 using Serilog;
-using Serilog.Events;
-using Serilog.Sinks.SystemConsole.Themes;
-using Kurisu.Core.Models;
+using Kurisu.App.AppHost.Hosting;
+using Kurisu.App.AppHost.Startup;
+using Kurisu.App.AppHost.Composition;
 
 namespace Kurisu.App;
 
 internal static class Program
 {
-    private const string WebKitLinuxInitParameters = """
+    private static async Task<int> Main()
     {
-      "enable-smooth-scrolling": true,
-      "enable-accelerated-2d-canvas": true,
-      "enable-mediasource": true,
-      "enable-resizable-text-areas": true,
-      "enable-webrtc": false,
-      "enable-page-cache": true,
-      "enable-fullscreen": true,
-      "enable-developer-extras": false,
-      "javascript-can-open-windows-automatically": false,
-      "enable-back-forward-navigation-gestures": true,
-      "enable-write-console-messages-to-stdout": true
-    }
-    """;
-
-    private static void ApplyWebKitGpuEnvironment()
-    {
-        if (!OperatingSystem.IsLinux()) return;
-        
-        Environment.SetEnvironmentVariable("WEBKIT_FORCE_COMPOSITING_MODE", "1");
-        Environment.SetEnvironmentVariable("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
-    }
-
-    [STAThread]
-    private static void Main(string[] args)
-    {
-        ApplyWebKitGpuEnvironment();
         GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
         GCSettings.LatencyMode = GCLatencyMode.Interactive;
-        if (AppContext.GetData("IsSingleFile") as bool? == true)
-        {
-            InfiniFrameSingleFileBootstrap.Initialize();
-        }
 
-        var configuration = new ConfigurationBuilder()
-            .SetBasePath(AppContext.BaseDirectory)
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
-            .AddJsonFile(
-                $"appsettings.{Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")}.json",
-                optional: true,
-                reloadOnChange: false)
-            .AddEnvironmentVariables()
-            .Build();
+        StartupBanner.Write();
 
-        WriteStartupBanner();
-        Log.Logger = CreateLogger(configuration);
+        var configuration = ConfigurationBootstrap.BuildConfiguration();
+        SerilogBootstrap.Configure(configuration);
+
         var services = new ServiceCollection();
-        services.AddSingleton<IConfiguration>(configuration);
+        services.AddSingleton(configuration);
         services.AddLogging(builder =>
         {
             builder.ClearProviders();
             builder.AddSerilog(Log.Logger, dispose: true);
         });
         services.AddDesktopShellServices(configuration);
+        await using var provider = services.BuildServiceProvider();
 
-        using var serviceProvider = services.BuildServiceProvider();
-        var logger = serviceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Kurisu.App");
+        var runtime = ElectronNetRuntime.RuntimeController;
+        ShutdownHandler.Install(runtime);
 
         try
         {
-            var wwwrootPath = Path.Combine(AppContext.BaseDirectory, "wwwroot");
-            var indexPath = Path.Combine(wwwrootPath, "index.html");
-            if (!File.Exists(indexPath))
-                throw new FileNotFoundException("Renderer entrypoint was not found", indexPath);
+            var logger = provider.GetRequiredService<ILoggerFactory>().CreateLogger("Kurisu.App");
+            logger.LogInformation("Starting electron runtime");
 
-            logger.LogInformation("Starting InfiniFrame host");
-            logger.LogInformation("Content root: {ContentRoot}", AppContext.BaseDirectory);
-            logger.LogInformation("Renderer root: {RendererRoot}", wwwrootPath);
-            logger.LogInformation("Environment: {EnvironmentName}", Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production");
-
-            var bridge = serviceProvider.GetRequiredService<InfiniFrameDesktopBridgeService>();
-            var productName = configuration["DesktopShell:ProductName"] ?? "Kurisu";
-
-            var window = InfiniFrameWindowBuilder.Create()
-                .SetUseOsDefaultSize(false)
-                .Center()
-                .SetTitle(productName)
-                .SetSize(new Size(1280, 720))
-                .SetMinSize(new Size(1200, 720))
-                .SetDevToolsEnabled(Debugger.IsAttached)
-                .SetSmoothScrollingEnabled()
-                .SetBrowserControlInitParameters(OperatingSystem.IsLinux() ? WebKitLinuxInitParameters : null)
-                .UseEmbeddedWwwrootAssets(
-                    scheme: "app",
-                    includePhysicalFallback: true,
-                    physicalWwwrootPath: wwwrootPath,
-                    setStartUrl: true)
-                .Build(serviceProvider);
-
-            bridge.Initialize(window);
-            var bootstrapTask = Bootstrapper.StartAsync(serviceProvider, configuration);
-            bootstrapTask.ContinueWith(
-                task => logger.LogError(task.Exception, "Desktop bootstrap services failed during startup"),
-                TaskContinuationOptions.OnlyOnFaulted);
-            window.WaitForClose();
-            bootstrapTask.GetAwaiter().GetResult();
+            await runtime.Start();
+            await runtime.WaitReadyTask;
+            await ElectronWindowBootstrap.LaunchAsync(provider, configuration, runtime);
+            await runtime.WaitStoppedTask;
+            return 0;
         }
         catch (Exception exception)
         {
-            logger.LogError(exception, "Fatal error while running desktop host");
-            throw;
+            Log.Fatal(exception, "Application crashed unexpectedly");
+            Console.WriteLine(exception);
+            try
+            {
+                await runtime.Stop().ConfigureAwait(false);
+                await runtime.WaitStoppedTask
+                    .WaitAsync(TimeSpan.FromSeconds(2))
+                    .ConfigureAwait(false);
+            }
+            catch { }
+            return 1;
         }
         finally
         {
             Log.CloseAndFlush();
         }
-    }
-
-    private static Serilog.ILogger CreateLogger(IConfiguration configuration)
-    {
-        var logsDirectory = Path.Combine(AppContext.BaseDirectory, "logs");
-        Directory.CreateDirectory(logsDirectory);
-
-        return new LoggerConfiguration()
-            .ReadFrom.Configuration(configuration)
-            .MinimumLevel.Information()
-            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-            .Enrich.FromLogContext()
-            .WriteTo.Console(
-                theme: AnsiConsoleTheme.Code,
-                outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
-            .WriteTo.File(
-                Path.Combine(logsDirectory, "kurisu-.log"),
-                rollingInterval: RollingInterval.Day,
-                retainedFileCountLimit: 7,
-                shared: true)
-            .CreateLogger();
-    }
-
-    private static void WriteStartupBanner()
-    {
-        const string logoColor = "\u001b[38;2;193;168;255m";
-        const string resetColor = "\u001b[0m";
-
-        string[] lines =
-        [
-            @"                                              ",
-            @" __                                           ",
-            @"/\ \                     __                   ",
-            @"\ \ \/'\   __  __  _ __ /\_\    ____  __  __  ",
-            @" \ \ , <  /\ \/\ \/\`'__\/\ \  /',__\/\ \/\ \ ",
-            @"  \ \ \\`\\ \ \_\ \ \ \/ \ \ \/\__, `\ \ \_\ \",
-            @"   \ \_\ \_\ \____/\ \_\  \ \_\/\____/\ \____/",
-            @"    \/_/\/_/\/___/  \/_/   \/_/\/___/  \/___/ ",
-        ];
-
-        Console.Clear();
-        Console.CursorVisible = false;
-
-        foreach (var line in lines)
-        {
-            Console.WriteLine($"{logoColor}{line}{resetColor}");
-        }
-
-        Console.WriteLine();
     }
 }

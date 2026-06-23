@@ -2,9 +2,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Kurisu.App.AppHost;
 using Kurisu.App.Desktop;
+using Kurisu.App.Desktop.Bridges;
 using Kurisu.App.Desktop.DirectConnect;
-using Kurisu.App.Ipc;
 using Kurisu.Core.Models;
+using Kurisu.App.Ipc.Binding;
 
 namespace Kurisu.Tests.Desktop;
 
@@ -193,7 +194,7 @@ public sealed class DesktopIpcServiceTests
             throw new NotSupportedException();
     }
 
-    private sealed class StubDesktopProjectionService : IDesktopProjectionService
+    private sealed class StubDesktopProjectionService : IDesktopSurface
     {
         public event EventHandler<DesktopStateChangedEvent>? StateChanged;
         public event EventHandler<DesktopSessionEvent>? SessionEvent;

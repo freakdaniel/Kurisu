@@ -22,7 +22,6 @@ import {
   envVarFor,
   TOTAL_WELCOME_STEPS,
   type WelcomeState,
-  type ApiKeyMode,
 } from './welcomeState';
 import { Step1Landing } from './steps/Step1Landing';
 import { Step2Configure } from './steps/Step2Configure';
@@ -42,6 +41,7 @@ const initialState = (presets: { id: string }[]): WelcomeState => {
     isLoadingModels: false,
     modelError: '',
     isSubmitting: false,
+    isValidating: false,
   };
 };
 
@@ -65,6 +65,11 @@ const stepItemVariants: Variants = {
 
 const stepItemTransition = {
   duration: 0.4,
+  ease: [0.22, 1, 0.36, 1] as const,
+};
+
+const nextButtonTransition = {
+  duration: 0.22,
   ease: [0.22, 1, 0.36, 1] as const,
 };
 
@@ -98,20 +103,27 @@ export default function WelcomeScreen() {
       model: isCustom ? s.model : '',
       modelError: '',
       isLoadingModels: false,
+      isValidating: false,
     }));
   }, [preset, isCustom]);
 
   const setApiKey = useCallback((value: string) => {
     setState((s) => {
-      if (s.apiKeyMode === 'confirming' || s.apiKeyMode === 'confirmed') return s;
-      const nextMode: ApiKeyMode = value.length > 0 ? 'editing' : 'idle';
-      return { ...s, apiKey: value, apiKeyMode: nextMode, modelError: '' };
+      if (s.isValidating) return s;
+      return {
+        ...s,
+        apiKey: value,
+        apiKeyMode: value.length > 0 ? 'editing' : 'idle',
+        modelError: '',
+      };
     });
   }, []);
 
   const fetchModels = useCallback(
-    async (apiKey: string): Promise<void> => {
-      if (!preset || isCustom || !window.kurisuDesktop?.listProviderModels) return;
+    async (apiKey: string): Promise<{ ok: boolean; error: string }> => {
+      if (!preset || isCustom || !window.kurisuDesktop?.listProviderModels) {
+        return { ok: true, error: '' };
+      }
       setState((s) => ({ ...s, isLoadingModels: true, modelError: '' }));
       try {
         const result = await window.kurisuDesktop!.listProviderModels({
@@ -119,18 +131,19 @@ export default function WelcomeScreen() {
           apiKey: apiKey.trim(),
           forceRefresh: true,
         });
-        setState((s) => {
-          const models = result.models ?? [];
-          const error = result.error ?? '';
-          return {
-            ...s,
-            availableModels: models,
-            modelError: error,
-            model: !error && models.length > 0 ? models[0] : '',
-          };
-        });
+        const models = result.models ?? [];
+        const error = result.error ?? '';
+        setState((s) => ({
+          ...s,
+          availableModels: models,
+          modelError: error,
+          model: !error && models.length > 0 ? models[0] : '',
+        }));
+        return { ok: !error, error };
       } catch (err) {
-        setState((s) => ({ ...s, modelError: String(err) }));
+        const msg = String(err);
+        setState((s) => ({ ...s, modelError: msg }));
+        return { ok: false, error: msg };
       } finally {
         setState((s) => ({ ...s, isLoadingModels: false }));
       }
@@ -138,43 +151,50 @@ export default function WelcomeScreen() {
     [preset, isCustom]
   );
 
-  const handleConfirmApiKey = useCallback(async () => {
-    if (isCustom) return;
+  const handleConfirmApiKey = useCallback(async (): Promise<boolean> => {
+    if (isCustom) return true;
     const key = state.apiKey.trim();
-    if (!key) return;
+    if (!key) return false;
     setState((s) => ({
       ...s,
+      isValidating: true,
       apiKeyMode: 'confirming',
       lastConfirmedKey: key,
     }));
-    await fetchModels(key);
-    setState((s) => ({ ...s, apiKeyMode: 'confirmed' }));
+    const { ok } = await fetchModels(key);
+    setState((s) => ({
+      ...s,
+      isValidating: false,
+      apiKeyMode: ok ? 'confirmed' : 'editing',
+    }));
+    return ok;
   }, [fetchModels, isCustom, state.apiKey]);
 
-  const handleCancelEdit = useCallback(() => {
-    setState((s) => {
-      if (s.apiKeyMode !== 'editing') return s;
-      const last = s.lastConfirmedKey;
-      const nextMode = last.length > 0 ? 'confirmed' : 'idle';
-      return { ...s, apiKey: last, apiKeyMode: nextMode, modelError: '' };
-    });
-  }, []);
-
-  const handleStartEdit = useCallback(() => {
-    setState((s) => ({ ...s, apiKeyMode: 'editing' }));
-  }, []);
+  const handleNext = useCallback(async () => {
+    if (state.step === 1 && !isCustom) {
+      const ok = await handleConfirmApiKey();
+      if (!ok) return;
+    }
+    setState((s) => ({ ...s, step: s.step + 1 }));
+  }, [state.step, isCustom, handleConfirmApiKey]);
 
   const canGoNext = useMemo(() => {
     if (state.step === 0) return true;
     if (state.step === 1) {
+      if (state.isValidating) return false;
       if (!preset) return false;
       if (!state.apiKey.trim()) return false;
-      if (!state.model.trim()) return false;
-      if (state.apiKeyMode === 'confirming' || state.apiKeyMode === 'editing') return false;
-      return true;
+      if (isCustom) {
+        if (!state.baseUrl.trim()) return false;
+        if (!state.model.trim()) return false;
+        return true;
+      }
+      // For non-custom: allow Next at any time after a key is present;
+      // validation happens on click.
+      return state.apiKeyMode !== 'confirming';
     }
     return true;
-  }, [state.step, preset, state.apiKey, state.model, state.apiKeyMode]);
+  }, [state.step, state.isValidating, preset, state.apiKey, state.baseUrl, state.model, isCustom, state.apiKeyMode]);
 
   const handleConnect = useCallback(async () => {
     if (state.isSubmitting || !window.kurisuDesktop) return;
@@ -224,6 +244,8 @@ export default function WelcomeScreen() {
     : state.step === 2
       ? t('welcome.reviewSubtitle')
       : '';
+
+  const isNextValidating = state.step === 1 && state.isValidating;
 
   return (
     <motion.div
@@ -321,16 +343,13 @@ export default function WelcomeScreen() {
                       apiKey={state.apiKey}
                       onApiKeyChange={setApiKey}
                       apiKeyMode={state.apiKeyMode}
-                      lastConfirmedKey={state.lastConfirmedKey}
-                      onConfirmApiKey={() => { void handleConfirmApiKey(); }}
-                      onStartEdit={handleStartEdit}
-                      onCancelEdit={handleCancelEdit}
                       baseUrl={state.baseUrl}
                       onBaseUrlChange={(baseUrl) => setState((s) => ({ ...s, baseUrl }))}
                       model={state.model}
                       onModelChange={(model) => setState((s) => ({ ...s, model }))}
                       modelError={state.modelError}
                       isSubmitting={state.isSubmitting}
+                      isValidating={state.isValidating}
                     />
                   </motion.div>
                 )}
@@ -348,7 +367,7 @@ export default function WelcomeScreen() {
                         color="gray.400"
                         leftIcon={<ArrowLeft size={16} />}
                         onClick={() => setState((s) => ({ ...s, step: Math.max(0, s.step - 1) }))}
-                        isDisabled={state.isSubmitting}
+                        isDisabled={state.isSubmitting || state.isValidating}
                         p={0}
                         _hover={{ color: 'white', bg: 'transparent' }}
                       >
@@ -357,18 +376,54 @@ export default function WelcomeScreen() {
 
                       {state.step < TOTAL_WELCOME_STEPS - 1 ? (
                         <Button
-                          rightIcon={<ArrowRight size={16} />}
                           bg="brand.500"
                           color="white"
-                          _hover={{ bg: 'brand.600' }}
-                          _active={{ bg: 'brand.700' }}
-                          onClick={() => canGoNext && setState((s) => ({ ...s, step: s.step + 1 }))}
+                          _hover={!isNextValidating ? { bg: 'brand.600' } : undefined}
+                          _active={!isNextValidating ? { bg: 'brand.700' } : undefined}
+                          onClick={handleNext}
                           isDisabled={!canGoNext}
                           borderRadius="full"
                           h="40px"
                           px={6}
+                          minW="140px"
+                          overflow="hidden"
+                          cursor={isNextValidating ? 'wait' : 'pointer'}
                         >
-                          {t('welcome.next')}
+                          <AnimatePresence mode="wait" initial={false}>
+                            {isNextValidating ? (
+                              <motion.span
+                                key="validating"
+                                initial={{ opacity: 0, y: 6 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -6 }}
+                                transition={nextButtonTransition}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 8,
+                                }}
+                              >
+                                <Loader2 size={16} className="animate-spin" />
+                                <span>{t('welcome.apiKeyFetching')}</span>
+                              </motion.span>
+                            ) : (
+                              <motion.span
+                                key="default"
+                                initial={{ opacity: 0, y: 6 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -6 }}
+                                transition={nextButtonTransition}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 8,
+                                }}
+                              >
+                                <span>{t('welcome.next')}</span>
+                                <ArrowRight size={16} />
+                              </motion.span>
+                            )}
+                          </AnimatePresence>
                         </Button>
                       ) : (
                         <Button

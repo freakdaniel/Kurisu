@@ -4,9 +4,8 @@ using System.Text.Json.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Kurisu.App.Ipc.Attributes;
-using Kurisu.Core.Models;
 
-namespace Kurisu.App.Ipc;
+namespace Kurisu.App.Ipc.Binding;
 
 /// <summary>
 /// Provides the base implementation for transport-agnostic IPC service dispatch.
@@ -61,9 +60,7 @@ public abstract class IpcServiceBase
     public async Task<object?> InvokeChannelAsync(string channel, string? payloadJson)
     {
         if (!_invokeBindings.Value.TryGetValue(channel, out var binding))
-        {
             throw new InvalidOperationException($"No IPC handler is registered for channel '{channel}'.");
-        }
 
         Logger.LogDebug("IPC invoke received: {Channel}", channel);
         var argument = binding.DeserializeArgument(payloadJson);
@@ -119,9 +116,7 @@ public abstract class IpcServiceBase
         foreach (var method in methods)
         {
             if (method.GetCustomAttribute<IpcEventAttribute>() is not { } evt)
-            {
                 continue;
-            }
 
             var parameters = method.GetParameters();
             if (parameters.Length != 1 ||

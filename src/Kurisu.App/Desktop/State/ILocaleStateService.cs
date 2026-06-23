@@ -1,6 +1,6 @@
 using Kurisu.Core.Models;
 
-namespace Kurisu.App.Desktop;
+namespace Kurisu.App.Desktop.State;
 
 /// <summary>
 /// Defines the contract for Locale State Service

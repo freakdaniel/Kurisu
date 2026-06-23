@@ -1,6 +1,6 @@
 using Kurisu.Core.Models;
 
-namespace Kurisu.App.Options;
+namespace Kurisu.App.Desktop.State;
 
 /// <summary>
 /// Represents the Desktop Shell Options

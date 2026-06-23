@@ -1,4 +1,5 @@
 using Kurisu.App.Desktop;
+using Kurisu.App.Desktop.Bridges;
 using Kurisu.App.Desktop.DirectConnect;
 using Kurisu.Core.Models;
 
@@ -9,7 +10,7 @@ public sealed class DirectConnectSessionServiceTests
     [Fact]
     public async Task StartTurnAsync_BindsSessionAndBuffersMatchingEvents()
     {
-        var projection = new RecordingSessionProjection();
+        var projection = new RecordingSessionBridge();
         var service = new DirectConnectSessionService(projection);
 
         var directSession = await service.CreateSessionAsync(new CreateDirectConnectSessionRequest
@@ -48,7 +49,7 @@ public sealed class DirectConnectSessionServiceTests
     [Fact]
     public async Task ApprovePendingToolAsync_UsesBoundSessionIdWhenRequestOmitsOne()
     {
-        var projection = new RecordingSessionProjection();
+        var projection = new RecordingSessionBridge();
         var service = new DirectConnectSessionService(projection);
 
         var directSession = await service.CreateSessionAsync(new CreateDirectConnectSessionRequest
@@ -72,7 +73,7 @@ public sealed class DirectConnectSessionServiceTests
     [Fact]
     public async Task StreamEventsAsync_YieldsLiveEventsFromBoundSession()
     {
-        var projection = new RecordingSessionProjection();
+        var projection = new RecordingSessionBridge();
         var service = new DirectConnectSessionService(projection);
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
@@ -99,7 +100,7 @@ public sealed class DirectConnectSessionServiceTests
         Assert.Equal(DesktopSessionEventKind.TurnStarted, stream.Current.Event.Kind);
     }
 
-    private sealed class RecordingSessionProjection : IDesktopSessionProjectionService
+    private sealed class RecordingSessionBridge : ISessionBridge
     {
         public event EventHandler<DesktopSessionEvent>? SessionEvent;
 

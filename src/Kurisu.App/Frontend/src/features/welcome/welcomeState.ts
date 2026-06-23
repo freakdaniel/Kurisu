@@ -14,6 +14,7 @@ export interface WelcomeState {
   isLoadingModels: boolean;
   modelError: string;
   isSubmitting: boolean;
+  isValidating: boolean;
 }
 
 export const envVarFor = (preset: ProviderPresetSnapshot | undefined) => {

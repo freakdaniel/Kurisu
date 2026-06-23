@@ -2,7 +2,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Kurisu.Core.Auth;
 using Kurisu.Core.Channels;
-using Kurisu.App.Desktop.Projection;
+using Kurisu.App.Desktop.Bridges;
 using Kurisu.Core.Extensions;
 using Kurisu.Core.Followup;
 using Kurisu.Core.Infrastructure;
@@ -11,12 +11,13 @@ using Kurisu.Core.Config;
 using Kurisu.Core.Telemetry;
 using Kurisu.Core.Runtime.Providers;
 using Kurisu.Tests.Shared.Fakes;
+using Kurisu.App.Desktop.State;
 
 namespace Kurisu.Tests.Shared.Fixtures;
 
 internal static class TestServiceFactory
 {
-    internal static DesktopAppService CreateService(DesktopShellOptions? options = null)
+    internal static DesktopFacade CreateService(DesktopShellOptions? options = null)
     {
         var environmentPaths = new FakeDesktopEnvironmentPaths(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
@@ -100,9 +101,9 @@ internal static class TestServiceFactory
                     Provider = "fallback"
                 })));
 
-        return new DesktopAppService(
+        return new DesktopFacade(
             new LocaleStateService(shellOptions),
-            new BootstrapProjectionService(
+            new BootstrapBridge(
                 shellOptions,
                 workspacePathResolver,
                 settingsResolver,
@@ -125,43 +126,43 @@ internal static class TestServiceFactory
                 chatRecordingService,
                 new FakeSessionTitleGenerationService(),
                 new LocaleStateService(shellOptions)),
-            new ArenaProjectionService(arenaSessionRegistry),
-            new AuthProjectionService(
+            new ArenaBridge(arenaSessionRegistry),
+            new AuthBridge(
                 shellOptions,
                 workspacePathResolver,
                 authFlowService),
-            new ChannelProjectionService(
+            new ChannelBridge(
                 shellOptions,
                 workspacePathResolver,
                 channelRegistry),
-            new WorkspaceProjectionService(
+            new WorkspaceBridge(
                 shellOptions,
                 workspacePathResolver,
                 workspaceInspectionService,
                 new GitWorktreeService(new GitCliService(), runtimeProfileService, gitHistoryService),
                 gitHistoryService),
-            new McpProjectionService(
+            new McpBridge(
                 shellOptions,
                 workspacePathResolver,
                 mcpRegistry,
                 mcpConnectionManager),
-            new PromptProjectionService(
+            new PromptBridge(
                 shellOptions,
                 workspacePathResolver,
                 promptRegistryService),
-            new McpResourceProjectionService(
+            new McpResourceBridge(
                 shellOptions,
                 workspacePathResolver,
                 mcpResourceRegistryService),
-            new FollowupProjectionService(
+            new FollowupBridge(
                 shellOptions,
                 workspacePathResolver,
                 followupSuggestionService),
-            new ExtensionProjectionService(
+            new ExtensionBridge(
                 shellOptions,
                 workspacePathResolver,
                 extensionCatalog),
-            new SessionProjectionService(
+            new SessionBridge(
                 shellOptions,
                 workspacePathResolver,
                 transcriptStore,
