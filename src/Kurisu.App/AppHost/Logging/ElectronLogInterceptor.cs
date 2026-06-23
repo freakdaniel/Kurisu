@@ -40,7 +40,18 @@ internal sealed class ElectronLogInterceptor : TextWriter
         "Mesa warning",
         "MESA-LOADER",
         "libEGL warning",
-        "DRI driver"
+        "DRI driver",
+        "Invalid mime.cache",
+        "mime_util_xdg.cc",
+        "ElectronProcessActive.StartCore",
+        "ElectronProcessBase.",
+        "ElectronProcessPassive.",
+        "InitializeSandbox",
+        "Failed to create",
+        "GLES2",
+        "vaapi",
+        "VAAPI",
+        "vulkan"
     ];
 
     private static readonly string[] WarningPatterns =

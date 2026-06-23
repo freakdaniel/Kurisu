@@ -1,4 +1,3 @@
-using System.Runtime;
 using ElectronNET;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -13,9 +12,6 @@ internal static class Program
 {
     private static async Task<int> Main()
     {
-        GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
-        GCSettings.LatencyMode = GCLatencyMode.Interactive;
-
         StartupBanner.Write();
 
         var configuration = ConfigurationBootstrap.BuildConfiguration();

@@ -29,6 +29,7 @@
 
   <PropertyGroup>
     <ElectronSkipMigrationChecks>true</ElectronSkipMigrationChecks>
+    <ElectronVersion>42.5.0</ElectronVersion>
   </PropertyGroup>
 
   <ItemGroup>

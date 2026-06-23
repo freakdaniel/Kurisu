@@ -18,11 +18,8 @@ namespace Kurisu.App.AppHost.Hosting;
 internal static class ElectronWindowBootstrap
 {
     private const string ChromiumArguments =
-        "--in-process-gpu " +
         "--disable-features=SpareRendererForSitePerProcess,BackForwardCache,Translate " +
-        "--disable-background-networking " +
-        "--disable-dev-shm-usage " +
-        "--js-flags=--max-old-space-size=256";
+        "--disable-dev-shm-usage ";
 
     public static async Task LaunchAsync(
         IServiceProvider services,
@@ -76,12 +73,8 @@ internal static class ElectronWindowBootstrap
             Icon = ResolveWindowIconPath(),
             WebPreferences = new WebPreferences
             {
-                NodeIntegration = true,
-                ContextIsolation = false,
-                Webgl = false,
                 WebviewTag = false,
                 DevTools = true,
-                Sandbox = false
             }
         };
 

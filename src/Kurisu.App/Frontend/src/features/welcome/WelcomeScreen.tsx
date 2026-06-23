@@ -13,7 +13,6 @@ import {
   ArrowRight,
   Loader2,
   Plug,
-  Rocket,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import kurisuLogo from '@/assets/logo.png';
@@ -264,7 +263,6 @@ export default function WelcomeScreen() {
         display="flex"
         flexDirection="row"
         alignItems="stretch"
-        bg="gray.950"
         overflow="hidden"
       >
         <Box
@@ -282,7 +280,6 @@ export default function WelcomeScreen() {
           flex={1}
           display="flex"
           flexDirection="column"
-          bg="gray.950"
           overflowY="auto"
         >
           <HStack
@@ -427,7 +424,6 @@ export default function WelcomeScreen() {
                         </Button>
                       ) : (
                         <Button
-                          rightIcon={state.isSubmitting ? undefined : <Rocket size={16} />}
                           bg="brand.500"
                           color="white"
                           _hover={{ bg: 'brand.600' }}
@@ -436,6 +432,7 @@ export default function WelcomeScreen() {
                           isDisabled={state.isSubmitting || !state.model.trim() || !state.apiKey.trim()}
                           h="40px"
                           px={6}
+                          borderRadius="full"
                         >
                           {state.isSubmitting ? (
                             <HStack spacing={2}>
