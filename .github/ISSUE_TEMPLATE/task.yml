@@ -1,0 +1,107 @@
+name: ✅ Task
+description: Track a development task or implementation work
+title: "Task | "
+labels: ["task"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## ✅ Development Task
+        Use this template to track implementation work, refactoring, or technical tasks
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which part of Kurisu does this task relate to?
+      options:
+        - Desktop Shell (WPF/Blazor)
+        - Discord Bot
+        - AI Integration
+        - MCP Protocol
+        - Agent System
+        - Configuration
+        - Infrastructure
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How urgent is this task?
+      options:
+        - Critical
+        - High
+        - Medium
+        - Low
+    validations:
+      required: true
+
+  - type: dropdown
+    id: effort
+    attributes:
+      label: Estimated Effort
+      description: How much work is this?
+      options:
+        - Small
+        - Medium
+        - Large
+        - Epic
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Task Description
+      description: What needs to be done?
+      placeholder: Describe the task clearly...
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: How do we know this task is complete?
+      value: |
+        - [ ] 
+        - [ ] 
+        - [ ] 
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation_notes
+    attributes:
+      label: Implementation Notes
+      description: Technical approach, considerations, or constraints
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: Does this task depend on other issues or tasks?
+      placeholder: "Related to #123, blocks #456"
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Screenshots, mockups, references, or extra details
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-task Checklist
+      options:
+        - label: I understand the requirements
+          required: true
+        - label: I have identified the affected components
+          required: true
+        - label: I have estimated the effort
+          required: true
