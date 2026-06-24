@@ -16,8 +16,7 @@ body:
       label: Component
       description: Which part of Kurisu does this task relate to?
       options:
-        - Desktop Shell (WPF/Blazor)
-        - Discord Bot
+        - Desktop Shell
         - AI Integration
         - MCP Protocol
         - Agent System
