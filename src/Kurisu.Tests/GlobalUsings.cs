@@ -13,7 +13,6 @@ global using Kurisu.Core.Hooks;
 global using Kurisu.Core.Infrastructure;
 global using Kurisu.Core.Mcp;
 global using Kurisu.Core.Models;
-global using Kurisu.App.Options;
 global using Kurisu.Core.Permissions;
 global using Kurisu.Core.Prompts;
 global using Kurisu.Core.Runtime;

@@ -24,7 +24,7 @@ internal static class Program
             builder.ClearProviders();
             builder.AddSerilog(Log.Logger, dispose: true);
         });
-        services.AddDesktopShellServices(configuration);
+        services.AddKurisu(configuration);
         await using var provider = services.BuildServiceProvider();
 
         var runtime = ElectronNetRuntime.RuntimeController;

@@ -1,3 +1,4 @@
+using Kurisu.App.AppHost.Composition;
 using Kurisu.Core.Config;
 
 namespace Kurisu.Tests.Tools;
@@ -180,16 +181,11 @@ public sealed class AgentToolTests
     private static IToolExecutor CreateToolExecutor(string workspaceRoot, string homeRoot, string systemRoot)
     {
         var services = new ServiceCollection();
+        services.AddLogging();
         services.AddSingleton<IDesktopEnvironmentPaths>(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot, workspaceRoot, AppContext.BaseDirectory));
         services.AddOptions<NativeAssistantRuntimeOptions>()
             .Configure(options => options.Provider = "fallback");
-        services.AddInfrastructureServices();
-        services.AddConfigServices();
-        services.AddCompatibilityServices();
-        services.AddPermissionServices();
-        services.AddRuntimeServices();
-        services.AddAgentServices();
-        services.AddToolServices();
+        services.AddKurisuCore();
 
         return services.BuildServiceProvider().GetRequiredService<IToolExecutor>();
     }

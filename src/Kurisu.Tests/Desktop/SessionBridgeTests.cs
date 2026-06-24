@@ -4,7 +4,6 @@ using Kurisu.App.Desktop;
 using Kurisu.App.Desktop.Bridges;
 using Kurisu.Core.Infrastructure;
 using Kurisu.Core.Models;
-using Kurisu.App.Options;
 using Kurisu.Core.Sessions;
 using Kurisu.Tests.Shared.Fakes;
 
