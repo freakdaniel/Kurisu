@@ -55,8 +55,9 @@ public sealed class HookRegistryService(
     public HookExecutionPlan BuildPlan(KurisuRuntimeProfile runtimeProfile, HookInvocationRequest request)
     {
         var eventName = request.EventName;
-        var projectSettingsPath = Path.Combine(runtimeProfile.ProjectRoot, ".kurisu", "settings.json");
-        var userSettingsPath = Path.Combine(runtimeProfile.GlobalKurisuDirectory, "settings.json");
+        var projectSettingsPath = KurisuPaths.ProjectSettingsFile(runtimeProfile.ProjectRoot);
+        var userSettingsPath = KurisuPaths.GlobalSettingsFile(
+            KurisuPaths.HomeDirectoryFromGlobalKurisu(runtimeProfile.GlobalKurisuDirectory));
         var systemRoot = ResolveProgramDataRoot();
         var systemDefaultsPath = GetSystemDefaultsPath(systemRoot);
         var systemSettingsPath = GetSystemSettingsPath(systemRoot);

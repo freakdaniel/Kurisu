@@ -352,7 +352,7 @@ public sealed class ChannelRegistryService(
             .ToArray();
     }
 
-    private string GetChannelsRoot() => Path.Combine(environmentPaths.HomeDirectory, ".kurisu", "channels");
+    private string GetChannelsRoot() => KurisuPaths.ChannelsDirectory(environmentPaths.HomeDirectory);
 
     private static ChannelServiceInfo? ReadServiceInfo(string channelsRoot)
     {

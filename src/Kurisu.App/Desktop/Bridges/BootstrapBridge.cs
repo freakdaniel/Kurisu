@@ -103,18 +103,18 @@ public sealed class BootstrapBridge(
             KurisuWorkspace = workspaceInspectionService.Inspect(workspace),
             KurisuAuth = authFlowService.GetStatus(workspace),
             KurisuMcp = CreateMcpSnapshot(mcpConnectionManager.ListServersWithStatus(workspace)),
-            KurisuProviderPresets = ProviderPresetCatalog.Presets
-                .Select(preset => new ProviderPresetSnapshot(
-                    Id: preset.Id,
-                    Name: preset.Name,
-                    Description: preset.Description,
-                    Family: preset.Family,
-                    DefaultBaseUrl: preset.DefaultBaseUrl,
-                    DefaultModelId: preset.DefaultModelId,
-                    Capabilities: preset.Capabilities,
-                    Popularity: preset.Popularity,
-                    DocsUrl: preset.DocsUrl,
-                    ModelsSourceUrl: preset.ModelsSourceUrl))
+            KurisuProviderPresets = ProviderCatalog.Builtins
+                .Select(manifest => new ProviderPresetSnapshot(
+                    Id: manifest.Id,
+                    Name: manifest.Name,
+                    Description: manifest.Description,
+                    Family: manifest.Family,
+                    DefaultBaseUrl: manifest.DefaultBaseUrl,
+                    DefaultModelId: manifest.DefaultModelId,
+                    Capabilities: manifest.Capabilities,
+                    Popularity: manifest.Popularity,
+                    DocsUrl: manifest.DocsUrl,
+                    ModelsSourceUrl: manifest.ModelsSourceUrl))
                 .ToArray()
         };
     }

@@ -1,30 +1,29 @@
-using Kurisu.Core.Models;
-
 namespace Kurisu.Core.Runtime.Providers;
 
 /// <summary>
-/// Static catalog of built-in OpenAI-Compatible provider presets.
+/// Static catalog of built-in OpenAI-Compatible provider manifests. The list
+/// mirrors the previous <c>ProviderPresetCatalog</c> but is data-driven and
+/// shares the richer <see cref="ProviderManifest"/> schema. User overrides
+/// are layered on top by <see cref="ProviderSettingsStore"/> at runtime.
 /// </summary>
-public static class ProviderPresetCatalog
+public static class ProviderCatalog
 {
     private const string AnthropicFallbackModelList =
         "[\"claude-3-5-sonnet-latest\",\"claude-3-7-sonnet-latest\",\"claude-sonnet-4\",\"claude-opus-4\"]";
 
-    /// <summary>
-    /// All presets, sorted by descending popularity.
-    /// </summary>
-    public static IReadOnlyList<ProviderPreset> Presets { get; } = Build();
+    /// <summary>All built-in manifests, sorted by descending popularity.</summary>
+    public static IReadOnlyList<ProviderManifest> Builtins { get; } = Build();
 
     /// <summary>
-    /// Resolves a preset by id (case-insensitive).
+    /// Resolves a built-in manifest by id (case-insensitive).
     /// </summary>
-    public static ProviderPreset? FindById(string id) =>
-        Presets.FirstOrDefault(preset =>
-            string.Equals(preset.Id, id, StringComparison.OrdinalIgnoreCase));
+    public static ProviderManifest? FindById(string id) =>
+        Builtins.FirstOrDefault(manifest =>
+            string.Equals(manifest.Id, id, StringComparison.OrdinalIgnoreCase));
 
-    private static IReadOnlyList<ProviderPreset> Build() =>
+    private static IReadOnlyList<ProviderManifest> Build() =>
     [
-        new ProviderPreset(
+new ProviderManifest(
             Id: "openai",
             Name: "OpenAI",
             Description: "GPT-4o, GPT-5, o-series and other OpenAI models.",
@@ -33,12 +32,12 @@ public static class ProviderPresetCatalog
             DefaultModelId: null,
             ApiKeyEnvVars: ["OPENAI_API_KEY"],
             Capabilities: ["tools", "json"],
-            Popularity: 100,
-            DocsUrl: "https://platform.openai.com/docs/models",
             ModelsSourceUrl: "https://api.openai.com/v1/models",
-            ModelsSourceHeaders: null),
-
-        new ProviderPreset(
+            KnownModels: null,
+            ModelsSourceHeaders: null,
+            DocsUrl: "https://platform.openai.com/docs/models",
+            Popularity: 100),
+        new ProviderManifest(
             Id: "anthropic",
             Name: "Anthropic",
             Description: "Claude 3.5/3.7/4 models served via OpenAI-Compatible endpoint.",
@@ -47,12 +46,12 @@ public static class ProviderPresetCatalog
             DefaultModelId: null,
             ApiKeyEnvVars: ["ANTHROPIC_API_KEY"],
             Capabilities: ["tools", "reasoning"],
-            Popularity: 95,
-            DocsUrl: "https://docs.anthropic.com/en/docs/about-claude/models",
             ModelsSourceUrl: null,
-            ModelsSourceHeaders: null),
-
-        new ProviderPreset(
+            KnownModels: null,
+            ModelsSourceHeaders: null,
+            DocsUrl: "https://docs.anthropic.com/en/docs/about-claude/models",
+            Popularity: 95),
+        new ProviderManifest(
             Id: "openrouter",
             Name: "OpenRouter",
             Description: "Aggregator for many providers (Anthropic, OpenAI, Google, Meta, etc.).",
@@ -61,12 +60,12 @@ public static class ProviderPresetCatalog
             DefaultModelId: null,
             ApiKeyEnvVars: ["OPENROUTER_API_KEY"],
             Capabilities: ["tools", "reasoning", "prompt-cache"],
-            Popularity: 90,
-            DocsUrl: "https://openrouter.ai/models",
             ModelsSourceUrl: "https://openrouter.ai/api/v1/models",
-            ModelsSourceHeaders: null),
-
-        new ProviderPreset(
+            KnownModels: null,
+            ModelsSourceHeaders: null,
+            DocsUrl: "https://openrouter.ai/models",
+            Popularity: 90),
+        new ProviderManifest(
             Id: "deepseek",
             Name: "DeepSeek",
             Description: "DeepSeek-V3, R1, Coder models.",
@@ -75,12 +74,12 @@ public static class ProviderPresetCatalog
             DefaultModelId: null,
             ApiKeyEnvVars: ["DEEPSEEK_API_KEY"],
             Capabilities: ["tools", "reasoning"],
-            Popularity: 80,
-            DocsUrl: "https://api-docs.deepseek.com/",
             ModelsSourceUrl: "https://api.deepseek.com/v1/models",
-            ModelsSourceHeaders: null),
-
-        new ProviderPreset(
+            KnownModels: null,
+            ModelsSourceHeaders: null,
+            DocsUrl: "https://api-docs.deepseek.com/",
+            Popularity: 80),
+        new ProviderManifest(
             Id: "xai",
             Name: "xAI (Grok)",
             Description: "Grok 2/3/4 models.",
@@ -89,12 +88,12 @@ public static class ProviderPresetCatalog
             DefaultModelId: null,
             ApiKeyEnvVars: ["XAI_API_KEY"],
             Capabilities: ["tools", "reasoning"],
-            Popularity: 70,
-            DocsUrl: "https://docs.x.ai/docs/models",
             ModelsSourceUrl: "https://api.x.ai/v1/models",
-            ModelsSourceHeaders: null),
-
-        new ProviderPreset(
+            KnownModels: null,
+            ModelsSourceHeaders: null,
+            DocsUrl: "https://docs.x.ai/docs/models",
+            Popularity: 70),
+        new ProviderManifest(
             Id: "groq",
             Name: "Groq",
             Description: "Ultra-fast LPU inference for open-source models.",
@@ -103,12 +102,12 @@ public static class ProviderPresetCatalog
             DefaultModelId: null,
             ApiKeyEnvVars: ["GROQ_API_KEY"],
             Capabilities: ["tools"],
-            Popularity: 65,
-            DocsUrl: "https://console.groq.com/docs/models",
             ModelsSourceUrl: "https://api.groq.com/openai/v1/models",
-            ModelsSourceHeaders: null),
-
-        new ProviderPreset(
+            KnownModels: null,
+            ModelsSourceHeaders: null,
+            DocsUrl: "https://console.groq.com/docs/models",
+            Popularity: 65),
+        new ProviderManifest(
             Id: "zai",
             Name: "Z.AI (GLM)",
             Description: "GLM-4.5/4.6/4.7 family.",
@@ -117,12 +116,12 @@ public static class ProviderPresetCatalog
             DefaultModelId: null,
             ApiKeyEnvVars: ["ZHIPU_API_KEY"],
             Capabilities: ["tools", "reasoning"],
-            Popularity: 60,
-            DocsUrl: "https://docs.z.ai/guides/overview/quick-start",
             ModelsSourceUrl: "https://api.z.ai/api/paas/v4/models",
-            ModelsSourceHeaders: null),
-
-        new ProviderPreset(
+            KnownModels: null,
+            ModelsSourceHeaders: null,
+            DocsUrl: "https://docs.z.ai/guides/overview/quick-start",
+            Popularity: 60),
+        new ProviderManifest(
             Id: "mistral",
             Name: "Mistral",
             Description: "Mistral Large, Codestral and other Mistral models.",
@@ -131,12 +130,12 @@ public static class ProviderPresetCatalog
             DefaultModelId: null,
             ApiKeyEnvVars: ["MISTRAL_API_KEY"],
             Capabilities: ["tools"],
-            Popularity: 55,
-            DocsUrl: "https://docs.mistral.ai/getting-started/models/models_overview/",
             ModelsSourceUrl: "https://api.mistral.ai/v1/models",
-            ModelsSourceHeaders: null),
-
-        new ProviderPreset(
+            KnownModels: null,
+            ModelsSourceHeaders: null,
+            DocsUrl: "https://docs.mistral.ai/getting-started/models/models_overview/",
+            Popularity: 55),
+        new ProviderManifest(
             Id: "together",
             Name: "Together AI",
             Description: "Fast inference for open-source models.",
@@ -145,12 +144,12 @@ public static class ProviderPresetCatalog
             DefaultModelId: null,
             ApiKeyEnvVars: ["TOGETHER_API_KEY"],
             Capabilities: ["tools"],
-            Popularity: 50,
-            DocsUrl: "https://docs.together.ai/docs/models-inference",
             ModelsSourceUrl: "https://api.together.xyz/v1/models",
-            ModelsSourceHeaders: null),
-
-        new ProviderPreset(
+            KnownModels: null,
+            ModelsSourceHeaders: null,
+            DocsUrl: "https://docs.together.ai/docs/models-inference",
+            Popularity: 50),
+        new ProviderManifest(
             Id: "moonshot",
             Name: "Moonshot (Kimi)",
             Description: "Moonshot v1 / Kimi models.",
@@ -159,12 +158,12 @@ public static class ProviderPresetCatalog
             DefaultModelId: null,
             ApiKeyEnvVars: ["MOONSHOT_API_KEY"],
             Capabilities: ["tools"],
-            Popularity: 45,
-            DocsUrl: "https://platform.moonshot.cn/docs/intro",
             ModelsSourceUrl: "https://api.moonshot.cn/v1/models",
-            ModelsSourceHeaders: null),
-
-        new ProviderPreset(
+            KnownModels: null,
+            ModelsSourceHeaders: null,
+            DocsUrl: "https://platform.moonshot.cn/docs/intro",
+            Popularity: 45),
+        new ProviderManifest(
             Id: "fireworks",
             Name: "Fireworks AI",
             Description: "High-performance inference for open-source models.",
@@ -173,12 +172,12 @@ public static class ProviderPresetCatalog
             DefaultModelId: null,
             ApiKeyEnvVars: ["FIREWORKS_API_KEY"],
             Capabilities: ["tools"],
-            Popularity: 45,
-            DocsUrl: "https://docs.fireworks.ai/models",
             ModelsSourceUrl: "https://api.fireworks.ai/inference/v1/models",
-            ModelsSourceHeaders: null),
-
-        new ProviderPreset(
+            KnownModels: null,
+            ModelsSourceHeaders: null,
+            DocsUrl: "https://docs.fireworks.ai/models",
+            Popularity: 45),
+        new ProviderManifest(
             Id: "huggingface",
             Name: "Hugging Face",
             Description: "Hugging Face Inference API router.",
@@ -187,12 +186,12 @@ public static class ProviderPresetCatalog
             DefaultModelId: null,
             ApiKeyEnvVars: ["HF_TOKEN"],
             Capabilities: ["tools"],
-            Popularity: 40,
-            DocsUrl: "https://huggingface.co/docs/inference-endpoints",
             ModelsSourceUrl: "https://router.huggingface.co/v1/models",
-            ModelsSourceHeaders: null),
-
-        new ProviderPreset(
+            KnownModels: null,
+            ModelsSourceHeaders: null,
+            DocsUrl: "https://huggingface.co/docs/inference-endpoints",
+            Popularity: 40),
+        new ProviderManifest(
             Id: "vercel",
             Name: "Vercel AI Gateway",
             Description: "Vercel's AI gateway service.",
@@ -201,12 +200,12 @@ public static class ProviderPresetCatalog
             DefaultModelId: null,
             ApiKeyEnvVars: ["AI_GATEWAY_API_KEY"],
             Capabilities: ["tools", "reasoning", "prompt-cache"],
-            Popularity: 35,
-            DocsUrl: "https://vercel.com/docs/ai-gateway",
             ModelsSourceUrl: "https://ai-gateway.vercel.sh/v1/models",
-            ModelsSourceHeaders: null),
-
-        new ProviderPreset(
+            KnownModels: null,
+            ModelsSourceHeaders: null,
+            DocsUrl: "https://vercel.com/docs/ai-gateway",
+            Popularity: 35),
+        new ProviderManifest(
             Id: "litellm",
             Name: "LiteLLM (self-host)",
             Description: "Self-hosted LiteLLM proxy (default http://localhost:4000).",
@@ -215,12 +214,12 @@ public static class ProviderPresetCatalog
             DefaultModelId: null,
             ApiKeyEnvVars: ["LITELLM_API_KEY"],
             Capabilities: ["tools", "prompt-cache"],
-            Popularity: 30,
-            DocsUrl: "https://docs.litellm.ai/",
             ModelsSourceUrl: "http://localhost:4000/v1/models",
-            ModelsSourceHeaders: null),
-
-        new ProviderPreset(
+            KnownModels: null,
+            ModelsSourceHeaders: null,
+            DocsUrl: "https://docs.litellm.ai/",
+            Popularity: 30),
+        new ProviderManifest(
             Id: "requesty",
             Name: "Requesty",
             Description: "AI router with multiple provider support.",
@@ -229,12 +228,12 @@ public static class ProviderPresetCatalog
             DefaultModelId: null,
             ApiKeyEnvVars: ["REQUESTY_API_KEY"],
             Capabilities: ["tools", "reasoning"],
-            Popularity: 25,
-            DocsUrl: "https://requesty.ai/solution/llm-routing",
             ModelsSourceUrl: "https://router.requesty.ai/v1/models",
-            ModelsSourceHeaders: null),
-
-        new ProviderPreset(
+            KnownModels: null,
+            ModelsSourceHeaders: null,
+            DocsUrl: "https://requesty.ai/solution/llm-routing",
+            Popularity: 25),
+        new ProviderManifest(
             Id: "ollama",
             Name: "Ollama (local)",
             Description: "Local Ollama daemon (default http://localhost:11434).",
@@ -243,12 +242,12 @@ public static class ProviderPresetCatalog
             DefaultModelId: null,
             ApiKeyEnvVars: ["OLLAMA_API_KEY"],
             Capabilities: ["tools"],
-            Popularity: 70,
+            ModelsSourceUrl: "http://localhost:11434/api/tags",
+            KnownModels: null,
+            ModelsSourceHeaders: null,
             DocsUrl: "https://github.com/ollama/ollama/blob/main/docs/openai.md",
-            ModelsSourceUrl: "http://localhost:11434/api/tags",  // Ollama uses /api/tags (non-standard)
-            ModelsSourceHeaders: null),
-
-        new ProviderPreset(
+            Popularity: 70),
+        new ProviderManifest(
             Id: "custom",
             Name: "Custom (manual)",
             Description: "Enter your own base URL, model, and API key.",
@@ -257,9 +256,47 @@ public static class ProviderPresetCatalog
             DefaultModelId: null,
             ApiKeyEnvVars: [],
             Capabilities: [],
-            Popularity: 0,
-            DocsUrl: null,
             ModelsSourceUrl: null,
-            ModelsSourceHeaders: null)
+            KnownModels: null,
+            ModelsSourceHeaders: null,
+            DocsUrl: null,
+            Popularity: 0)
     ];
+
+    /// <summary>
+    /// Returns the effective manifest list: built-ins plus any user-defined
+    /// custom providers from <see cref="ProviderSettingsStore"/>.
+    /// </summary>
+    public static IReadOnlyList<ProviderManifest> Effective(IEnumerable<ProviderEntry>? customEntries)
+    {
+        if (customEntries is null)
+        {
+            return Builtins;
+        }
+
+        var byId = Builtins.ToDictionary(p => p.Id, StringComparer.OrdinalIgnoreCase);
+        var effective = new List<ProviderManifest>(Builtins);
+        foreach (var entry in customEntries)
+        {
+            if (byId.ContainsKey(entry.ManifestId))
+            {
+                continue;
+            }
+            effective.Add(new ProviderManifest(
+                Id: entry.ManifestId,
+                Name: entry.ManifestId,
+                Description: "User-defined custom provider.",
+                Family: "openai-compatible",
+                DefaultBaseUrl: entry.BaseUrl ?? string.Empty,
+                DefaultModelId: null,
+                ApiKeyEnvVars: [],
+                Capabilities: [],
+                ModelsSourceUrl: null,
+                KnownModels: null,
+                ModelsSourceHeaders: null,
+                DocsUrl: null,
+                Popularity: -1));
+        }
+        return effective;
+    }
 }

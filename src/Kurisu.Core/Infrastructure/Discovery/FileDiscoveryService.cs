@@ -15,7 +15,7 @@ public sealed class FileDiscoveryService(
     private static readonly string[] IgnoredDirectories =
     [
         ".git",
-        ".kurisu",
+        KurisuPaths.DotFolderName,
         "node_modules",
         "bin",
         "obj"

@@ -22,8 +22,8 @@ public sealed partial class KurisuCompatibilityService(IDesktopEnvironmentPaths 
             ? Environment.CurrentDirectory
             : paths.WorkspaceRoot;
 
-        var projectKurisuRoot = Path.Combine(projectRoot, ".kurisu");
-        var homeKurisuRoot = Path.Combine(environmentPaths.HomeDirectory, ".kurisu");
+        var projectKurisuRoot = KurisuPaths.ProjectKurisuDirectory(projectRoot);
+        var homeKurisuRoot = KurisuPaths.GlobalKurisuDirectory(environmentPaths.HomeDirectory);
         var programDataRoot = ResolveProgramDataRoot();
         var runtimeProfile = new KurisuRuntimeProfileService(environmentPaths).Inspect(new WorkspacePaths
         {
@@ -38,8 +38,8 @@ public sealed partial class KurisuCompatibilityService(IDesktopEnvironmentPaths 
             SettingsLayers =
             [
                 CreateLayer("system-defaults", "System defaults", "system defaults", 2, GetSystemDefaultsPath(programDataRoot)),
-                CreateLayer("user-settings", "User settings", "user", 3, Path.Combine(homeKurisuRoot, "settings.json")),
-                CreateLayer("project-settings", "Project settings", "project", 4, Path.Combine(projectKurisuRoot, "settings.json")),
+                CreateLayer("user-settings", "User settings", "user", 3, KurisuPaths.GlobalSettingsFile(environmentPaths.HomeDirectory)),
+                CreateLayer("project-settings", "Project settings", "project", 4, KurisuPaths.ProjectSettingsFile(projectRoot)),
                 CreateLayer("system-settings", "System settings", "system override", 5, GetSystemSettingsPath(programDataRoot))
             ],
             SurfaceDirectories =

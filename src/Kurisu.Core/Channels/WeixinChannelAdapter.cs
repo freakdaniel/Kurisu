@@ -99,7 +99,7 @@ public sealed class WeixinChannelAdapter(
 
     private (string Token, string BaseUrl) LoadWeixinAccount()
     {
-        var path = Path.Combine(environmentPaths.HomeDirectory, ".kurisu", "channels", "weixin", "account.json");
+        var path = KurisuPaths.ChannelWeixinAccountFile(environmentPaths.HomeDirectory);
         if (!File.Exists(path))
         {
             return (string.Empty, string.Empty);

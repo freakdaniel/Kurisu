@@ -10,8 +10,7 @@ public sealed class WorkspacePathResolver(IDesktopEnvironmentPaths environmentPa
 {
     private static readonly string[] WorkspaceMarkers =
     [
-        ".kurisu",
-        ".kurisu",
+        KurisuPaths.DotFolderName,
         ".git",
         "Kurisu.slnx"
     ];

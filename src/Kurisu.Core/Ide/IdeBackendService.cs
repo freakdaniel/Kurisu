@@ -120,7 +120,7 @@ public sealed class IdeBackendService(
 
     private IdeConnectionConfigRecord? GetBestConnectionConfig(string workspaceRoot)
     {
-        var ideRoot = Path.Combine(environmentPaths.HomeDirectory, ".kurisu", "ide");
+        var ideRoot = KurisuPaths.IdeDirectory(environmentPaths.HomeDirectory);
         var fileBackedConfig = Directory.Exists(ideRoot)
             ? Directory.GetFiles(ideRoot, "*.lock", SearchOption.TopDirectoryOnly)
                 .Select(ReadConnectionConfig)
@@ -211,7 +211,7 @@ public sealed class IdeBackendService(
         var envPort = Environment.GetEnvironmentVariable("QWEN_CODE_IDE_SERVER_PORT");
         if (!string.IsNullOrWhiteSpace(envPort))
         {
-            var envLockPath = Path.Combine(environmentPaths.HomeDirectory, ".kurisu", "ide", $"{envPort}.lock");
+            var envLockPath = KurisuPaths.IdePortLockFile(environmentPaths.HomeDirectory, envPort);
             var lockConfig = ReadConnectionConfig(envLockPath);
             if (lockConfig is not null)
             {

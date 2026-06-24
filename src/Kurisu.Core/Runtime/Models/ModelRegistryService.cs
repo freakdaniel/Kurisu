@@ -1,14 +1,20 @@
 using Kurisu.Core.Config;
 using Kurisu.Core.Models;
+using Microsoft.Extensions.Options;
 
 namespace Kurisu.Core.Runtime;
 
 /// <summary>
-/// Represents the Model Registry Service
+/// Resolves the list of models visible to the assistant runtime and which
+/// one is currently selected. Reads everything from
+/// <see cref="RuntimeConfigSnapshot"/>: model metadata from the legacy
+/// <c>modelProviders</c> section of Settings.json (still preserved for
+/// compatibility), and the currently selected model + embedding model from
+/// <c>model.name</c> + <c>embeddingModel</c>.
 /// </summary>
-/// <param name="configService">The config service</param>
-/// <param name="tokenLimitService">The token limit service</param>
-/// <param name="runtimeOptions">The runtime options</param>
+/// <param name="configService">Source of merged settings (paths, telemetry, model list, selection).</param>
+/// <param name="tokenLimitService">Resolves context/output token limits per model.</param>
+/// <param name="runtimeOptions">Runtime override options (endpoint, api key overrides).</param>
 public sealed class ModelRegistryService(
     IConfigService configService,
     ITokenLimitService tokenLimitService,
@@ -18,10 +24,10 @@ public sealed class ModelRegistryService(
     private readonly NativeAssistantRuntimeOptions _runtimeOptions = runtimeOptions.Value;
 
     /// <summary>
-    /// Executes inspect
+    /// Inspects the configuration and returns the resolved model snapshot.
     /// </summary>
-    /// <param name="paths">The paths to process</param>
-    /// <returns>The resulting runtime model snapshot</returns>
+    /// <param name="paths">Workspace paths.</param>
+    /// <returns>The resulting runtime model snapshot.</returns>
     public RuntimeModelSnapshot Inspect(WorkspacePaths paths)
     {
         var snapshot = configService.Inspect(paths);

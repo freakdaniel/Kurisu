@@ -1,5 +1,6 @@
 using Kurisu.Core.Models;
 using Kurisu.Core.Compatibility;
+using Kurisu.Core.Infrastructure;
 using Kurisu.Core.Followup;
 using Kurisu.Core.Hooks;
 using Kurisu.Core.Runtime;
@@ -2101,8 +2102,9 @@ public sealed class DesktopSessionHostService(
         }
 
         var settingsPath = decision == "always-allow-user"
-            ? Path.Combine(runtimeProfile.GlobalKurisuDirectory, "settings.json")
-            : Path.Combine(runtimeProfile.ProjectRoot, ".kurisu", "settings.json");
+            ? KurisuPaths.GlobalSettingsFile(
+                  KurisuPaths.HomeDirectoryFromGlobalKurisu(runtimeProfile.GlobalKurisuDirectory))
+            : KurisuPaths.ProjectSettingsFile(runtimeProfile.ProjectRoot);
         TryAppendAllowRule(settingsPath, allowRule);
     }
 

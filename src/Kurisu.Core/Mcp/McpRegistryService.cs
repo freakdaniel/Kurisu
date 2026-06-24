@@ -1,4 +1,6 @@
 using Kurisu.Core.Compatibility;
+using Kurisu.Core.Config;
+using Kurisu.Core.Infrastructure;
 using Kurisu.Core.Models;
 
 namespace Kurisu.Core.Mcp;
@@ -20,8 +22,9 @@ public sealed class McpRegistryService(
     public IReadOnlyList<McpServerDefinition> ListServers(WorkspacePaths paths)
     {
         var runtimeProfile = runtimeProfileService.Inspect(paths);
-        var userSettingsPath = Path.Combine(runtimeProfile.GlobalKurisuDirectory, "settings.json");
-        var projectSettingsPath = Path.Combine(runtimeProfile.ProjectRoot, ".kurisu", "settings.json");
+        var userSettingsPath = KurisuPaths.GlobalSettingsFile(
+            KurisuPaths.HomeDirectoryFromGlobalKurisu(runtimeProfile.GlobalKurisuDirectory));
+        var projectSettingsPath = KurisuPaths.ProjectSettingsFile(runtimeProfile.ProjectRoot);
 
         var servers = new Dictionary<string, McpServerDefinition>(StringComparer.OrdinalIgnoreCase);
 
@@ -53,6 +56,7 @@ public sealed class McpRegistryService(
 
         var runtimeProfile = runtimeProfileService.Inspect(paths);
         var settingsPath = ResolveSettingsPath(runtimeProfile, request.Scope);
+        // settings path comes from RuntimeConfigService (still lowercase "settings.json" for backward compat with system files)
         var root = LoadSettingsRoot(settingsPath);
         var mcpServers = root["mcpServers"] as JsonObject ?? [];
         root["mcpServers"] = mcpServers;
@@ -265,6 +269,9 @@ public sealed class McpRegistryService(
     private static void SaveSettingsRoot(string settingsPath, JsonObject root)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(settingsPath)!);
+        // Strip junk and unknown keys so the on-disk Settings.json stays clean.
+        RuntimeConfigService.StripLegacyRuntimeState(root);
+        RuntimeConfigService.Prune(root, RuntimeConfigService.SettingsSchema);
         File.WriteAllText(
             settingsPath,
             root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
@@ -273,8 +280,9 @@ public sealed class McpRegistryService(
     private static string ResolveSettingsPath(KurisuRuntimeProfile runtimeProfile, string scope) =>
         NormalizeScope(scope) switch
         {
-            "project" => Path.Combine(runtimeProfile.ProjectRoot, ".kurisu", "settings.json"),
-            _ => Path.Combine(runtimeProfile.GlobalKurisuDirectory, "settings.json")
+            "project" => KurisuPaths.ProjectSettingsFile(runtimeProfile.ProjectRoot),
+            _ => KurisuPaths.GlobalSettingsFile(
+                KurisuPaths.HomeDirectoryFromGlobalKurisu(runtimeProfile.GlobalKurisuDirectory))
         };
 
     private static void ValidateRequest(McpServerRegistrationRequest request)

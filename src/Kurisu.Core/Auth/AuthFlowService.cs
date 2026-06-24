@@ -78,7 +78,7 @@ public sealed class AuthFlowService(
         var root = LoadSettingsRoot(settingsPath);
 
         // Resolve preset defaults (auto-fill baseUrl, env-var, model).
-        var preset = ProviderPresetCatalog.FindById(request.PresetId);
+        var preset = ProviderCatalog.FindById(request.PresetId);
         var presetAuthType = string.IsNullOrWhiteSpace(request.AuthType) ? "openai" : request.AuthType.Trim();
         if (preset is not null && !string.IsNullOrWhiteSpace(preset.Id))
         {
@@ -179,8 +179,9 @@ public sealed class AuthFlowService(
 
     private string ResolveSelectedScope(KurisuRuntimeProfile runtimeProfile)
     {
-        var projectSettingsPath = Path.Combine(runtimeProfile.ProjectRoot, ".kurisu", "settings.json");
-        var userSettingsPath = Path.Combine(runtimeProfile.GlobalKurisuDirectory, "settings.json");
+        var projectSettingsPath = KurisuPaths.ProjectSettingsFile(runtimeProfile.ProjectRoot);
+        var userSettingsPath = KurisuPaths.GlobalSettingsFile(
+            KurisuPaths.HomeDirectoryFromGlobalKurisu(runtimeProfile.GlobalKurisuDirectory));
 
         return SettingsHasSelectedType(projectSettingsPath)
             ? "project"
@@ -324,6 +325,8 @@ public sealed class AuthFlowService(
     private static void SaveSettingsRoot(string path, JsonObject root)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        RuntimeConfigService.StripLegacyRuntimeState(root);
+        RuntimeConfigService.Prune(root, RuntimeConfigService.SettingsSchema);
         File.WriteAllText(path, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
     }
 

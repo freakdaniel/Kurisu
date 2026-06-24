@@ -640,7 +640,7 @@ public sealed partial class ExtensionCatalogService(
         };
 
     private static string GetExtensionsDirectory(KurisuRuntimeProfile runtimeProfile) =>
-        Path.Combine(runtimeProfile.GlobalKurisuDirectory, "extensions");
+        Path.Combine(runtimeProfile.GlobalKurisuDirectory, "Extensions");
 
     private string ResolveScopePath(KurisuRuntimeProfile runtimeProfile, string scope) =>
         string.Equals(scope, "workspace", StringComparison.OrdinalIgnoreCase) ||
@@ -1387,10 +1387,10 @@ public sealed partial class ExtensionCatalogService(
         Path.Combine(wrapperPath, ".kurisu-extension-secrets.json");
 
     private static string GetWorkspaceSettingsPath(KurisuRuntimeProfile runtimeProfile, string extensionName) =>
-        Path.Combine(runtimeProfile.ProjectRoot, ".kurisu", "extensions", SanitizeDirectoryName(extensionName), ".env");
+        Path.Combine(KurisuPaths.ProjectExtensionsDirectory(runtimeProfile.ProjectRoot), SanitizeDirectoryName(extensionName), ".env");
 
     private static string GetWorkspaceSecretsPath(KurisuRuntimeProfile runtimeProfile, string extensionName) =>
-        Path.Combine(runtimeProfile.ProjectRoot, ".kurisu", "extensions", SanitizeDirectoryName(extensionName), ".kurisu-extension-secrets.json");
+        Path.Combine(KurisuPaths.ProjectExtensionsDirectory(runtimeProfile.ProjectRoot), SanitizeDirectoryName(extensionName), ".kurisu-extension-secrets.json");
 
     private sealed record ExtensionManifest(
         string Name,

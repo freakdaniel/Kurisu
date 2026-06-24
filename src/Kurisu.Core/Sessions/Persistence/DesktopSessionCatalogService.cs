@@ -4,14 +4,18 @@ using Kurisu.Core.Runtime;
 
 namespace Kurisu.Core.Sessions;
 
+using Kurisu.Core.Sessions.Persistence;
+
 /// <summary>
 /// Represents the Desktop Session Catalog Service
 /// </summary>
 /// <param name="runtimeProfileService">The runtime profile service</param>
 /// <param name="chatRecordingService">The chat recording service</param>
+/// <param name="sessionsDb">Optional SQLite metadata index. When present, <see cref="ListSessions"/> uses the indexed lookup instead of scanning the chats directory.</param>
 public sealed class DesktopSessionCatalogService(
     KurisuRuntimeProfileService runtimeProfileService,
-    IChatRecordingService chatRecordingService) : ITranscriptStore, ISessionService
+    IChatRecordingService chatRecordingService,
+    SessionsDb? sessionsDb = null) : ITranscriptStore, ISessionService
 {
     private const int DefaultDetailEntryLimit = 120;
     private const int MaximumDetailEntryLimit = 240;
@@ -21,7 +25,10 @@ public sealed class DesktopSessionCatalogService(
     private const int MaximumChangedFileCount = 128;
 
     /// <summary>
-    /// Lists sessions
+    /// Lists sessions. Fast path: if <see cref="SessionsDb"/> has rows for the
+    /// workspace, return them (ordered, indexed). Slow path: fall back to
+    /// scanning the chats directory and reading the first line of each file
+    /// for the title.
     /// </summary>
     /// <param name="paths">The paths to process</param>
     /// <param name="limit">The limit</param>
@@ -29,6 +36,23 @@ public sealed class DesktopSessionCatalogService(
     public IReadOnlyList<SessionPreview> ListSessions(WorkspacePaths paths, int limit = 24)
     {
         var runtimeProfile = runtimeProfileService.Inspect(paths);
+
+        if (sessionsDb is not null)
+        {
+            try
+            {
+                var indexed = sessionsDb.ListByWorkspace(paths.WorkspaceRoot, limit);
+                if (indexed.Count > 0 || Directory.Exists(runtimeProfile.ChatsDirectory))
+                {
+                    return indexed;
+                }
+            }
+            catch
+            {
+                // Fall through to filesystem scan if the DB is corrupt or empty.
+            }
+        }
+
         if (!Directory.Exists(runtimeProfile.ChatsDirectory))
         {
             return [];

@@ -227,7 +227,7 @@ public sealed class ChannelSessionRouterService(IDesktopEnvironmentPaths environ
         File.WriteAllText(path, JsonSerializer.Serialize(routes, new JsonSerializerOptions { WriteIndented = true }));
     }
 
-    private string GetPersistPath() => Path.Combine(environmentPaths.HomeDirectory, ".kurisu", "channels", "sessions.json");
+    private string GetPersistPath() => KurisuPaths.ChannelSessionsFile(environmentPaths.HomeDirectory);
 
     private string GetLegacyPersistPath() => Path.Combine(environmentPaths.HomeDirectory, ".kurisu", "channels", "sessions.runtime.json");
 

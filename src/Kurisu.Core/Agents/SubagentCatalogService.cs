@@ -29,8 +29,8 @@ public sealed partial class SubagentCatalogService(
         {
             WorkspaceRoot = workspaceRoot
         });
-        var userAgentsRoot = Path.Combine(environmentPaths.HomeDirectory, ".kurisu", "agents");
-        var projectAgentsRoot = Path.Combine(workspaceRoot, ".kurisu", "agents");
+        var userAgentsRoot = KurisuPaths.AgentsDirectory(environmentPaths.HomeDirectory);
+        var projectAgentsRoot = KurisuPaths.ProjectAgentsDirectory(workspaceRoot);
 
         var agents = new List<SubagentDescriptor>();
         agents.AddRange(BuiltinSubagentRegistry.All);

@@ -65,8 +65,5 @@ public sealed class FileMcpTokenStore(IDesktopEnvironmentPaths environmentPaths)
     }
 
     private string GetTokenPath(string serverName) =>
-        Path.Combine(environmentPaths.HomeDirectory, ".kurisu", "mcp", "tokens", $"{Sanitize(serverName)}.json");
-
-    private static string Sanitize(string value) =>
-        new(value.Select(static character => char.IsLetterOrDigit(character) ? character : '-').ToArray());
+        KurisuPaths.McpTokenFile(environmentPaths.HomeDirectory, serverName);
 }

@@ -3,6 +3,7 @@ using Kurisu.Core.Channels;
 using Kurisu.Core.Config;
 using Kurisu.App.Desktop;
 using Kurisu.App.Desktop.Bridges;
+using Kurisu.App.Desktop.State;
 using Kurisu.Core.Extensions;
 using Kurisu.Core.Runtime.Providers;
 using Microsoft.Extensions.DependencyInjection;

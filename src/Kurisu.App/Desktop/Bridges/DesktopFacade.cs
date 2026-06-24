@@ -137,7 +137,7 @@ public sealed class DesktopFacade(
     /// </summary>
     public async Task<ListProviderModelsResponse> ListProviderModelsAsync(ListProviderModelsRequest request)
     {
-        var preset = ProviderPresetCatalog.FindById(request.PresetId);
+        var preset = ProviderCatalog.FindById(request.PresetId);
         if (preset is null)
         {
             return new ListProviderModelsResponse

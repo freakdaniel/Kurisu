@@ -644,7 +644,7 @@ public sealed class ChannelRuntimeService(
         }
     }
 
-    private string GetChannelsRoot() => Path.Combine(environmentPaths.HomeDirectory, ".kurisu", "channels");
+    private string GetChannelsRoot() => KurisuPaths.ChannelsDirectory(environmentPaths.HomeDirectory);
 
     private sealed record SlashCommand(string Name);
 

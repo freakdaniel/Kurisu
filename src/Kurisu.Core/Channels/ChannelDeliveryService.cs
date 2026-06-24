@@ -521,7 +521,7 @@ public sealed class ChannelDeliveryService : IChannelDeliveryService
         };
     }
 
-    private string GetOutboxRoot() => Path.Combine(environmentPaths.HomeDirectory, ".kurisu", "channels", "outbox");
+    private string GetOutboxRoot() => KurisuPaths.ChannelOutboxDirectory(environmentPaths.HomeDirectory);
 
     private static string GetString(JsonObject? node, string propertyName)
     {

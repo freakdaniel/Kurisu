@@ -1,4 +1,5 @@
 using Kurisu.Core.Config;
+using Kurisu.Core.Runtime.Providers;
 
 namespace Kurisu.Tests.Runtime;
 
@@ -20,41 +21,48 @@ public sealed class ModelRegistryTests
             Directory.CreateDirectory(Path.Combine(homeRoot, ".kurisu"));
             Directory.CreateDirectory(systemRoot);
 
+            // Runtime selection now lives in Selection.json (not Settings.json).
+            var homeKurisu = Path.Combine(homeRoot, ".kurisu");
             File.WriteAllText(
-                Path.Combine(workspaceRoot, ".kurisu", "settings.json"),
+                Path.Combine(homeKurisu, "State", "Selection.json"),
                 """
                 {
-                  "security": {
-                    "auth": {
-                      "selectedType": "openai"
-                    }
-                  },
-                  "model": {
-                    "name": "kurisu-max"
-                  },
-                  "embeddingModel": "text-embedding-v4",
-                  "modelProviders": {
-                    "openai": [
-                      {
-                        "id": "kurisu-max",
-                        "baseUrl": "https://provider.example/v1",
-                        "envKey": "CUSTOM_OPENAI_KEY"
-                      }
-                    ]
-                  }
+                  "selectedAuthType": "openai",
+                  "selectedModelId": "kurisu-max",
+                  "selectedEmbeddingModelId": "text-embedding-v4"
                 }
                 """);
 
+            // Provider API keys + overrides live in Providers.json.
+            File.WriteAllText(
+                Path.Combine(homeKurisu, "State", "Providers.json"),
+                """
+                {
+                  "entries": [
+                    {
+                      "manifestId": "kurisu-max",
+                      "apiKey": "sk-test",
+                      "baseUrl": "https://provider.example/v1"
+                    }
+                  ]
+                }
+                """);
+
+            var envPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
+            var configService = new RuntimeConfigService(envPaths);
+
             var registry = new ModelRegistryService(
-                new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)),
+                configService,
                 new TokenLimitService(),
                 Microsoft.Extensions.Options.Options.Create(new NativeAssistantRuntimeOptions()));
             var snapshot = registry.Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
 
+            // Test expects legacy Settings.json with modelProviders to drive the registry.
             Assert.Equal("kurisu-max", snapshot.DefaultModelId);
             Assert.Equal("text-embedding-v4", snapshot.EmbeddingModelId);
             Assert.Equal("openai", snapshot.SelectedAuthType);
 
+            // The configured custom provider from modelProviders should appear in the available list.
             var defaultModel = Assert.Single(snapshot.AvailableModels, static model => model.IsDefaultModel);
             Assert.Equal("kurisu-max", defaultModel.Id);
             Assert.Equal("model-provider", defaultModel.Source);

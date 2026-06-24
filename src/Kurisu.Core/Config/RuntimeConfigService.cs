@@ -22,11 +22,11 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
         var projectRoot = string.IsNullOrWhiteSpace(paths.WorkspaceRoot)
             ? environmentPaths.CurrentDirectory
             : Path.GetFullPath(paths.WorkspaceRoot);
-        var globalKurisuDirectory = Path.Combine(environmentPaths.HomeDirectory, ".kurisu");
+        var globalKurisuDirectory = KurisuPaths.GlobalKurisuDirectory(environmentPaths.HomeDirectory);
         var programDataRoot = ResolveProgramDataRoot();
         var systemDefaultsPath = ResolveSystemDefaultsPath(programDataRoot);
-        var userSettingsPath = Path.Combine(globalKurisuDirectory, "settings.json");
-        var projectSettingsPath = Path.Combine(projectRoot, ".kurisu", "settings.json");
+        var userSettingsPath = KurisuPaths.GlobalSettingsFile(environmentPaths.HomeDirectory);
+        var projectSettingsPath = KurisuPaths.ProjectSettingsFile(projectRoot);
         var systemSettingsPath = ResolveSystemSettingsPath(programDataRoot);
 
         var trustLayers = new[]
@@ -188,6 +188,10 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
                     });
                 if (JsonSerializer.SerializeToNode(document.RootElement) is JsonObject layerRoot)
                 {
+                    // Strip junk that has moved to dedicated stores.
+                    StripLegacyRuntimeState(layerRoot);
+                    // Keep only whitelisted keys (recursively).
+                    Prune(layerRoot, SettingsSchema);
                     MergeObjects(mergedRoot, layerRoot);
                 }
 
@@ -556,6 +560,83 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
             {
                 target[pair.Key] = pair.Value?.DeepClone();
             }
+        }
+    }
+
+    /// <summary>
+    /// Schema whitelist for Settings.json. Only the listed top-level keys
+    /// (and their nested children listed below) are read or written. Anything
+    /// else is stripped on read and silently dropped on write. Runtime state
+    /// (<c>model.name</c>, <c>embeddingModel</c>, <c>security.auth.selectedType</c>,
+    /// <c>modelProviders</c>, <c>env</c>) lives in dedicated stores.
+    /// </summary>
+    internal static readonly JsonObject SettingsSchema = new()
+    {
+        ["permissions"] = new JsonObject(),
+        ["telemetry"] = new JsonObject(),
+        ["security"] = new JsonObject { ["folderTrust"] = new JsonObject() },
+        ["context"] = new JsonObject(),
+        ["mcpServers"] = new JsonObject(),
+        ["allowedMcpServers"] = new JsonArray(),
+        ["excludedMcpServers"] = new JsonArray(),
+        ["tools"] = new JsonObject(),
+        ["hooks"] = new JsonObject(),
+        ["webSearch"] = new JsonObject(),
+        ["advanced"] = new JsonObject { ["runtimeOutputDir"] = string.Empty },
+        ["preferences"] = new JsonObject
+        {
+            ["hooks"] = new JsonObject { ["disabled"] = false },
+            ["ideMode"] = false,
+            ["listExtensions"] = false,
+            ["checkpointing"] = true,
+            ["overrideExtensions"] = new JsonArray(),
+        },
+    };
+
+    /// <summary>
+    /// Recursively removes any key from <paramref name="root"/> that is not
+    /// declared in <paramref name="schema"/>. Used on read and write paths so
+    /// legacy junk fields (or future ones we forget to whitelist) never leak
+    /// into or out of Settings.json.
+    /// </summary>
+    internal static void Prune(JsonObject root, JsonObject schema)
+    {
+        var allowed = new HashSet<string>(schema.Select(static kv => kv.Key), StringComparer.Ordinal);
+        var toRemove = root.Select(kv => kv.Key).Where(key => !allowed.Contains(key)).ToArray();
+        foreach (var key in toRemove)
+        {
+            root.Remove(key);
+        }
+        // Recurse only into known-structured nested objects. Freeform
+        // dictionaries like mcpServers are kept verbatim (only their
+        // top-level presence is checked by the schema above).
+        foreach (var (key, value) in root.ToArray())
+        {
+            if (schema[key] is not JsonObject childSchema) continue;
+            if (value is JsonObject child)
+            {
+                // The empty schema for mcpServers/hooks/tools/etc. means
+                // "freeform dict, don't recurse into its values".
+                if (childSchema.Count == 0) continue;
+                Prune(child, childSchema);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Removes junk fields that used to be persisted but are now stored in
+    /// dedicated stores (<see cref="RuntimeSelectionStore"/>,
+    /// <see cref="Kurisu.Core.Runtime.Providers.ProviderSettingsStore"/>).
+    /// </summary>
+    internal static void StripLegacyRuntimeState(JsonObject root)
+    {
+        root.Remove("model");
+        root.Remove("embeddingModel");
+        root.Remove("env");
+        root.Remove("modelProviders");
+        if (root["security"] is JsonObject security)
+        {
+            security.Remove("auth");
         }
     }
 

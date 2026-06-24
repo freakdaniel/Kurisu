@@ -29,8 +29,8 @@ public sealed class KurisuRuntimeProfileService(
             ? "environment"
             : snapshot.RuntimeSource;
         var runtimeDirectory = ResolveRuntimeBaseDirectory(snapshot.GlobalKurisuDirectory, snapshot.ProjectRoot, snapshot.RuntimeOutputDirectory);
-        var projectDataDirectory = Path.Combine(runtimeDirectory, "projects", SanitizePath(snapshot.ProjectRoot));
-        var historyDirectory = Path.Combine(runtimeDirectory, "history", ComputeProjectHash(snapshot.ProjectRoot));
+        var projectDataDirectory = Path.Combine(KurisuPaths.ProjectsRuntimeDirectory(runtimeDirectory), SanitizePath(snapshot.ProjectRoot));
+        var historyDirectory = Path.Combine(KurisuPaths.HistoryRuntimeDirectory(runtimeDirectory), ComputeProjectHash(snapshot.ProjectRoot));
         var contextFileNames = snapshot.ContextFileNames.Count > 0
             ? snapshot.ContextFileNames
             : ["QWEN.md", "AGENTS.md"];
@@ -43,7 +43,7 @@ public sealed class KurisuRuntimeProfileService(
             RuntimeBaseDirectory = runtimeDirectory,
             RuntimeSource = runtimeSource,
             ProjectDataDirectory = projectDataDirectory,
-            ChatsDirectory = Path.Combine(projectDataDirectory, "chats"),
+            ChatsDirectory = KurisuPaths.ChatsDirectory(projectDataDirectory),
             HistoryDirectory = historyDirectory,
             ContextFileNames = contextFileNames,
             ContextFilePaths = contextFileNames

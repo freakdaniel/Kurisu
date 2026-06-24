@@ -17,12 +17,15 @@ using Kurisu.Core.Hooks;
 using Kurisu.Core.Ide;
 using Kurisu.Core.Infrastructure;
 using Kurisu.Core.Mcp;
+using Kurisu.Core.Models;
 using Kurisu.Core.Output;
 using Kurisu.Core.Permissions;
 using Kurisu.Core.Prompts;
 using Kurisu.Core.Runtime;
 using Kurisu.Core.Runtime.Providers;
 using Kurisu.Core.Sessions;
+using Kurisu.Core.Sessions.Memory;
+using Kurisu.Core.Sessions.Persistence;
 using Kurisu.Core.Telemetry;
 using Kurisu.Core.Tools;
 
@@ -87,6 +90,36 @@ public static class AppComposition
 
         #region Config
         services.AddSingleton<IConfigService, RuntimeConfigService>();
+        services.AddSingleton<RuntimeSelectionStore>();
+        #endregion
+
+        #region Providers
+        services.AddHttpClient();
+        services.AddSingleton<ProviderSettingsStore>();
+        services.AddSingleton<ProviderHealthChecker>();
+        #endregion
+
+        #region Sessions (SQLite metadata + vector index)
+        services.AddSingleton<SessionsDb>(sp =>
+        {
+            var profile = sp.GetRequiredService<KurisuRuntimeProfileService>();
+            var paths = sp.GetRequiredService<WorkspacePaths>();
+            var runtime = profile.Inspect(paths);
+            var db = new SessionsDb(KurisuPaths.SessionsDbPath(runtime));
+            return db;
+        });
+        services.AddSingleton<VectorsDb>(sp =>
+        {
+            var profile = sp.GetRequiredService<KurisuRuntimeProfileService>();
+            var paths = sp.GetRequiredService<WorkspacePaths>();
+            var runtime = profile.Inspect(paths);
+            var dims = 1536; // matches text-embedding-v4 default
+            return new VectorsDb(KurisuPaths.VectorsDbPath(runtime), dims);
+        });
+        services.AddSingleton<EmbeddingIndexer>();
+        services.AddSingleton<SessionMemoryRetriever>();
+        services.AddSingleton<SessionsMigration>();
+        services.AddHostedService<SessionsMigrationHostedService>();
         #endregion
 
         #region Auth
@@ -112,6 +145,13 @@ public static class AppComposition
         services.AddSingleton<KurisuRuntimeProfileService>();
         services.AddSingleton<IProjectSummaryService, ProjectSummaryService>();
         services.AddSingleton<ISettingsResolver, DesktopSettingsResolver>();
+        #endregion
+
+        #region WorkspacePaths (root workspace context)
+        services.AddSingleton<WorkspacePaths>(_ => new WorkspacePaths
+        {
+            WorkspaceRoot = Environment.CurrentDirectory
+        });
         #endregion
 
         #region Extensions
