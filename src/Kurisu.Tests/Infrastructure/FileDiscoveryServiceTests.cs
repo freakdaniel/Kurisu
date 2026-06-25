@@ -18,7 +18,7 @@ public sealed class FileDiscoveryServiceTests
         {
             Directory.CreateDirectory(Path.Combine(workspaceRoot, "src"));
             Directory.CreateDirectory(Path.Combine(workspaceRoot, "docs"));
-            File.WriteAllText(Path.Combine(workspaceRoot, "QWEN.md"), "Project context");
+            File.WriteAllText(Path.Combine(workspaceRoot, "KURISU.md"), "Project context");
             File.WriteAllText(Path.Combine(workspaceRoot, ".gitignore"), "*.log");
             File.WriteAllText(Path.Combine(workspaceRoot, ".kurisuignore"), "docs/private-*.md");
             File.WriteAllText(Path.Combine(workspaceRoot, "src", "tracked.cs"), "class Tracked {}");
@@ -46,7 +46,7 @@ public sealed class FileDiscoveryServiceTests
             Assert.Equal(1, snapshot.QwenIgnorePatternCount);
             Assert.True(snapshot.GitIgnoredCount >= 1);
             Assert.True(snapshot.QwenIgnoredCount >= 1);
-            Assert.Contains("QWEN.md", snapshot.ContextFiles);
+            Assert.Contains("KURISU.md", snapshot.ContextFiles);
             Assert.Contains("notes.txt", snapshot.SampleVisibleFiles);
             Assert.Contains("docs/private-notes.md", snapshot.SampleQwenIgnoredFiles);
         }

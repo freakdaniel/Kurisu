@@ -42,14 +42,12 @@ public sealed class RuntimeProfileServiceTests
                     "defaultMode": "auto-edit",
                     "confirmShellCommands": true,
                     "confirmFileEdits": false,
+                    "allow": ["Bash(git *)", "Read", "Write"],
                     "ask": ["Edit"],
                     "deny": ["Read(.env)"]
                   },
-                  "tools": {
-                    "core": ["Read", "Write"]
-                  },
                   "context": {
-                    "fileName": ["TEAM.md", "QWEN.md"]
+                    "fileName": ["TEAM.md", "KURISU.md"]
                   }
                 }
                 """);
@@ -67,7 +65,7 @@ public sealed class RuntimeProfileServiceTests
             Assert.Contains("Write", profile.ApprovalProfile.AllowRules);
             Assert.Contains("Edit", profile.ApprovalProfile.AskRules);
             Assert.Contains("Read(.env)", profile.ApprovalProfile.DenyRules);
-            Assert.Equal(["TEAM.md", "QWEN.md"], profile.ContextFileNames);
+            Assert.Equal(["TEAM.md", "KURISU.md"], profile.ContextFileNames);
             Assert.True(profile.Checkpointing);
             Assert.Equal(0.61d, profile.ChatCompression?.ContextPercentageThreshold);
         }
@@ -96,10 +94,10 @@ public sealed class RuntimeProfileServiceTests
             var service = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var profile = service.Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
 
-            Assert.Equal(["QWEN.md", "AGENTS.md"], profile.ContextFileNames);
+            Assert.Equal(["KURISU.md", "AGENTS.md"], profile.ContextFileNames);
             Assert.Equal(
                 [
-                    Path.Combine(workspaceRoot, "QWEN.md"),
+                    Path.Combine(workspaceRoot, "KURISU.md"),
                     Path.Combine(workspaceRoot, "AGENTS.md")
                 ],
                 profile.ContextFilePaths);
@@ -184,7 +182,7 @@ public sealed class RuntimeProfileServiceTests
                     "defaultMode": "default"
                   },
                   "context": {
-                    "fileName": ["QWEN.md", "AGENTS.md"]
+                    "fileName": ["KURISU.md", "AGENTS.md"]
                   }
                 }
                 """);
@@ -214,7 +212,7 @@ public sealed class RuntimeProfileServiceTests
             Assert.False(profile.IsWorkspaceTrusted);
             Assert.Equal("default", profile.ApprovalProfile.DefaultMode);
             Assert.DoesNotContain(".kurisu-runtime", profile.RuntimeBaseDirectory, StringComparison.OrdinalIgnoreCase);
-            Assert.Equal(["QWEN.md", "AGENTS.md"], profile.ContextFileNames);
+            Assert.Equal(["KURISU.md", "AGENTS.md"], profile.ContextFileNames);
         }
         finally
         {

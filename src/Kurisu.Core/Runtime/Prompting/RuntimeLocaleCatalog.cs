@@ -22,7 +22,7 @@ internal static class RuntimeLocaleCatalog
 
     public static string DetectLocale(string? configuredLocale = null)
     {
-        var envLang = Environment.GetEnvironmentVariable("QWEN_CODE_LANG");
+        var envLang = Environment.GetEnvironmentVariable("KURISU_LANG");
         if (!string.IsNullOrWhiteSpace(envLang))
         {
             return NormalizeLocale(envLang.Trim());

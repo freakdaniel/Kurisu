@@ -9,7 +9,6 @@ using Kurisu.Core.Followup;
 using Kurisu.Core.Infrastructure;
 using Kurisu.Core.Prompts;
 using Kurisu.Core.Config;
-using Kurisu.Core.Telemetry;
 using Kurisu.Core.Runtime.Providers;
 using Kurisu.Tests.Shared.Fakes;
 using Kurisu.App.Desktop.State;
@@ -120,6 +119,7 @@ internal static class TestServiceFactory
                 mcpConnectionManager,
                 new ModelRegistryService(
                     new RuntimeConfigService(environmentPaths),
+                    new RuntimeSelectionStore(environmentPaths, NullLogger<RuntimeSelectionStore>.Instance),
                     new TokenLimitService(),
                     Options.Create(new NativeAssistantRuntimeOptions())),
                 transcriptStore,
@@ -185,8 +185,7 @@ internal static class TestServiceFactory
         IActiveTurnRegistry? activeTurnRegistry = null,
         IInterruptedTurnStore? interruptedTurnStore = null,
         IUserPromptHookService? userPromptHookService = null,
-        IHookLifecycleService? hookLifecycleService = null,
-        ITelemetryService? telemetryService = null)
+        IHookLifecycleService? hookLifecycleService = null)
     {
         var approvalPolicyService = new ApprovalPolicyService();
         var approvalSessionRuleStore = new ApprovalSessionRuleStore();
@@ -218,7 +217,6 @@ internal static class TestServiceFactory
             new NativeToolHostService(
                 runtimeProfileService,
                 approvalPolicyService,
-                telemetryService: telemetryService,
                 approvalSessionRuleStore: approvalSessionRuleStore),
             hookLifecycleService ?? new PassthroughHookLifecycleService(),
             effectiveUserQuestionToolService,
@@ -229,7 +227,6 @@ internal static class TestServiceFactory
             new SessionTranscriptWriter(),
             new SessionEventFactory(),
             sessionMessageBus,
-            telemetryService,
             approvalSessionRuleStore: approvalSessionRuleStore);
     }
 
@@ -246,6 +243,7 @@ internal static class TestServiceFactory
         var modelConfigResolver = new ModelConfigResolver(
             new ModelRegistryService(
                 configService,
+                selectionStore,
                 new TokenLimitService(),
                 Options.Create(new NativeAssistantRuntimeOptions())));
 

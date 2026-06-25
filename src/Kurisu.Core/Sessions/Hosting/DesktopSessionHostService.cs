@@ -4,7 +4,6 @@ using Kurisu.Core.Infrastructure;
 using Kurisu.Core.Followup;
 using Kurisu.Core.Hooks;
 using Kurisu.Core.Runtime;
-using Kurisu.Core.Telemetry;
 using Kurisu.Core.Tools;
 
 namespace Kurisu.Core.Sessions;
@@ -27,7 +26,6 @@ namespace Kurisu.Core.Sessions;
 /// <param name="transcriptWriter">The transcript writer</param>
 /// <param name="sessionEventFactory">The session event factory</param>
 /// <param name="sessionMessageBus">The session message bus</param>
-/// <param name="telemetryService">The telemetry service</param>
 /// <param name="followupSuggestionService">The followup suggestion service</param>
 /// <param name="runtimeOptions">The runtime options</param>
 /// <param name="approvalSessionRuleStore">The approval session rule store</param>
@@ -47,7 +45,6 @@ public sealed class DesktopSessionHostService(
     ISessionTranscriptWriter transcriptWriter,
     ISessionEventFactory sessionEventFactory,
     ISessionMessageBus sessionMessageBus,
-    ITelemetryService? telemetryService = null,
     IFollowupSuggestionService? followupSuggestionService = null,
     IOptions<NativeAssistantRuntimeOptions>? runtimeOptions = null,
     IApprovalSessionRuleStore? approvalSessionRuleStore = null) : ISessionHost
@@ -240,11 +237,6 @@ public sealed class DesktopSessionHostService(
         Directory.CreateDirectory(runtimeProfile.ChatsDirectory);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (createdNewSession && telemetryService is not null)
-        {
-            await telemetryService.TrackSessionConfiguredAsync(runtimeProfile, sessionId, cancellationToken);
-        }
-
         var sessionStartHook = await ExecuteLifecycleHookAsync(
             runtimeProfile,
             HookEventName.SessionStart,
@@ -370,17 +362,6 @@ public sealed class DesktopSessionHostService(
                 }
             },
             cancellationToken);
-
-        if (telemetryService is not null)
-        {
-            await telemetryService.TrackUserPromptAsync(
-                runtimeProfile,
-                sessionId,
-                userUuid,
-                effectivePrompt,
-                runtimeProfile.Telemetry?.Target ?? string.Empty,
-                cancellationToken);
-        }
 
         parentUuid = userUuid;
         if (commandInvocation is not null)
@@ -1426,11 +1407,6 @@ public sealed class DesktopSessionHostService(
         if (checkpoint is null)
         {
             return parentUuid;
-        }
-
-        if (telemetryService is not null)
-        {
-            await telemetryService.TrackChatCompressionAsync(runtimeProfile, sessionId, checkpoint, cancellationToken);
         }
 
         _ = await hookLifecycleService.ExecuteAsync(

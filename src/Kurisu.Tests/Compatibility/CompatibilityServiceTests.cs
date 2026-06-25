@@ -25,7 +25,7 @@ public sealed class CompatibilityServiceTests
             File.WriteAllText(
                 Path.Combine(homeRoot, ".kurisu", "settings.json"),
                 """{ "privacy": {} }""");
-            File.WriteAllText(Path.Combine(workspaceRoot, "QWEN.md"), "# project memory");
+            File.WriteAllText(Path.Combine(workspaceRoot, "KURISU.md"), "# project memory");
 
             var previousDefaults = Environment.GetEnvironmentVariable("KURISU_SYSTEM_DEFAULTS_PATH");
             var previousSettings = Environment.GetEnvironmentVariable("KURISU_SYSTEM_SETTINGS_PATH");
@@ -42,7 +42,7 @@ public sealed class CompatibilityServiceTests
                 var service = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
                 var snapshot = service.Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
 
-                Assert.Equal("QWEN.md", snapshot.DefaultContextFileName);
+                Assert.Equal("KURISU.md", snapshot.DefaultContextFileName);
                 Assert.Contains(snapshot.SettingsLayers, layer => layer.Id == "project-settings" && layer.Exists);
                 Assert.Contains(snapshot.SettingsLayers, layer => layer.Id == "user-settings" && layer.Exists);
                 Assert.Contains(snapshot.SurfaceDirectories, surface => surface.Id == "project-commands" && surface.Exists);

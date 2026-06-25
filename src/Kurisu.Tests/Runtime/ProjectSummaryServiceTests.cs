@@ -94,7 +94,7 @@ public sealed class ProjectSummaryServiceTests
             ProjectDataDirectory = Path.Combine(workspaceRoot, ".kurisu-runtime", "project"),
             ChatsDirectory = Path.Combine(workspaceRoot, ".kurisu-runtime", "project", "chats"),
             HistoryDirectory = Path.Combine(workspaceRoot, ".kurisu-runtime", "history"),
-            ContextFileNames = ["QWEN.md", "AGENTS.md"],
+            ContextFileNames = ["KURISU.md", "AGENTS.md"],
             ContextFilePaths = [],
             FolderTrustEnabled = true,
             IsWorkspaceTrusted = trusted,

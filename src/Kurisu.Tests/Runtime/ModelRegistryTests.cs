@@ -46,24 +46,22 @@ public sealed class ModelRegistryTests
                 """
                 {
                   "selectedAuthType": "openai",
-                  "selectedModelId": "kurisu-max",
+                  "selectedModelId": "qwen-max",
                   "selectedEmbeddingModelId": "text-embedding-v4"
                 }
                 """);
 
             var envPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
             var configService = new RuntimeConfigService(envPaths);
+            var selectionStore = new RuntimeSelectionStore(envPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance);
 
             var registry = new ModelRegistryService(
                 configService,
+                selectionStore,
                 new TokenLimitService(),
-                Microsoft.Extensions.Options.Options.Create(new NativeAssistantRuntimeOptions()));
+                Options.Create(new NativeAssistantRuntimeOptions()));
             var snapshot = registry.Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
 
-            // The runtime resolves the default model + embedding model + selected auth type from
-            // Settings.json (legacy snapshot) — those fields are still available for now.
-            // Selection.json + Providers.json are surfaced through RuntimeSelectionStore and
-            // ProviderSettingsStore (consumed by ProviderConfigurationService).
             Assert.NotNull(snapshot.AvailableModels);
             Assert.NotNull(snapshot.DefaultModelId);
         }
@@ -87,30 +85,27 @@ public sealed class ModelRegistryTests
 
             Directory.CreateDirectory(Path.Combine(workspaceRoot, ".kurisu"));
             Directory.CreateDirectory(Path.Combine(homeRoot, ".kurisu"));
+            Directory.CreateDirectory(Path.Combine(homeRoot, ".kurisu", "State"));
             Directory.CreateDirectory(systemRoot);
 
             File.WriteAllText(
-                Path.Combine(workspaceRoot, ".kurisu", "settings.json"),
+                Path.Combine(homeRoot, ".kurisu", "State", "Selection.json"),
                 """
                 {
-                  "security": {
-                    "auth": {
-                      "selectedType": "openai"
-                    }
-                  },
-                  "model": {
-                    "name": "qwen3-coder-plus"
-                  },
-                  "embeddingModel": "text-embedding-v4"
+                  "selectedAuthType": "openai",
+                  "selectedModelId": "qwen3-coder-plus",
+                  "selectedEmbeddingModelId": "text-embedding-v4"
                 }
                 """);
 
             var configService = new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var selectionStore = new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance);
             var resolver = new ModelConfigResolver(
                 new ModelRegistryService(
                     configService,
+                    selectionStore,
                     new TokenLimitService(),
-                    Microsoft.Extensions.Options.Options.Create(new NativeAssistantRuntimeOptions())));
+                    Options.Create(new NativeAssistantRuntimeOptions())));
             var workspace = new WorkspacePaths { WorkspaceRoot = workspaceRoot };
 
             var defaultModel = resolver.Resolve(workspace);

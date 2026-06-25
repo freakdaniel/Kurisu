@@ -120,7 +120,7 @@ public sealed class ProviderConfigurationServiceTests
                 Status = "ok",
                 ApprovalState = "not_required",
                 WorkingDirectory = Path.GetTempPath(),
-                ChangedFiles = Array.Empty<string>(),
+                ChangedFiles = [],
             },
             ProviderIdOverride = providerId,
         };

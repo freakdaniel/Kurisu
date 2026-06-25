@@ -1,5 +1,4 @@
 using Kurisu.Core.Runtime.Providers;
-using Kurisu.Core.Telemetry;
 
 namespace Kurisu.Core.Runtime;
 
@@ -9,12 +8,10 @@ namespace Kurisu.Core.Runtime;
 /// <param name="httpClient">The http client</param>
 /// <param name="configurationResolver">The configuration resolver</param>
 /// <param name="tokenLimitService">The token limit service</param>
-/// <param name="telemetryService">The telemetry service</param>
 public sealed class OpenAiCompatibleAssistantResponseProvider(
     HttpClient httpClient,
     ProviderConfigurationService configurationResolver,
-    ITokenLimitService tokenLimitService,
-    ITelemetryService? telemetryService = null) : IAssistantResponseProvider
+    ITokenLimitService tokenLimitService) : IAssistantResponseProvider
 {
     /// <summary>
     /// Gets the name
@@ -160,21 +157,6 @@ public sealed class OpenAiCompatibleAssistantResponseProvider(
                 httpRequest,
                 HttpCompletionOption.ResponseHeadersRead,
                 cancellationToken);
-            if (telemetryService is not null)
-            {
-                var isStreaming = response.Content.Headers.ContentType?.MediaType?.Contains("event-stream", StringComparison.OrdinalIgnoreCase) == true;
-                await telemetryService.TrackApiRequestAsync(
-                    request.RuntimeProfile,
-                    request.SessionId,
-                    Name,
-                    configuration.Model,
-                    stopwatch.ElapsedMilliseconds,
-                    response.IsSuccessStatusCode ? "success" : "error",
-                    (int)response.StatusCode,
-                    response.IsSuccessStatusCode ? null : response.ReasonPhrase,
-                    preferStreaming || isStreaming,
-                    cancellationToken: cancellationToken);
-            }
 
             if (response.IsSuccessStatusCode)
             {

@@ -49,8 +49,8 @@ public sealed class ChatCompressionServiceTests
                     ProjectDataDirectory = root,
                     ChatsDirectory = root,
                     HistoryDirectory = root,
-                    ContextFileNames = ["QWEN.md"],
-                    ContextFilePaths = [Path.Combine(root, "QWEN.md")],
+                    ContextFileNames = ["KURISU.md"],
+                    ContextFilePaths = [Path.Combine(root, "KURISU.md")],
                     ModelName = "qwen3-coder-plus",
                     ChatCompression = new RuntimeChatCompressionSettings
                     {
@@ -121,8 +121,8 @@ public sealed class ChatCompressionServiceTests
                     ProjectDataDirectory = root,
                     ChatsDirectory = root,
                     HistoryDirectory = root,
-                    ContextFileNames = ["QWEN.md"],
-                    ContextFilePaths = [Path.Combine(root, "QWEN.md")],
+                    ContextFileNames = ["KURISU.md"],
+                    ContextFilePaths = [Path.Combine(root, "KURISU.md")],
                     Checkpointing = false,
                     ApprovalProfile = new ApprovalProfile
                     {
@@ -191,8 +191,8 @@ public sealed class ChatCompressionServiceTests
                     ProjectDataDirectory = root,
                     ChatsDirectory = root,
                     HistoryDirectory = root,
-                    ContextFileNames = ["QWEN.md"],
-                    ContextFilePaths = [Path.Combine(root, "QWEN.md")],
+                    ContextFileNames = ["KURISU.md"],
+                    ContextFilePaths = [Path.Combine(root, "KURISU.md")],
                     ModelName = "qwen3-coder-plus",
                     CurrentLocale = "en-US",
                     CurrentLanguage = "English",

@@ -334,9 +334,9 @@ public sealed partial class ExtensionCatalogService(
                 manifestObject["agents"] = new JsonArray("agents");
                 break;
             case "context":
-                File.WriteAllText(Path.Combine(targetPath, "QWEN.md"), "# Project context");
-                createdFiles.Add(Path.Combine(targetPath, "QWEN.md"));
-                manifestObject["contextFileName"] = new JsonArray("QWEN.md");
+                File.WriteAllText(Path.Combine(targetPath, "KURISU.md"), "# Project context");
+                createdFiles.Add(Path.Combine(targetPath, "KURISU.md"));
+                manifestObject["contextFileName"] = new JsonArray("KURISU.md");
                 break;
             case "mcp-server":
             case "mcp":
@@ -711,7 +711,7 @@ public sealed partial class ExtensionCatalogService(
             Name: name,
             Version: version,
             Description: manifestObject["description"]?.GetValue<string>()?.Trim() ?? string.Empty,
-            ContextFiles: ParseStringList(manifestObject["contextFileName"], fallback: ["QWEN.md"]),
+            ContextFiles: ParseStringList(manifestObject["contextFileName"], fallback: ["KURISU.md"]),
             CommandRoots: ParseStringList(manifestObject["commands"]),
             SkillRoots: ParseStringList(manifestObject["skills"]),
             AgentRoots: ParseStringList(manifestObject["agents"]),

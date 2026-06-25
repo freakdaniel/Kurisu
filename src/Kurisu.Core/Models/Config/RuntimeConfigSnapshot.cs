@@ -53,9 +53,9 @@ public sealed class RuntimeConfigSnapshot
     public required JsonObject MergedSettings { get; init; }
 
     /// <summary>
-    /// Gets or sets the environment
+    /// Gets or sets the environment (legacy, always empty after Qwen removal).
     /// </summary>
-    public required IReadOnlyDictionary<string, string> Environment { get; init; }
+    public IReadOnlyDictionary<string, string> Environment { get; init; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Gets or sets the runtime output directory
@@ -66,26 +66,6 @@ public sealed class RuntimeConfigSnapshot
     /// Gets or sets the runtime source
     /// </summary>
     public string RuntimeSource { get; init; } = string.Empty;
-
-    /// <summary>
-    /// Gets or sets the model name
-    /// </summary>
-    public string ModelName { get; init; } = string.Empty;
-
-    /// <summary>
-    /// Gets or sets the embedding model
-    /// </summary>
-    public string EmbeddingModel { get; init; } = string.Empty;
-
-    /// <summary>
-    /// Gets or sets the selected auth type
-    /// </summary>
-    public string SelectedAuthType { get; init; } = string.Empty;
-
-    /// <summary>
-    /// Gets or sets the model providers
-    /// </summary>
-    public required IReadOnlyList<RuntimeModelProviderSnapshot> ModelProviders { get; init; }
 
     /// <summary>
     /// Gets or sets the default approval mode
@@ -176,9 +156,4 @@ public sealed class RuntimeConfigSnapshot
     /// Gets or sets the chat compression
     /// </summary>
     public RuntimeChatCompressionSettings? ChatCompression { get; init; }
-
-    /// <summary>
-    /// Gets or sets the telemetry
-    /// </summary>
-    public RuntimeTelemetrySettings? Telemetry { get; init; }
 }

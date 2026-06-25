@@ -22,43 +22,11 @@ public sealed class RuntimeConfigServiceTests
             Directory.CreateDirectory(systemRoot);
 
             File.WriteAllText(
-                Path.Combine(systemRoot, "system-defaults.json"),
-                """
-                {
-                  "telemetry": {
-                    "enabled": false,
-                    "target": "local"
-                  }
-                }
-                """);
-            File.WriteAllText(
                 Path.Combine(userQwenRoot, "settings.json"),
                 """
                 {
-                  "security": {
-                    "auth": {
-                      "selectedType": "openai"
-                    }
-                  },
-                  "model": {
-                    "name": "kurisu-max"
-                  },
-                  "modelProviders": {
-                    "openai": [
-                      {
-                        "id": "kurisu-max",
-                        "baseUrl": "https://provider.example/v1",
-                        "envKey": "CUSTOM_OPENAI_KEY"
-                      }
-                    ]
-                  },
-                  "telemetry": {
-                    "enabled": true,
-                    "target": "local",
-                    "outfile": "telemetry.ndjson"
-                  },
-                  "env": {
-                    "CUSTOM_OPENAI_KEY": "from-settings"
+                  "permissions": {
+                    "defaultMode": "auto-edit"
                   }
                 }
                 """);
@@ -66,7 +34,6 @@ public sealed class RuntimeConfigServiceTests
                 Path.Combine(workspaceRoot, ".kurisu", "settings.json"),
                 """
                 {
-                  "embeddingModel": "text-embedding-v4",
                   "chatCompression": {
                     "contextPercentageThreshold": 0.72
                   },
@@ -81,21 +48,12 @@ public sealed class RuntimeConfigServiceTests
             var service = new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var snapshot = service.Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
 
-            Assert.Equal("openai", snapshot.SelectedAuthType);
-            Assert.Equal("kurisu-max", snapshot.ModelName);
-            Assert.Equal("text-embedding-v4", snapshot.EmbeddingModel);
-            Assert.Single(snapshot.ModelProviders);
-            Assert.Equal("CUSTOM_OPENAI_KEY", snapshot.ModelProviders[0].EnvironmentVariableName);
             Assert.Equal(0.72d, snapshot.ChatCompression?.ContextPercentageThreshold);
-            Assert.True(snapshot.Telemetry?.Enabled);
-            Assert.Equal("local", snapshot.Telemetry?.Target);
-            Assert.Equal("telemetry.ndjson", snapshot.Telemetry?.Outfile);
             Assert.True(snapshot.DisableAllHooks);
             Assert.True(snapshot.Checkpointing);
             Assert.Equal(["docs", "github"], snapshot.AllowedMcpServers);
             Assert.Equal(["unsafe-server"], snapshot.ExcludedMcpServers);
             Assert.Equal(["org.kurisu.desktop"], snapshot.OverrideExtensions);
-            Assert.Equal("from-settings", snapshot.Environment["CUSTOM_OPENAI_KEY"]);
         }
         finally
         {
@@ -158,7 +116,6 @@ public sealed class RuntimeConfigServiceTests
             Assert.True(snapshot.FolderTrustEnabled);
             Assert.False(snapshot.IsWorkspaceTrusted);
             Assert.Equal("file", snapshot.WorkspaceTrustSource);
-            Assert.Equal("qwen3-coder-plus", snapshot.ModelName);
             Assert.False(snapshot.DisableAllHooks);
             Assert.DoesNotContain(snapshot.SettingsLayers, layer => layer.Scope == "project" && layer.Included);
         }

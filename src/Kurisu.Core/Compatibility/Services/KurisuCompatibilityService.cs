@@ -9,7 +9,7 @@ namespace Kurisu.Core.Compatibility;
 /// <param name="environmentPaths">The environment paths</param>
 public sealed partial class KurisuCompatibilityService(IDesktopEnvironmentPaths environmentPaths)
 {
-    private const string DefaultContextFileName = "QWEN.md";
+    private const string DefaultContextFileName = "KURISU.md";
 
     /// <summary>
     /// Executes inspect

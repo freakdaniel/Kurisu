@@ -208,7 +208,7 @@ public sealed class IdeBackendService(
 
     private IdeConnectionConfigRecord? GetConfigFromEnvironmentOrLegacy()
     {
-        var envPort = Environment.GetEnvironmentVariable("QWEN_CODE_IDE_SERVER_PORT");
+        var envPort = Environment.GetEnvironmentVariable("KURISU_IDE_SERVER_PORT");
         if (!string.IsNullOrWhiteSpace(envPort))
         {
             var envLockPath = KurisuPaths.IdePortLockFile(environmentPaths.HomeDirectory, envPort);
@@ -217,19 +217,12 @@ public sealed class IdeBackendService(
             {
                 return lockConfig;
             }
-
-            var legacyPath = Path.Combine(Path.GetTempPath(), $"kurisu-ide-server-{envPort}.json");
-            var legacyConfig = ReadConnectionConfig(legacyPath);
-            if (legacyConfig is not null)
-            {
-                return legacyConfig;
-            }
         }
 
-        var stdioCommand = Environment.GetEnvironmentVariable("QWEN_CODE_IDE_SERVER_STDIO_COMMAND");
-        var stdioArgs = Environment.GetEnvironmentVariable("QWEN_CODE_IDE_SERVER_STDIO_ARGS");
-        var workspacePath = Environment.GetEnvironmentVariable("QWEN_CODE_IDE_WORKSPACE_PATH");
-        var authToken = Environment.GetEnvironmentVariable("QWEN_CODE_IDE_AUTH_TOKEN");
+        var stdioCommand = Environment.GetEnvironmentVariable("KURISU_IDE_SERVER_STDIO_COMMAND");
+        var stdioArgs = Environment.GetEnvironmentVariable("KURISU_IDE_SERVER_STDIO_ARGS");
+        var workspacePath = Environment.GetEnvironmentVariable("KURISU_IDE_WORKSPACE_PATH");
+        var authToken = Environment.GetEnvironmentVariable("KURISU_IDE_AUTH_TOKEN");
         if (string.IsNullOrWhiteSpace(envPort) &&
             string.IsNullOrWhiteSpace(stdioCommand) &&
             string.IsNullOrWhiteSpace(workspacePath) &&

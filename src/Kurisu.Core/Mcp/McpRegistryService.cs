@@ -269,8 +269,6 @@ public sealed class McpRegistryService(
     private static void SaveSettingsRoot(string settingsPath, JsonObject root)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(settingsPath)!);
-        // Strip junk and unknown keys so the on-disk Settings.json stays clean.
-        RuntimeConfigService.StripLegacyRuntimeState(root);
         RuntimeConfigService.Prune(root, RuntimeConfigService.SettingsSchema);
         File.WriteAllText(
             settingsPath,

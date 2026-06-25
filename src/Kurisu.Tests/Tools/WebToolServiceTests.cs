@@ -217,22 +217,14 @@ public sealed class WebToolServiceTests
         var root = Path.Combine(Path.GetTempPath(), $"kurisu-web-search-env-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
 
+        var previousTavilyKey = Environment.GetEnvironmentVariable("TAVILY_API_KEY");
+        Environment.SetEnvironmentVariable("TAVILY_API_KEY", "env-test-key");
         try
         {
             var workspaceRoot = Path.Combine(root, "workspace");
             var homeRoot = Path.Combine(root, "home");
             Directory.CreateDirectory(Path.Combine(workspaceRoot, ".kurisu"));
             Directory.CreateDirectory(homeRoot);
-
-            File.WriteAllText(
-                Path.Combine(workspaceRoot, ".kurisu", "settings.json"),
-                """
-                {
-                  "env": {
-                    "TAVILY_API_KEY": "env-test-key"
-                  }
-                }
-                """);
 
             var runtimeProfile = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, null))
                 .Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
@@ -275,6 +267,7 @@ public sealed class WebToolServiceTests
         }
         finally
         {
+            Environment.SetEnvironmentVariable("TAVILY_API_KEY", previousTavilyKey);
             Directory.Delete(root, recursive: true);
         }
     }

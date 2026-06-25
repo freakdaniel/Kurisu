@@ -1,6 +1,7 @@
 using Kurisu.Core.Config;
 using Kurisu.Core.Models;
 using Kurisu.Core.Infrastructure;
+using Kurisu.Core.Runtime.Providers;
 
 namespace Kurisu.Core.Compatibility;
 
@@ -9,13 +10,16 @@ namespace Kurisu.Core.Compatibility;
 /// </summary>
 /// <param name="environmentPaths">The environment paths</param>
 /// <param name="configService">The config service</param>
+/// <param name="selectionStore">Source of the active model / embedding model / provider selection</param>
 public sealed class KurisuRuntimeProfileService(
     IDesktopEnvironmentPaths environmentPaths,
-    IConfigService? configService = null)
+    IConfigService? configService = null,
+    RuntimeSelectionStore? selectionStore = null)
 {
     private static readonly StringComparer PathComparer =
         OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
     private readonly IConfigService config = configService ?? new RuntimeConfigService(environmentPaths);
+    private readonly RuntimeSelectionStore selection = selectionStore ?? new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance);
 
     /// <summary>
     /// Executes inspect
@@ -33,8 +37,9 @@ public sealed class KurisuRuntimeProfileService(
         var historyDirectory = Path.Combine(KurisuPaths.HistoryRuntimeDirectory(runtimeDirectory), ComputeProjectHash(snapshot.ProjectRoot));
         var contextFileNames = snapshot.ContextFileNames.Count > 0
             ? snapshot.ContextFileNames
-            : ["QWEN.md", "AGENTS.md"];
+            : ["KURISU.md", "AGENTS.md"];
         var locale = RuntimeLocaleCatalog.DetectLocale();
+        var currentSelection = selection.Current;
 
         return new KurisuRuntimeProfile
         {
@@ -49,12 +54,12 @@ public sealed class KurisuRuntimeProfileService(
             ContextFilePaths = contextFileNames
                 .Select(fileName => Path.Combine(snapshot.ProjectRoot, fileName))
                 .ToArray(),
-            ModelName = snapshot.ModelName,
-            EmbeddingModel = snapshot.EmbeddingModel,
+            ModelName = currentSelection.SelectedModelId,
+            EmbeddingModel = currentSelection.SelectedEmbeddingModelId,
+            SelectedAuthType = currentSelection.SelectedAuthType,
             CurrentLocale = locale,
             CurrentLanguage = RuntimeLocaleCatalog.ResolveLanguageName(locale),
             ChatCompression = snapshot.ChatCompression,
-            Telemetry = snapshot.Telemetry,
             Checkpointing = snapshot.Checkpointing,
             FolderTrustEnabled = snapshot.FolderTrustEnabled,
             IsWorkspaceTrusted = snapshot.IsWorkspaceTrusted,
@@ -82,9 +87,6 @@ public sealed class KurisuRuntimeProfileService(
         IReadOnlyList<string> allowRules = [];
         IReadOnlyList<string> askRules = [];
         IReadOnlyList<string> denyRules = [];
-        IReadOnlyList<string> legacyAllowed = [];
-        IReadOnlyList<string> legacyCore = [];
-        IReadOnlyList<string> legacyExcluded = [];
         IReadOnlyList<string> contextFileNames = [];
         bool folderTrustEnabled = false;
 
@@ -105,10 +107,6 @@ public sealed class KurisuRuntimeProfileService(
                 if (TryGetString(root, ["permissions", "defaultMode"], out var permissionDefaultMode))
                 {
                     defaultApprovalMode = permissionDefaultMode;
-                }
-                else if (TryGetString(root, ["tools", "approvalMode"], out var legacyApprovalMode))
-                {
-                    defaultApprovalMode = legacyApprovalMode;
                 }
 
                 if (TryGetBoolean(root, ["permissions", "confirmShellCommands"], out var shellConfirmValue))
@@ -134,21 +132,6 @@ public sealed class KurisuRuntimeProfileService(
                 if (TryGetStringArray(root, ["permissions", "deny"], out var currentDenyRules))
                 {
                     denyRules = currentDenyRules;
-                }
-
-                if (TryGetStringArray(root, ["tools", "allowed"], out var currentLegacyAllowed))
-                {
-                    legacyAllowed = currentLegacyAllowed;
-                }
-
-                if (TryGetStringArray(root, ["tools", "core"], out var currentLegacyCore))
-                {
-                    legacyCore = currentLegacyCore;
-                }
-
-                if (TryGetStringArray(root, ["tools", "exclude"], out var currentLegacyExcluded))
-                {
-                    legacyExcluded = currentLegacyExcluded;
                 }
 
                 if (TryGetBoolean(root, ["security", "folderTrust", "enabled"], out var currentFolderTrustEnabled))
@@ -178,10 +161,10 @@ public sealed class KurisuRuntimeProfileService(
             DefaultApprovalMode: string.IsNullOrWhiteSpace(defaultApprovalMode) ? "default" : defaultApprovalMode,
             ConfirmShellCommands: confirmShellCommands,
             ConfirmFileEdits: confirmFileEdits,
-            AllowRules: MergeRules(allowRules, legacyAllowed, legacyCore),
+            AllowRules: allowRules,
             AskRules: askRules,
-            DenyRules: MergeRules(denyRules, legacyExcluded),
-            ContextFileNames: contextFileNames.Count > 0 ? contextFileNames : ["QWEN.md", "AGENTS.md"],
+            DenyRules: denyRules,
+            ContextFileNames: contextFileNames.Count > 0 ? contextFileNames : ["KURISU.md", "AGENTS.md"],
             FolderTrustEnabled: folderTrustEnabled);
     }
 

@@ -375,7 +375,7 @@ public sealed class ExtensionCatalogServiceTests
             name = extensionName,
             version = "1.2.3",
             description = "Demo extension",
-            contextFileName = new[] { "QWEN.md", "AGENTS.md" },
+            contextFileName = new[] { "KURISU.md", "AGENTS.md" },
             commands = new[] { "commands" },
             skills = new[] { "skills" },
             agents = new[] { "agents" },

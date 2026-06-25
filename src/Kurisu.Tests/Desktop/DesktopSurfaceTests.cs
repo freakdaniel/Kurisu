@@ -140,6 +140,7 @@ public sealed class DesktopProjectionServiceTests
                 new McpToolRuntimeService(mcpRegistry, mcpTokenStore, new HttpClient(), runtimeProfileService));
             var modelRegistry = new ModelRegistryService(
                 new RuntimeConfigService(environmentPaths),
+                new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance),
                 new TokenLimitService(),
                 Microsoft.Extensions.Options.Options.Create(new NativeAssistantRuntimeOptions()));
             var transcriptStore = new DesktopSessionCatalogService(runtimeProfileService, new ChatRecordingService());
@@ -363,6 +364,7 @@ public sealed class DesktopProjectionServiceTests
             var gitHistoryService = new GitHistoryService(new GitCliService(), runtimeProfileService);
             var modelRegistry = new ModelRegistryService(
                 new RuntimeConfigService(environmentPaths),
+                new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance),
                 new TokenLimitService(),
                 Microsoft.Extensions.Options.Options.Create(new NativeAssistantRuntimeOptions()));
             var transcriptStore = new DesktopSessionCatalogService(runtimeProfileService, new ChatRecordingService());

@@ -35,7 +35,7 @@ public sealed class ChannelRegistryServiceTests
                       "sessionScope": "thread",
                       "cwd": ".",
                       "approvalMode": "plan",
-                      "model": "kurisu-max"
+                      "model": "qwen-max"
                     }
                   }
                 }

@@ -466,8 +466,8 @@ public sealed class NativeToolHostTests
                 ArgumentsJson = """{"fact":"Remember that Daniel prefers the C# port to stay monolithic","scope":"global"}"""
             });
 
-            var projectMemoryPath = Path.Combine(workspaceRoot, "QWEN.md");
-            var globalMemoryPath = Path.Combine(homeRoot, ".kurisu", "QWEN.md");
+            var projectMemoryPath = Path.Combine(workspaceRoot, "KURISU.md");
+            var globalMemoryPath = Path.Combine(homeRoot, ".kurisu", "KURISU.md");
 
             Assert.Equal("completed", projectResult.Status);
             Assert.Equal("completed", globalResult.Status);

@@ -19,7 +19,7 @@ internal static class MemoryStore
             ? runtimeProfile.GlobalKurisuDirectory
             : runtimeProfile.ProjectRoot;
         var fileName = runtimeProfile.ContextFileNames.FirstOrDefault(static name => !string.IsNullOrWhiteSpace(name))
-            ?? "QWEN.md";
+            ?? "KURISU.md";
 
         return Path.Combine(root, fileName);
     }

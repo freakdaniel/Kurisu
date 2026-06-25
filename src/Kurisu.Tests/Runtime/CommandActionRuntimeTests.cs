@@ -17,8 +17,8 @@ public sealed class CommandActionRuntimeTests
             Directory.CreateDirectory(Path.Combine(homeRoot, ".kurisu"));
             Directory.CreateDirectory(systemRoot);
 
-            File.WriteAllText(Path.Combine(workspaceRoot, "QWEN.md"), "# Project memory");
-            File.WriteAllText(Path.Combine(homeRoot, ".kurisu", "QWEN.md"), "# Global memory");
+            File.WriteAllText(Path.Combine(workspaceRoot, "KURISU.md"), "# Project memory");
+            File.WriteAllText(Path.Combine(homeRoot, ".kurisu", "KURISU.md"), "# Global memory");
 
             var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var compatibilityService = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
@@ -52,7 +52,7 @@ public sealed class CommandActionRuntimeTests
             Assert.NotNull(addResult);
             Assert.Equal("completed", addResult!.Status);
             Assert.Contains("Saved memory", addResult.Output);
-            Assert.Contains("remember desktop port parity", File.ReadAllText(Path.Combine(workspaceRoot, "QWEN.md")));
+            Assert.Contains("remember desktop port parity", File.ReadAllText(Path.Combine(workspaceRoot, "KURISU.md")));
 
             Assert.NotNull(refreshResult);
             Assert.Equal("completed", refreshResult!.Status);
@@ -80,8 +80,8 @@ public sealed class CommandActionRuntimeTests
             Directory.CreateDirectory(Path.Combine(homeRoot, ".kurisu"));
             Directory.CreateDirectory(systemRoot);
 
-            File.WriteAllText(Path.Combine(workspaceRoot, "QWEN.md"), "# Project memory");
-            File.WriteAllText(Path.Combine(homeRoot, ".kurisu", "QWEN.md"), "# Global memory");
+            File.WriteAllText(Path.Combine(workspaceRoot, "KURISU.md"), "# Project memory");
+            File.WriteAllText(Path.Combine(homeRoot, ".kurisu", "KURISU.md"), "# Global memory");
             File.WriteAllText(
                 Path.Combine(workspaceRoot, ".kurisu", "commands", "qc", "code-review.md"),
                 """

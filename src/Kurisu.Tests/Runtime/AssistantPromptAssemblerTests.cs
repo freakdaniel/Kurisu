@@ -35,7 +35,7 @@ public sealed class AssistantPromptAssemblerTests
                     """{"uuid":"4","sessionId":"session-1","type":"assistant","message":{"parts":[{"text":"Context loaded."}]}}"""
                 ]);
 
-            var globalContextPath = Path.Combine(homeRoot, ".kurisu", "QWEN.md");
+            var globalContextPath = Path.Combine(homeRoot, ".kurisu", "KURISU.md");
             Directory.CreateDirectory(Path.GetDirectoryName(globalContextPath)!);
             File.WriteAllText(globalContextPath, "# Global memory\nPrefer native runtime integrations.");
 
@@ -43,7 +43,7 @@ public sealed class AssistantPromptAssemblerTests
             Directory.CreateDirectory(Path.GetDirectoryName(importedContextPath)!);
             File.WriteAllText(importedContextPath, "Respect repository conventions.");
 
-            var rootContextPath = Path.Combine(workspaceRoot, "QWEN.md");
+            var rootContextPath = Path.Combine(workspaceRoot, "KURISU.md");
             File.WriteAllText(
                 rootContextPath,
                 """
@@ -135,7 +135,7 @@ public sealed class AssistantPromptAssemblerTests
                         ProjectDataDirectory = Path.Combine(runtimeRoot, "projects", "project-a"),
                         ChatsDirectory = chatsRoot,
                         HistoryDirectory = Path.Combine(runtimeRoot, "history", "project-a"),
-                        ContextFileNames = ["QWEN.md", "AGENTS.md"],
+                        ContextFileNames = ["KURISU.md", "AGENTS.md"],
                         ContextFilePaths = [rootContextPath, nestedContextPath],
                         CurrentLocale = "en",
                         CurrentLanguage = "English",
@@ -173,7 +173,7 @@ public sealed class AssistantPromptAssemblerTests
             Assert.Contains("Respect repository conventions.", promptContext.ContextFiles[1]);
             Assert.Contains("reconnect flow must survive renderer reloads", promptContext.ContextFiles[2]);
             Assert.Contains("Transcript messages loaded: 4", promptContext.SessionSummary);
-            Assert.Contains("Context file names: QWEN.md, AGENTS.md", promptContext.SessionSummary);
+            Assert.Contains("Context file names: KURISU.md, AGENTS.md", promptContext.SessionSummary);
             Assert.Contains("Project summary: loaded", promptContext.SessionSummary);
             Assert.Contains("Workspace root:", promptContext.EnvironmentSummary);
             Assert.Contains("Platform:", promptContext.EnvironmentSummary);
@@ -243,10 +243,10 @@ public sealed class AssistantPromptAssemblerTests
                 """{"uuid":"1","sessionId":"session-1","type":"user","message":{"parts":[{"text":"Continue the work."}]}}""");
 
             File.WriteAllText(
-                Path.Combine(homeRoot, ".kurisu", "QWEN.md"),
+                Path.Combine(homeRoot, ".kurisu", "KURISU.md"),
                 "# Global memory\nOnly global context should load.");
             File.WriteAllText(
-                Path.Combine(workspaceRoot, "QWEN.md"),
+                Path.Combine(workspaceRoot, "KURISU.md"),
                 "# Project memory\nThis must stay hidden.");
             File.WriteAllText(
                 Path.Combine(workspaceRoot, ".kurisu", "PROJECT_SUMMARY.md"),
@@ -272,7 +272,7 @@ public sealed class AssistantPromptAssemblerTests
                         ProjectDataDirectory = Path.Combine(runtimeRoot, "projects", "project-a"),
                         ChatsDirectory = chatsRoot,
                         HistoryDirectory = Path.Combine(runtimeRoot, "history", "project-a"),
-                        ContextFileNames = ["QWEN.md", "AGENTS.md"],
+                        ContextFileNames = ["KURISU.md", "AGENTS.md"],
                         ContextFilePaths = [],
                         CurrentLocale = "en",
                         CurrentLanguage = "English",
@@ -448,7 +448,7 @@ public sealed class AssistantPromptAssemblerTests
                         ProjectDataDirectory = Path.Combine(runtimeRoot, "projects", "project-a"),
                         ChatsDirectory = chatsRoot,
                         HistoryDirectory = Path.Combine(runtimeRoot, "history", "project-a"),
-                        ContextFileNames = ["QWEN.md"],
+                        ContextFileNames = ["KURISU.md"],
                         ContextFilePaths = [],
                         CurrentLocale = "en",
                         CurrentLanguage = "English",
@@ -523,10 +523,10 @@ public sealed class AssistantPromptAssemblerTests
                     .Select(index => $"{{\"uuid\":\"{index}\",\"sessionId\":\"session-budget\",\"type\":\"user\",\"message\":{{\"parts\":[{{\"text\":\"{new string('x', 220)} {index}\"}}]}}}}"));
 
             File.WriteAllText(
-                Path.Combine(homeRoot, ".kurisu", "QWEN.md"),
+                Path.Combine(homeRoot, ".kurisu", "KURISU.md"),
                 new string('g', 2400));
             File.WriteAllText(
-                Path.Combine(workspaceRoot, "QWEN.md"),
+                Path.Combine(workspaceRoot, "KURISU.md"),
                 new string('p', 2400));
 
             var assembler = new AssistantPromptAssembler(
@@ -560,7 +560,7 @@ public sealed class AssistantPromptAssemblerTests
                         ProjectDataDirectory = Path.Combine(runtimeRoot, "projects", "project-a"),
                         ChatsDirectory = chatsRoot,
                         HistoryDirectory = Path.Combine(runtimeRoot, "history", "project-a"),
-                        ContextFileNames = ["QWEN.md"],
+                        ContextFileNames = ["KURISU.md"],
                         ContextFilePaths = [],
                         CurrentLocale = "en",
                         CurrentLanguage = "English",

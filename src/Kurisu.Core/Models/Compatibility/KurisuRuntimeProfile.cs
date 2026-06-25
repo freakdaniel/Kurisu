@@ -51,14 +51,19 @@ public sealed class KurisuRuntimeProfile
     public required IReadOnlyList<string> ContextFilePaths { get; init; }
 
     /// <summary>
-    /// Gets or sets the model name
+    /// Gets or sets the active model id (resolved from <c>RuntimeSelectionStore.SelectedModelId</c>).
     /// </summary>
     public string ModelName { get; init; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the embedding model
+    /// Gets or sets the active embedding model id (resolved from <c>RuntimeSelectionStore.SelectedEmbeddingModelId</c>).
     /// </summary>
     public string EmbeddingModel { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the active provider id (resolved from <c>RuntimeSelectionStore.SelectedAuthType</c>).
+    /// </summary>
+    public string SelectedAuthType { get; init; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the preferred locale
@@ -74,11 +79,6 @@ public sealed class KurisuRuntimeProfile
     /// Gets or sets the chat compression
     /// </summary>
     public RuntimeChatCompressionSettings? ChatCompression { get; init; }
-
-    /// <summary>
-    /// Gets or sets the telemetry
-    /// </summary>
-    public RuntimeTelemetrySettings? Telemetry { get; init; }
 
     /// <summary>
     /// Gets or sets the checkpointing

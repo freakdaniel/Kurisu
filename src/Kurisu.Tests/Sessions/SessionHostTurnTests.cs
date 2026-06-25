@@ -321,8 +321,8 @@ public sealed class SessionHostTurnTests
             Assert.NotNull(result.ResolvedCommand);
             Assert.Equal("memory/add/project", result.ResolvedCommand!.Name);
             Assert.Contains("Built-in command", result.AssistantSummary);
-            Assert.True(File.Exists(Path.Combine(workspaceRoot, "QWEN.md")));
-            Assert.Contains("remember built-in command execution", File.ReadAllText(Path.Combine(workspaceRoot, "QWEN.md")));
+            Assert.True(File.Exists(Path.Combine(workspaceRoot, "KURISU.md")));
+            Assert.Contains("remember built-in command execution", File.ReadAllText(Path.Combine(workspaceRoot, "KURISU.md")));
 
             var transcript = File.ReadAllLines(result.Session.TranscriptPath);
             Assert.Equal(3, transcript.Length);
@@ -350,7 +350,7 @@ public sealed class SessionHostTurnTests
             Directory.CreateDirectory(workspaceRoot);
             Directory.CreateDirectory(Path.Combine(homeRoot, ".kurisu"));
             Directory.CreateDirectory(systemRoot);
-            File.WriteAllText(Path.Combine(workspaceRoot, "QWEN.md"), "# Project memory");
+            File.WriteAllText(Path.Combine(workspaceRoot, "KURISU.md"), "# Project memory");
 
             var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var compatibilityService = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));

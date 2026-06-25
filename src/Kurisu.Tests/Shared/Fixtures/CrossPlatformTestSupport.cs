@@ -48,7 +48,7 @@ internal static class CrossPlatformTestSupport
 
     public static string ResolveUpstreamRepoRoot()
     {
-        var configured = Environment.GetEnvironmentVariable("QWEN_CODE_MAIN_ROOT");
+        var configured = Environment.GetEnvironmentVariable("KURISU_MAIN_ROOT");
         if (!string.IsNullOrWhiteSpace(configured) && Directory.Exists(configured))
         {
             return configured;

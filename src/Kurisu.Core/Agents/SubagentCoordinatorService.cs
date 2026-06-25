@@ -5,7 +5,6 @@ using Kurisu.Core.Infrastructure;
 using Kurisu.Core.Models;
 using Kurisu.Core.Runtime;
 using Kurisu.Core.Runtime.Providers;
-using Kurisu.Core.Telemetry;
 using Kurisu.Core.Tools;
 
 namespace Kurisu.Core.Agents;
@@ -20,7 +19,6 @@ namespace Kurisu.Core.Agents;
 /// <param name="validationService">The validation service</param>
 /// <param name="hookLifecycleService">The hook lifecycle service</param>
 /// <param name="serviceProvider">The service provider</param>
-/// <param name="telemetryService">The telemetry service</param>
 public sealed class SubagentCoordinatorService(
     ISubagentCatalog subagentCatalog,
     IToolRegistry toolRegistry,
@@ -28,8 +26,7 @@ public sealed class SubagentCoordinatorService(
     ISubagentModelSelectionService modelSelectionService,
     ISubagentValidationService validationService,
     IHookLifecycleService? hookLifecycleService = null,
-    IServiceProvider? serviceProvider = null,
-    ITelemetryService? telemetryService = null) : ISubagentCoordinator
+    IServiceProvider? serviceProvider = null) : ISubagentCoordinator
 {
     /// <summary>
     /// Executes async
@@ -203,19 +200,6 @@ public sealed class SubagentCoordinatorService(
             artifactPath,
             JsonSerializer.Serialize(record, new JsonSerializerOptions { WriteIndented = true }),
             cancellationToken);
-
-        if (telemetryService is not null)
-        {
-            await telemetryService.TrackSubagentExecutionAsync(
-                runtimeProfile,
-                executionId,
-                agent.Name,
-                status,
-                Math.Max(0, (long)(endedAtUtc - startedAtUtc).TotalMilliseconds),
-                response.Model,
-                resolvedStopReason,
-                cancellationToken);
-        }
 
         if (!string.IsNullOrWhiteSpace(taskId))
         {

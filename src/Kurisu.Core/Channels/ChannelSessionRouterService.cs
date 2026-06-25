@@ -195,13 +195,11 @@ public sealed class ChannelSessionRouterService(IDesktopEnvironmentPaths environ
             }
 
             var path = GetPersistPath();
-            var legacyPath = GetLegacyPersistPath();
-            var effectivePath = File.Exists(path) ? path : legacyPath;
-            if (File.Exists(effectivePath))
+            if (File.Exists(path))
             {
                 try
                 {
-                    var persisted = JsonSerializer.Deserialize<Dictionary<string, ChannelSessionRoute>>(File.ReadAllText(effectivePath));
+                    var persisted = JsonSerializer.Deserialize<Dictionary<string, ChannelSessionRoute>>(File.ReadAllText(path));
                     if (persisted is not null)
                     {
                         foreach (var item in persisted)
@@ -228,8 +226,6 @@ public sealed class ChannelSessionRouterService(IDesktopEnvironmentPaths environ
     }
 
     private string GetPersistPath() => KurisuPaths.ChannelSessionsFile(environmentPaths.HomeDirectory);
-
-    private string GetLegacyPersistPath() => Path.Combine(environmentPaths.HomeDirectory, ".kurisu", "channels", "sessions.runtime.json");
 
     private static string BuildKey(
         string channelName,

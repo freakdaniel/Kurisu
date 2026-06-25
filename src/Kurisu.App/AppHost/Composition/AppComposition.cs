@@ -26,7 +26,7 @@ using Kurisu.Core.Runtime.Providers;
 using Kurisu.Core.Sessions;
 using Kurisu.Core.Sessions.Memory;
 using Kurisu.Core.Sessions.Persistence;
-using Kurisu.Core.Telemetry;
+
 using Kurisu.Core.Tools;
 
 namespace Kurisu.App.AppHost.Composition;
@@ -227,10 +227,6 @@ public static class AppComposition
         services.AddSingleton<IAssistantResponseProvider, OpenAiCompatibleAssistantResponseProvider>();
         services.AddSingleton<IAssistantResponseProvider, FallbackAssistantResponseProvider>();
         services.AddSingleton<IAssistantTurnRuntime, AssistantTurnRuntime>();
-        #endregion
-
-        #region Telemetry
-        services.AddSingleton<ITelemetryService, TelemetryService>();
         #endregion
 
         #region Tools

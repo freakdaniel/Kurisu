@@ -454,7 +454,6 @@ Call web_fetch again with the redirect URL if you want to inspect that destinati
         var configSnapshot = new RuntimeConfigService(environmentPaths)
             .Inspect(new WorkspacePaths { WorkspaceRoot = projectRoot });
         var merged = configSnapshot.MergedSettings;
-        var settingsEnvironment = configSnapshot.Environment;
         var providers = new List<WebSearchProviderConfiguration>();
         var defaultProvider = string.Empty;
 
@@ -465,19 +464,20 @@ Call web_fetch again with the redirect URL if you want to inspect that destinati
             {
                 providers.AddRange(providerArray
                     .OfType<JsonObject>()
-                    .Select(providerNode => BuildProviderConfiguration(providerNode, settingsEnvironment))
+                    .Select(BuildProviderConfiguration)
                     .Where(static provider => !string.IsNullOrWhiteSpace(provider.Type)));
             }
         }
         else
         {
-            providers.AddRange(BuildEnvironmentProviders(merged, settingsEnvironment));
+            providers.AddRange(BuildEnvironmentProviders(merged));
         }
 
-        EnsureDashScopeProvider(providers, configSnapshot.SelectedAuthType);
+        var selectedProviderId = string.Empty;
+        EnsureDashScopeProvider(providers, selectedProviderId);
         var availableProviders = providers
             .Select(static provider => provider with { Type = provider.Type.Trim().ToLowerInvariant() })
-            .Where(provider => IsProviderAvailable(provider, configSnapshot.SelectedAuthType))
+            .Where(provider => IsProviderAvailable(provider))
             .GroupBy(static provider => provider.Type, StringComparer.OrdinalIgnoreCase)
             .Select(static group => group.First())
             .ToArray();
@@ -488,8 +488,7 @@ Call web_fetch again with the redirect URL if you want to inspect that destinati
     }
 
     private static WebSearchProviderConfiguration BuildProviderConfiguration(
-        JsonObject providerNode,
-        IReadOnlyDictionary<string, string> settingsEnvironment)
+        JsonObject providerNode)
     {
         var type = GetString(providerNode, "type");
         if (string.IsNullOrWhiteSpace(type))
@@ -501,11 +500,6 @@ Call web_fetch again with the redirect URL if you want to inspect that destinati
         var apiKey = FirstNonEmpty(
             GetString(providerNode, "apiKey"),
             normalizedType.Equals("tavily", StringComparison.OrdinalIgnoreCase)
-                ? ReadEnvironmentValue(settingsEnvironment, "TAVILY_API_KEY", "WEB_SEARCH_API_KEY")
-                : normalizedType.Equals("google", StringComparison.OrdinalIgnoreCase)
-                    ? ReadEnvironmentValue(settingsEnvironment, "GOOGLE_SEARCH_API_KEY", "GOOGLE_API_KEY")
-                    : ReadEnvironmentValue(settingsEnvironment, "DASHSCOPE_API_KEY", "QWEN_OAUTH_ACCESS_TOKEN"),
-            normalizedType.Equals("tavily", StringComparison.OrdinalIgnoreCase)
                 ? FirstNonEmpty(Environment.GetEnvironmentVariable("TAVILY_API_KEY"), Environment.GetEnvironmentVariable("WEB_SEARCH_API_KEY"))
                 : normalizedType.Equals("google", StringComparison.OrdinalIgnoreCase)
                     ? FirstNonEmpty(Environment.GetEnvironmentVariable("GOOGLE_SEARCH_API_KEY"), Environment.GetEnvironmentVariable("GOOGLE_API_KEY"))
@@ -513,7 +507,6 @@ Call web_fetch again with the redirect URL if you want to inspect that destinati
 
         var searchEngineId = FirstNonEmpty(
             GetString(providerNode, "searchEngineId"),
-            ReadEnvironmentValue(settingsEnvironment, "GOOGLE_SEARCH_ENGINE_ID", "GOOGLE_CSE_ID"),
             Environment.GetEnvironmentVariable("GOOGLE_SEARCH_ENGINE_ID"),
             Environment.GetEnvironmentVariable("GOOGLE_CSE_ID"));
 
@@ -531,13 +524,10 @@ Call web_fetch again with the redirect URL if you want to inspect that destinati
             ResourceUrl: FirstNonEmpty(GetString(providerNode, "resourceUrl"), GetString(providerNode, "baseUrl")));
     }
 
-    private static IReadOnlyList<WebSearchProviderConfiguration> BuildEnvironmentProviders(
-        JsonObject mergedSettings,
-        IReadOnlyDictionary<string, string> settingsEnvironment)
+    private static IReadOnlyList<WebSearchProviderConfiguration> BuildEnvironmentProviders(JsonObject mergedSettings)
     {
         var providers = new List<WebSearchProviderConfiguration>();
         var tavilyKey = FirstNonEmpty(
-            ReadEnvironmentValue(settingsEnvironment, "TAVILY_API_KEY", "WEB_SEARCH_API_KEY"),
             GetString(mergedSettings, "advanced", "tavilyApiKey"),
             Environment.GetEnvironmentVariable("TAVILY_API_KEY"),
             Environment.GetEnvironmentVariable("WEB_SEARCH_API_KEY"));
@@ -547,11 +537,9 @@ Call web_fetch again with the redirect URL if you want to inspect that destinati
         }
 
         var googleKey = FirstNonEmpty(
-            ReadEnvironmentValue(settingsEnvironment, "GOOGLE_SEARCH_API_KEY", "GOOGLE_API_KEY"),
             Environment.GetEnvironmentVariable("GOOGLE_SEARCH_API_KEY"),
             Environment.GetEnvironmentVariable("GOOGLE_API_KEY"));
         var googleSearchEngineId = FirstNonEmpty(
-            ReadEnvironmentValue(settingsEnvironment, "GOOGLE_SEARCH_ENGINE_ID", "GOOGLE_CSE_ID"),
             Environment.GetEnvironmentVariable("GOOGLE_SEARCH_ENGINE_ID"),
             Environment.GetEnvironmentVariable("GOOGLE_CSE_ID"));
         if (!string.IsNullOrWhiteSpace(googleKey) && !string.IsNullOrWhiteSpace(googleSearchEngineId))
@@ -578,13 +566,13 @@ Call web_fetch again with the redirect URL if you want to inspect that destinati
         providers.Add(CreateProvider("dashscope"));
     }
 
-    private static bool IsProviderAvailable(WebSearchProviderConfiguration provider, string authType) =>
+    private static bool IsProviderAvailable(WebSearchProviderConfiguration provider) =>
         provider.Type switch
         {
             "tavily" => !string.IsNullOrWhiteSpace(provider.ApiKey),
             "google" => !string.IsNullOrWhiteSpace(provider.ApiKey) &&
                         !string.IsNullOrWhiteSpace(provider.SearchEngineId),
-            "dashscope" => false,  // DashScope web search disabled — requires Qwen OAuth which was removed
+            "dashscope" => false,  // DashScope web search disabled
             _ => false
         };
 
@@ -825,11 +813,12 @@ Call web_fetch again with the redirect URL if you want to inspect that destinati
             .ToDictionary(static pair => pair.Key, static pair => pair.Value!, StringComparer.OrdinalIgnoreCase);
     }
 
-    private static string ReadEnvironmentValue(IReadOnlyDictionary<string, string> settingsEnvironment, params string[] keys)
+    private static string ReadEnvironmentValue(params string[] keys)
     {
         foreach (var key in keys)
         {
-            if (settingsEnvironment.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value))
+            var value = Environment.GetEnvironmentVariable(key);
+            if (!string.IsNullOrWhiteSpace(value))
             {
                 return value;
             }

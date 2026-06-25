@@ -42,7 +42,7 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
             workspaceTrust = new WorkspaceTrustDecision(true, string.Empty);
         }
 
-        var settingsLayers = new[]
+var settingsLayers = new[]
         {
             CreateLayer("system-defaults", "system-defaults", systemDefaultsPath, included: true),
             CreateLayer("user", "user-settings", userSettingsPath, included: true),
@@ -50,13 +50,6 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
             CreateLayer("system", "system-settings", systemSettingsPath, included: true)
         };
         var mergedSettings = BuildMergedSettings(settingsLayers);
-        var environment = ReadEnvironment(mergedSettings.Root);
-
-        var selectedAuthType = FirstNonEmpty(GetString(mergedSettings.Root, "security", "auth", "selectedType"), "openai");
-        var defaultModelName = string.Equals(selectedAuthType, "openai", StringComparison.OrdinalIgnoreCase) ||
-                               string.Equals(selectedAuthType, "openai", StringComparison.OrdinalIgnoreCase)
-            ? "coder-model"
-            : "qwen3-coder-plus";
 
         return new RuntimeConfigSnapshot
         {
@@ -69,13 +62,8 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
             SystemSettingsPath = systemSettingsPath,
             SettingsLayers = settingsLayers,
             MergedSettings = mergedSettings.Root,
-            Environment = environment,
             RuntimeOutputDirectory = mergedSettings.RuntimeOutputDirectory,
             RuntimeSource = mergedSettings.RuntimeSource,
-            ModelName = FirstNonEmpty(GetString(mergedSettings.Root, "model", "name"), defaultModelName),
-            EmbeddingModel = FirstNonEmpty(GetString(mergedSettings.Root, "embeddingModel"), "text-embedding-v4"),
-            SelectedAuthType = selectedAuthType,
-            ModelProviders = ParseModelProviders(mergedSettings.Root),
             DefaultApprovalMode = string.IsNullOrWhiteSpace(mergedSettings.DefaultApprovalMode)
                 ? "default"
                 : mergedSettings.DefaultApprovalMode,
@@ -84,7 +72,7 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
             AllowRules = mergedSettings.AllowRules,
             AskRules = mergedSettings.AskRules,
             DenyRules = mergedSettings.DenyRules,
-            ContextFileNames = mergedSettings.ContextFileNames.Count > 0 ? mergedSettings.ContextFileNames : ["QWEN.md", "AGENTS.md"],
+            ContextFileNames = mergedSettings.ContextFileNames.Count > 0 ? mergedSettings.ContextFileNames : ["KURISU.md", "AGENTS.md"],
             FolderTrustEnabled = mergedSettings.FolderTrustEnabled,
             IsWorkspaceTrusted = workspaceTrust.IsTrusted,
             WorkspaceTrustSource = workspaceTrust.Source,
@@ -100,22 +88,7 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
                 {
                     ContextPercentageThreshold = mergedSettings.ChatCompressionThreshold
                 }
-                : null,
-            Telemetry = mergedSettings.TelemetryEnabled ||
-                        !string.IsNullOrWhiteSpace(mergedSettings.TelemetryTarget) ||
-                        !string.IsNullOrWhiteSpace(mergedSettings.TelemetryOtlpEndpoint) ||
-                        !string.IsNullOrWhiteSpace(mergedSettings.TelemetryOutfile)
-                ? new RuntimeTelemetrySettings
-                {
-                    Enabled = mergedSettings.TelemetryEnabled,
-                    Target = mergedSettings.TelemetryTarget,
-                    OtlpEndpoint = mergedSettings.TelemetryOtlpEndpoint,
-                    OtlpProtocol = mergedSettings.TelemetryOtlpProtocol,
-                    LogPrompts = mergedSettings.TelemetryLogPrompts,
-                    Outfile = mergedSettings.TelemetryOutfile,
-                    UseCollector = mergedSettings.TelemetryUseCollector
-                }
-                : null
+: null
         };
     }
 
@@ -153,9 +126,6 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
         IReadOnlyList<string> allowRules = [];
         IReadOnlyList<string> askRules = [];
         IReadOnlyList<string> denyRules = [];
-        IReadOnlyList<string> legacyAllowed = [];
-        IReadOnlyList<string> legacyCore = [];
-        IReadOnlyList<string> legacyExcluded = [];
         IReadOnlyList<string> contextFileNames = [];
         bool folderTrustEnabled = false;
         bool disableAllHooks = false;
@@ -166,13 +136,6 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
         IReadOnlyList<string> allowedMcpServers = [];
         IReadOnlyList<string> excludedMcpServers = [];
         double? chatCompressionThreshold = null;
-        bool telemetryEnabled = false;
-        string telemetryTarget = string.Empty;
-        string telemetryOtlpEndpoint = string.Empty;
-        string telemetryOtlpProtocol = string.Empty;
-        bool telemetryLogPrompts = false;
-        string telemetryOutfile = string.Empty;
-        bool telemetryUseCollector = false;
 
         foreach (var layer in settingsLayers.Where(static item => item.Included && File.Exists(item.Path)))
         {
@@ -188,7 +151,6 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
                     });
                 if (JsonSerializer.SerializeToNode(document.RootElement) is JsonObject layerRoot)
                 {
-                    // legacy shiii
                     Prune(layerRoot, SettingsSchema);
                     MergeObjects(mergedRoot, layerRoot);
                 }
@@ -204,10 +166,6 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
                 if (TryGetString(root, ["permissions", "defaultMode"], out var permissionDefaultMode))
                 {
                     defaultApprovalMode = permissionDefaultMode;
-                }
-                else if (TryGetString(root, ["tools", "approvalMode"], out var legacyApprovalMode))
-                {
-                    defaultApprovalMode = legacyApprovalMode;
                 }
 
                 if (TryGetBoolean(root, ["permissions", "confirmShellCommands"], out var shellConfirm))
@@ -233,21 +191,6 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
                 if (TryGetStringArray(root, ["permissions", "deny"], out var currentDenyRules))
                 {
                     denyRules = currentDenyRules;
-                }
-
-                if (TryGetStringArray(root, ["tools", "allowed"], out var currentLegacyAllowed))
-                {
-                    legacyAllowed = currentLegacyAllowed;
-                }
-
-                if (TryGetStringArray(root, ["tools", "core"], out var currentLegacyCore))
-                {
-                    legacyCore = currentLegacyCore;
-                }
-
-                if (TryGetStringArray(root, ["tools", "exclude"], out var currentLegacyExcluded))
-                {
-                    legacyExcluded = currentLegacyExcluded;
                 }
 
                 if (TryGetBoolean(root, ["security", "folderTrust", "enabled"], out var currentFolderTrustEnabled))
@@ -304,46 +247,8 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
                 {
                     chatCompressionThreshold = currentChatCompressionThreshold;
                 }
-
-                if (TryGetBoolean(root, ["telemetry", "enabled"], out var currentTelemetryEnabled))
-                {
-                    telemetryEnabled = currentTelemetryEnabled;
-                }
-
-                if (TryGetString(root, ["telemetry", "target"], out var currentTelemetryTarget))
-                {
-                    telemetryTarget = currentTelemetryTarget;
-                }
-
-                if (TryGetString(root, ["telemetry", "otlpEndpoint"], out var currentTelemetryOtlpEndpoint))
-                {
-                    telemetryOtlpEndpoint = currentTelemetryOtlpEndpoint;
-                }
-
-                if (TryGetString(root, ["telemetry", "otlpProtocol"], out var currentTelemetryOtlpProtocol))
-                {
-                    telemetryOtlpProtocol = currentTelemetryOtlpProtocol;
-                }
-
-                if (TryGetBoolean(root, ["telemetry", "logPrompts"], out var currentTelemetryLogPrompts))
-                {
-                    telemetryLogPrompts = currentTelemetryLogPrompts;
-                }
-
-                if (TryGetString(root, ["telemetry", "outfile"], out var currentTelemetryOutfile))
-                {
-                    telemetryOutfile = currentTelemetryOutfile;
-                }
-
-                if (TryGetBoolean(root, ["telemetry", "useCollector"], out var currentTelemetryUseCollector))
-                {
-                    telemetryUseCollector = currentTelemetryUseCollector;
-                }
             }
-            catch
-            {
-                // Ignore malformed layers and keep best-effort merged settings.
-            }
+            catch { }
         }
 
         return new MergedSettings(
@@ -353,10 +258,10 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
             DefaultApprovalMode: string.IsNullOrWhiteSpace(defaultApprovalMode) ? "default" : defaultApprovalMode,
             ConfirmShellCommands: confirmShellCommands,
             ConfirmFileEdits: confirmFileEdits,
-            AllowRules: MergeRules(allowRules, legacyAllowed, legacyCore),
+            AllowRules: allowRules,
             AskRules: askRules,
-            DenyRules: MergeRules(denyRules, legacyExcluded),
-            ContextFileNames: contextFileNames.Count > 0 ? contextFileNames : ["QWEN.md", "AGENTS.md"],
+            DenyRules: denyRules,
+            ContextFileNames: contextFileNames.Count > 0 ? contextFileNames : ["KURISU.md", "AGENTS.md"],
             FolderTrustEnabled: folderTrustEnabled,
             DisableAllHooks: disableAllHooks,
             IdeMode: ideMode,
@@ -365,60 +270,7 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
             OverrideExtensions: overrideExtensions,
             AllowedMcpServers: allowedMcpServers,
             ExcludedMcpServers: excludedMcpServers,
-            ChatCompressionThreshold: chatCompressionThreshold,
-            TelemetryEnabled: telemetryEnabled,
-            TelemetryTarget: telemetryTarget,
-            TelemetryOtlpEndpoint: telemetryOtlpEndpoint,
-            TelemetryOtlpProtocol: telemetryOtlpProtocol,
-            TelemetryLogPrompts: telemetryLogPrompts,
-            TelemetryOutfile: telemetryOutfile,
-            TelemetryUseCollector: telemetryUseCollector);
-    }
-
-    private static IReadOnlyList<RuntimeModelProviderSnapshot> ParseModelProviders(JsonObject mergedSettings)
-    {
-        if (mergedSettings["modelProviders"] is not JsonObject modelProviders)
-        {
-            return [];
-        }
-
-        var providers = new List<RuntimeModelProviderSnapshot>();
-        foreach (var authTypeEntry in modelProviders)
-        {
-            if (authTypeEntry.Value is not JsonArray authProviders)
-            {
-                continue;
-            }
-
-            foreach (var providerNode in authProviders.OfType<JsonObject>())
-            {
-                providers.Add(new RuntimeModelProviderSnapshot
-                {
-                    AuthType = authTypeEntry.Key,
-                    Id = providerNode["id"]?.GetValue<string?>() ?? string.Empty,
-                    BaseUrl = providerNode["baseUrl"]?.GetValue<string?>() ?? string.Empty,
-                    EnvironmentVariableName = providerNode["envKey"]?.GetValue<string?>() ?? string.Empty,
-                    ContextWindowSize = ReadInt(providerNode, "generationConfig", "contextWindowSize"),
-                    MaxOutputTokens = ReadInt(providerNode, "generationConfig", "maxOutputTokens")
-                });
-            }
-        }
-
-        return providers;
-    }
-
-    private static IReadOnlyDictionary<string, string> ReadEnvironment(JsonObject mergedSettings)
-    {
-        if (mergedSettings["env"] is not JsonObject envObject)
-        {
-            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
-
-        return envObject
-            .Where(static pair => pair.Value is JsonValue)
-            .Select(pair => new KeyValuePair<string, string?>(pair.Key, pair.Value?.GetValue<string>()))
-            .Where(static pair => !string.IsNullOrWhiteSpace(pair.Value))
-            .ToDictionary(static pair => pair.Key, static pair => pair.Value!, StringComparer.OrdinalIgnoreCase);
+            ChatCompressionThreshold: chatCompressionThreshold);
     }
 
     private string ResolveProgramDataRoot() =>
@@ -538,13 +390,13 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
     /// Schema whitelist for Settings.json. Only the listed top-level keys
     /// (and their nested children listed below) are read or written. Anything
     /// else is stripped on read and silently dropped on write. Runtime state
-    /// (<c>model.name</c>, <c>embeddingModel</c>, <c>security.auth.selectedType</c>,
-    /// <c>modelProviders</c>, <c>env</c>) lives in dedicated stores.
+    /// (active model, api keys, embedded model selection) lives in dedicated
+    /// stores (<see cref="RuntimeSelectionStore"/>,
+    /// <see cref="Runtime.Providers.ProviderSettingsStore"/>).
     /// </summary>
     internal static readonly JsonObject SettingsSchema = new()
     {
         ["permissions"] = new JsonObject(),
-        ["telemetry"] = new JsonObject(),
         ["security"] = new JsonObject { ["folderTrust"] = new JsonObject() },
         ["context"] = new JsonObject(),
         ["mcpServers"] = new JsonObject(),
@@ -553,11 +405,6 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
         ["tools"] = new JsonObject(),
         ["hooks"] = new JsonObject(),
         ["webSearch"] = new JsonObject(),
-        // legacy runtime-state keys
-        ["model"] = new JsonObject { ["name"] = string.Empty },
-        ["embeddingModel"] = string.Empty,
-        ["modelProviders"] = new JsonObject(),
-        ["env"] = new JsonObject(),
         ["advanced"] = new JsonObject { ["runtimeOutputDir"] = string.Empty },
         ["preferences"] = new JsonObject
         {
@@ -592,31 +439,11 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
         }
     }
 
-    /// <summary>
-    /// Removes junk fields that used to be persisted but are now stored in
-    /// dedicated stores (<see cref="RuntimeSelectionStore"/>,
-    /// <see cref="Runtime.Providers.ProviderSettingsStore"/>).
-    /// </summary>
-    internal static void StripLegacyRuntimeState(JsonObject root)
-    {
-        // removes the legacy runtime-state keys that have dedicated stores
-        root.Remove("model");
-        root.Remove("embeddingModel");
-        root.Remove("env");
-        root.Remove("modelProviders");
-        if (root["security"] is JsonObject security)
-        {
-            security.Remove("auth");
-        }
-    }
-
     private static bool TryGetString(JsonElement root, IReadOnlyList<string> path, out string value)
     {
         value = string.Empty;
         if (!TryNavigate(root, path, out var element) || element.ValueKind != JsonValueKind.String)
-        {
             return false;
-        }
 
         value = element.GetString() ?? string.Empty;
         return !string.IsNullOrWhiteSpace(value);
@@ -672,9 +499,7 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
         foreach (var segment in path)
         {
             if (current is not JsonObject currentObject || currentObject[segment] is not JsonNode next)
-            {
                 return string.Empty;
-            }
 
             current = next;
         }
@@ -688,9 +513,7 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
         foreach (var segment in path)
         {
             if (current is not JsonObject currentObject || currentObject[segment] is not JsonNode next)
-            {
                 return null;
-            }
 
             current = next;
         }
@@ -724,12 +547,5 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
         IReadOnlyList<string> OverrideExtensions,
         IReadOnlyList<string> AllowedMcpServers,
         IReadOnlyList<string> ExcludedMcpServers,
-        double? ChatCompressionThreshold,
-        bool TelemetryEnabled,
-        string TelemetryTarget,
-        string TelemetryOtlpEndpoint,
-        string TelemetryOtlpProtocol,
-        bool TelemetryLogPrompts,
-        string TelemetryOutfile,
-        bool TelemetryUseCollector);
+        double? ChatCompressionThreshold);
 }

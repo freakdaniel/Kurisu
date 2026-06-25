@@ -19,7 +19,7 @@ public sealed class TokenLimitServiceTests
         var limits = service.Resolve("qwen3-coder-plus", new NativeAssistantRuntimeOptions());
 
         Assert.Equal(1_000_000, limits.InputTokenLimit);
-        Assert.Equal(32_000, limits.OutputTokenLimit);
+        Assert.Equal(32_768, limits.OutputTokenLimit);
     }
 
     [Fact]

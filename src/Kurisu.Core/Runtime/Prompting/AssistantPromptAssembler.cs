@@ -23,7 +23,7 @@ public sealed class AssistantPromptAssembler : IAssistantPromptAssembler
     private const int MaxImportDepth = 6;
     private const int MaxSessionMemoryCharacters = 4000;
     private const string ChatCompressionStatus = "chat-compression";
-    private static readonly string[] DefaultContextFileNames = ["QWEN.md", "AGENTS.md"];
+    private static readonly string[] DefaultContextFileNames = ["KURISU.md", "AGENTS.md"];
     private readonly IProjectSummaryService _projectSummaryService;
     private readonly ISessionService? _sessionService;
     private readonly IMcpConnectionManager? _mcpConnectionManager;

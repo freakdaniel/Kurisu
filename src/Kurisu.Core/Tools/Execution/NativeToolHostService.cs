@@ -6,7 +6,6 @@ using Kurisu.Core.Mcp;
 using Kurisu.Core.Models;
 using Kurisu.Core.Permissions;
 using Kurisu.Core.Runtime;
-using Kurisu.Core.Telemetry;
 
 namespace Kurisu.Core.Tools;
 
@@ -25,7 +24,6 @@ namespace Kurisu.Core.Tools;
 /// <param name="agentArenaService">The agent arena service</param>
 /// <param name="hookLifecycleService">The hook lifecycle service</param>
 /// <param name="shellExecutionService">The shell execution service</param>
-/// <param name="telemetryService">The telemetry service</param>
 /// <param name="approvalSessionRuleStore">The approval session rule store</param>
 public sealed class NativeToolHostService(
     KurisuRuntimeProfileService runtimeProfileService,
@@ -40,7 +38,6 @@ public sealed class NativeToolHostService(
     IAgentArenaService? agentArenaService = null,
     IHookLifecycleService? hookLifecycleService = null,
     IShellExecutionService? shellExecutionService = null,
-    ITelemetryService? telemetryService = null,
     IApprovalSessionRuleStore? approvalSessionRuleStore = null) : IToolExecutor
 {
     private static readonly string[] IgnoredDirectories = [".git", "node_modules", "bin", "obj", "dist"];
@@ -167,7 +164,6 @@ public sealed class NativeToolHostService(
             {
                 var questionResult = ExecuteAskUserQuestion(runtimeProfile, approvalContext.WorkingDirectory ?? runtimeProfile.ProjectRoot, document.RootElement, approval.State);
                 var askedResult = await ApplyPostToolHooksAsync(runtimeProfile, request, document.RootElement, questionResult, cancellationToken);
-                await TrackTelemetryAsync(runtimeProfile, request, askedResult, 0, approval.State, cancellationToken);
                 return askedResult;
             }
 
@@ -185,7 +181,6 @@ public sealed class NativeToolHostService(
                     ChangedFiles = []
                 };
                 var gatedResult = await ApplyPermissionRequestHooksAsync(runtimeProfile, request, document.RootElement, approvalRequiredResult, cancellationToken);
-                await TrackTelemetryAsync(runtimeProfile, request, gatedResult, 0, approval.State, cancellationToken);
                 return gatedResult;
             }
 
@@ -206,86 +201,9 @@ public sealed class NativeToolHostService(
                     preToolHook.BlockReason);
             }
 
-            var stopwatch = Stopwatch.StartNew();
             var result = await ExecuteToolCoreAsync(paths, request, runtimeProfile, document.RootElement, approval.State, eventSink, cancellationToken);
             var finalResult = await ApplyPostToolHooksAsync(runtimeProfile, request, document.RootElement, result, cancellationToken);
-            await TrackTelemetryAsync(runtimeProfile, request, finalResult, stopwatch.ElapsedMilliseconds, approval.State, cancellationToken);
             return finalResult;
-        }
-    }
-
-    private async Task TrackTelemetryAsync(
-        KurisuRuntimeProfile runtimeProfile,
-        ExecuteNativeToolRequest request,
-        NativeToolExecutionResult result,
-        long durationMs,
-        string approvalState,
-        CancellationToken cancellationToken)
-    {
-        if (telemetryService is null)
-        {
-            return;
-        }
-
-        await telemetryService.TrackToolCallAsync(
-            runtimeProfile,
-            ExtractSessionId(request.ArgumentsJson),
-            new AssistantToolCall
-            {
-                Id = $"{request.ToolName}-{Guid.NewGuid():N}",
-                ToolName = request.ToolName,
-                ArgumentsJson = string.IsNullOrWhiteSpace(request.ArgumentsJson) ? "{}" : request.ArgumentsJson
-            },
-            result,
-            durationMs,
-            ResolveToolType(request.ToolName),
-            ResolveDecision(request, result, approvalState),
-            ResolveMcpServerName(request.ArgumentsJson),
-            cancellationToken);
-    }
-
-    private static string ExtractSessionId(string argumentsJson)
-    {
-        try
-        {
-            using var document = JsonDocument.Parse(string.IsNullOrWhiteSpace(argumentsJson) ? "{}" : argumentsJson);
-            return TryGetOptionalString(document.RootElement, "session_id") ??
-                   TryGetOptionalString(document.RootElement, "sessionId") ??
-                   string.Empty;
-        }
-        catch
-        {
-            return string.Empty;
-        }
-    }
-
-    private static string ResolveToolType(string toolName) =>
-        toolName.StartsWith("mcp-", StringComparison.OrdinalIgnoreCase) ? "mcp" : "native";
-
-    private static string? ResolveDecision(
-        ExecuteNativeToolRequest request,
-        NativeToolExecutionResult result,
-        string approvalState) =>
-        result.Status switch
-        {
-            "approval-required" => null,
-            "blocked" => "reject",
-            _ when request.ApproveExecution => "accept",
-            _ when string.Equals(approvalState, "allow", StringComparison.OrdinalIgnoreCase) => "auto_accept",
-            _ => null
-        };
-
-    private static string? ResolveMcpServerName(string argumentsJson)
-    {
-        try
-        {
-            using var document = JsonDocument.Parse(string.IsNullOrWhiteSpace(argumentsJson) ? "{}" : argumentsJson);
-            return TryGetOptionalString(document.RootElement, "server") ??
-                   TryGetOptionalString(document.RootElement, "serverName");
-        }
-        catch
-        {
-            return null;
         }
     }
 
