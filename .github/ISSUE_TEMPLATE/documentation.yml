@@ -1,7 +1,7 @@
 name: 📚 Documentation
 description: Suggest improvements or report issues in documentation
 title: "Docs | "
-labels: ["documentation"]
+labels: ["documentation", "status:ready"]
 
 body:
   - type: markdown
@@ -9,6 +9,27 @@ body:
       value: |
         ## 📚 Documentation Request
         Thanks for suggesting an improvement to our documentation!
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected documentation
+      description: Which doc is affected?
+      options:
+        - README
+        - Provider setup guide
+        - Architecture overview
+        - IPC contract reference
+        - Hook authoring guide
+        - Extension authoring guide
+        - Permissions reference
+        - CHANGELOG
+        - Migration guide
+        - FAQ
+        - Code comments / XML doc
+        - Other
+    validations:
+      required: true
 
   - type: dropdown
     id: type
@@ -20,7 +41,20 @@ body:
         - Incorrect information
         - Unclear explanation
         - Outdated content
+        - Needs translation
         - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How urgent is this?
+      options:
+        - high (missmatches with current project state)
+        - medium (should ship)
+        - low (nice to have)
     validations:
       required: true
 

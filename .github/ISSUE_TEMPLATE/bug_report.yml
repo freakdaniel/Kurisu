@@ -1,7 +1,7 @@
 name: 🐛 Bug report
 description: Report a bug to help improve Kurisu
 title: "Bug | "
-labels: ["bug"]
+labels: ["bug", "status:ready"]
 
 body:
   - type: markdown
@@ -21,21 +21,23 @@ body:
         - MCP Protocol
         - Agent System
         - Configuration
-        - Build/CI
+        - Core / Infrastructure
+        - Build / CI
+        - Tests
+        - Documentation
         - Other
     validations:
       required: true
 
   - type: dropdown
-    id: severity
+    id: priority
     attributes:
-      label: Severity
-      description: How severe is this issue?
+      label: Priority
+      description: How urgent is this fix?
       options:
-        - Critical (crash, data loss)
-        - High (major feature broken)
-        - Medium
-        - Low
+        - high (data loss, crash, security)
+        - medium (major feature broken, workaround exists)
+        - low (minor, cosmetic, edge case)
     validations:
       required: true
 
@@ -87,22 +89,30 @@ body:
     id: dotnet
     attributes:
       label: .NET Version
-      placeholder: e.g. .NET 9.0
+      placeholder: e.g. .NET 10.0
 
   - type: input
     id: os
     attributes:
       label: Operating System
-      placeholder: e.g. Windows 11, Linux, macOS
+      placeholder: e.g. Windows 11, Ubuntu 24.04, macOS 15
+
+  - type: input
+    id: provider
+    attributes:
+      label: Provider (if AI-related)
+      placeholder: e.g. openai, anthropic, deepseek
 
   - type: checkboxes
     id: checklist
     attributes:
-      label: Checklist
+      label: Pre-report Checklist
       options:
         - label: I searched existing issues
           required: true
         - label: I can reproduce this consistently
           required: true
         - label: I included logs and/or a reproduction
+          required: true
+        - label: This is not a question (use Discussions instead)
           required: true

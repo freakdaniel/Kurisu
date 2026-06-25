@@ -7,8 +7,21 @@
 - [ ] Documentation update
 - [ ] Test addition or update
 - [ ] Performance improvement
-- [ ] Build/CI change
+- [ ] Build / CI change
 - [ ] Other (please describe):
+
+## Related Issue / Tracker
+
+<!--
+Pick one:
+- Closes #N — this PR closes a single bug/feature/task
+- Part of #N — this PR is one sub-task of a tracker
+- No related issue
+-->
+
+- [ ] Closes #
+- [ ] Part of tracker #
+- [ ] No related issue
 
 ## Affected Components / Scope
 
@@ -17,19 +30,15 @@
 - [ ] MCP Protocol
 - [ ] Agent System
 - [ ] Configuration
-- [ ] Infrastructure / Core
-- [ ] Documentation
+- [ ] Core / Infrastructure
+- [ ] Build / CI
 - [ ] Tests
+- [ ] Documentation
 - [ ] Other:
 
 ## Changes Introduced
 
 <!-- Describe what this PR does. Be specific about the changes made. -->
-
-## Related Issues
-
-<!-- Link related issues using #issue_number format -->
-<!-- Example: Closes #123, Related to #456 -->
 
 ## Testing Notes
 
@@ -38,14 +47,14 @@
 
 ## Breaking Changes
 
-<!-- If this PR introduces breaking changes, describe them here -->
-<!-- Include migration steps if necessary -->
-<!-- If none, write "None" -->
+<!-- If this PR introduces breaking changes, describe them here. -->
+<!-- Include migration steps if necessary. -->
+<!-- If none, write "None". -->
 
 ## Screenshots / Demos
 
-<!-- If applicable, add screenshots, GIFs, or videos showing the changes -->
-<!-- Remove this section if not relevant -->
+<!-- If applicable, add screenshots, GIFs, or videos showing the changes. -->
+<!-- Remove this section if not relevant. -->
 
 ## Checklist
 

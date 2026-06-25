@@ -1,14 +1,16 @@
 name: 🚀 Feature request
 description: Suggest an idea or improvement for Kurisu
 title: "Feature | "
-labels: ["enhancement"]
+labels: ["enhancement", "status:ready"]
 
 body:
   - type: markdown
     attributes:
       value: |
         ## 🚀 Feature Request
-        Thanks for suggesting an idea! Please provide as much detail as possible
+        Thanks for suggesting an idea! Please provide as much detail as possible.
+
+        For high-level efforts (release readiness, area roadmaps, external dependencies) use the **📋 Tracker** template instead.
 
   - type: dropdown
     id: component
@@ -21,20 +23,36 @@ body:
         - MCP Protocol
         - Agent System
         - Configuration
+        - Core / Infrastructure
+        - Build / CI
+        - Tests
+        - Documentation
         - Other
     validations:
       required: true
 
   - type: dropdown
-    id: impact
+    id: priority
     attributes:
-      label: Impact
-      description: How significant is this feature?
+      label: Priority
+      description: How important is this for the project?
       options:
-        - Critical
-        - High
-        - Medium
-        - Low
+        - high (Kurisu MUST have this feature)
+        - medium (should ship in next releases)
+        - low (nice to have)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: audience
+    attributes:
+      label: Audience
+      description: Who is this for?
+      options:
+        - developers
+        - power users
+        - end users (non-technical)
+        - all
     validations:
       required: true
 
@@ -74,9 +92,11 @@ body:
   - type: checkboxes
     id: checklist
     attributes:
-      label: Checklist
+      label: Pre-submit Checklist
       options:
-        - label: I searched existing issues, features/pull requests
+        - label: I searched existing issues and pull requests
           required: true
-        - label: This is not a support question
+        - label: This is not a support question (use Discussions)
+          required: true
+        - label: This is not a tracker-level effort (use 📋 Tracker instead)
           required: true

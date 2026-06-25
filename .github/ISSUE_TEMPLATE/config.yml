@@ -4,3 +4,6 @@ contact_links:
   - name: 💬 GitHub Discussions
     url: https://github.com/freakdaniel/Kurisu/discussions
     about: Ask questions, share ideas, or start discussions
+  - name: 📋 Active Trackers
+    url: https://github.com/freakdaniel/Kurisu/issues?q=is%3Aissue%20state%3Aopen%20label%3Atracker
+    about: High-level release and area trackers

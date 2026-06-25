@@ -1,0 +1,116 @@
+name: 📋 Tracker
+description: Track a high-level effort (release readiness, area roadmap, external dependency)
+title: "Tracker | "
+labels: ["tracker", "status:ready"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 📋 Tracker Issue
+        This template tracks a coordinated effort across many sub-issues. Each tracker has its own label and a progress counter.
+
+        **When to use this template**
+        - Release readiness milestones
+        - Area roadmaps (Frontend, MCP, Documentation, ...)
+        - External dependency tracking (e.g., porting features from another project)
+        - Large coordinated refactors
+
+        **When NOT to use it**
+        - A single bug (or set of related bugs) or feature: use 🐛 Bug or 🚀 Feature instead
+        - A single PR-sized implementation task: use ✅ Task instead
+
+        **Table Legend**
+
+        | Emoji | Status |
+        |---|---|
+        | ✅ | Implemented and merged |
+        | 🚧 | Under construction (open PR or in-progress branch) |
+        | 📝 | Assigned, not started |
+        | ❓ | Under discussion / unclear if should be done |
+        | ❌ | Rejected for this tracker |
+        | 🚫 | Out of scope for this tracker |
+
+  - type: input
+    id: topic
+    attributes:
+      label: Topic
+      description: Short identifier (used to derive the custom label, e.g. "New hermes-agent flow system" means label "Tracker | New hermes-agent flow system")
+      placeholder: e.g. "CI/CD", "Frontend", "MCP"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How urgent is this tracker?
+      options:
+        - high (current release)
+        - medium (next release)
+        - low (long-term roadmap)
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: One paragraph explaining what this tracker covers and what it means for the project
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ## Sections (Markdown)
+
+        Use the following format for each section. Replace `Status` with one of the emojis from the legend above.
+
+        ```markdown
+        ## <Section Name>
+
+        | Status | Item | Notes |
+        |---|---|---|
+        | ✅ | <item> | <context or link> |
+        | 📝 | <item> | <context or link> |
+        ```
+
+        Group items by responsibility area (Architecture, Frontend, Channels, ...), not by person or week.
+
+  - type: textarea
+    id: sections
+    attributes:
+      label: Item list (Markdown tables)
+      description: Paste the markdown tables with status emojis
+      render: markdown
+    validations:
+      required: true
+
+  - type: input
+    id: related
+    attributes:
+      label: Related issues
+      description: Comma-separated issue numbers this tracker depends on or supersedes
+      placeholder: "#1, #2, #3"
+
+  - type: textarea
+    id: decisions
+    attributes:
+      label: Key decisions
+      description: Architecture or scope decisions made for this tracker (and why)
+      placeholder: |
+        - Use ProviderSettingsStore instead of legacy modelProviders field. Multi-provider is the new contract.
+        - Drop custom tooling (out of release scope)
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Tracker hygiene
+      options:
+        - label: I've created the specific label
+          required: true
+        - label: I've assigned this tracker to myself
+          required: true
+        - label: I've linked all related sub-issues
+          required: true
