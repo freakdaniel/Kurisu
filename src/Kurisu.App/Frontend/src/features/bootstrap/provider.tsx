@@ -13,7 +13,7 @@ import { fallbackBootstrap } from './fallback';
 import { bootstrapReducer, preloadRecentSessions, type BootstrapState } from './reducer';
 import type {
   AppBootstrapPayload,
-  AuthStatusSnapshot,
+  ProviderListSnapshot,
   DesktopSessionDetail,
   McpSnapshot,
   DesktopSessionEvent,
@@ -24,10 +24,10 @@ export type { BootstrapState } from './reducer';
 export interface BootstrapStateApi extends BootstrapState {
   setBootstrap: React.Dispatch<React.SetStateAction<AppBootstrapPayload>>;
   setSessionCache: React.Dispatch<React.SetStateAction<Record<string, DesktopSessionDetail>>>;
-  setAuthSnapshot: React.Dispatch<React.SetStateAction<AuthStatusSnapshot>>;
+  setProviders: React.Dispatch<React.SetStateAction<ProviderListSnapshot>>;
   setMcpSnapshot: React.Dispatch<React.SetStateAction<McpSnapshot>>;
   setLatestSessionEvent: React.Dispatch<React.SetStateAction<DesktopSessionEvent | null>>;
-  updateAuthSnapshot: (snapshot: AuthStatusSnapshot) => void;
+  updateProviders: (snapshot: ProviderListSnapshot) => void;
   loadSessionDetail: (
     sessionId: string,
     options?: { force?: boolean; limit?: number },
@@ -39,7 +39,7 @@ const BootstrapContext = createContext<BootstrapStateApi | null>(null);
 function initialState(): BootstrapState {
   return {
     bootstrap: fallbackBootstrap,
-    authSnapshot: fallbackBootstrap.kurisuAuth,
+    providers: fallbackBootstrap.kurisuProviders,
     mcpSnapshot: fallbackBootstrap.kurisuMcp,
     activeTurnSessions: {},
     liveSessionEvents: {},
@@ -119,12 +119,12 @@ export function BootstrapProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const setAuthSnapshot = useCallback<React.Dispatch<React.SetStateAction<AuthStatusSnapshot>>>(
+  const setProviders = useCallback<React.Dispatch<React.SetStateAction<ProviderListSnapshot>>>(
     (updater) => {
-      const next = typeof updater === 'function' ? updater(state.authSnapshot) : updater;
-      dispatch({ type: 'updateAuth', snapshot: next });
+      const next = typeof updater === 'function' ? updater(state.providers) : updater;
+      dispatch({ type: 'updateProviders', snapshot: next });
     },
-    [state.authSnapshot],
+    [state.providers],
   );
 
   const setMcpSnapshot = useCallback<React.Dispatch<React.SetStateAction<McpSnapshot>>>(
@@ -144,8 +144,8 @@ export function BootstrapProvider({ children }: { children: ReactNode }) {
     }
   }, [state.latestSessionEvent]);
 
-  const updateAuthSnapshot = useCallback((snapshot: AuthStatusSnapshot) => {
-    dispatch({ type: 'updateAuth', snapshot });
+  const updateProviders = useCallback((snapshot: ProviderListSnapshot) => {
+    dispatch({ type: 'updateProviders', snapshot });
   }, []);
 
   const loadSessionDetail = useCallback(
@@ -178,7 +178,7 @@ export function BootstrapProvider({ children }: { children: ReactNode }) {
       const payload = await window.kurisuDesktop.bootstrap();
       const normalized: AppBootstrapPayload = {
         ...payload,
-        kurisuAuth: payload.kurisuAuth,
+        kurisuProviders: payload.kurisuProviders,
         kurisuModels:
           'kurisuModels' in payload && payload.kurisuModels
             ? payload.kurisuModels
@@ -199,7 +199,7 @@ export function BootstrapProvider({ children }: { children: ReactNode }) {
 
       disposers.push(
         window.kurisuDesktop.subscribeAuthChanged((snapshot) => {
-          dispatch({ type: 'updateAuth', snapshot });
+          dispatch({ type: 'updateProviders', snapshot });
         }),
       );
 
@@ -270,10 +270,10 @@ export function BootstrapProvider({ children }: { children: ReactNode }) {
     ...state,
     setBootstrap,
     setSessionCache,
-    setAuthSnapshot,
+    setProviders,
     setMcpSnapshot,
     setLatestSessionEvent,
-    updateAuthSnapshot,
+    updateProviders,
     loadSessionDetail,
   };
 

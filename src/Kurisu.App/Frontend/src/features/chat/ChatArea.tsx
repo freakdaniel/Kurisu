@@ -60,7 +60,6 @@ export default function ChatArea({
     return (
       models.find((model) => model.isDefaultModel) ??
       models.find((model) => model.id === bootstrap?.kurisuRuntime?.modelName) ??
-      models.find((model) => model.id === bootstrap?.kurisuAuth?.model) ??
       null
     );
   }, [bootstrap]);

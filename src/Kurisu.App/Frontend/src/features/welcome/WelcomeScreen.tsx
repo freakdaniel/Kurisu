@@ -18,7 +18,6 @@ import { useTranslation } from 'react-i18next';
 import kurisuLogo from '@/assets/logo.png';
 import { useBootstrap } from '@/features/bootstrap';
 import {
-  envVarFor,
   TOTAL_WELCOME_STEPS,
   type WelcomeState,
 } from './welcomeState';
@@ -88,7 +87,6 @@ export default function WelcomeScreen() {
     [presets, state.presetId]
   );
   const isCustom = state.presetId === 'custom';
-  const envKey = envVarFor(preset);
 
   useEffect(() => {
     if (!preset) return;
@@ -199,14 +197,10 @@ export default function WelcomeScreen() {
     if (state.isSubmitting || !window.kurisuDesktop) return;
     setState((s) => ({ ...s, isSubmitting: true }));
     try {
-      await window.kurisuDesktop.configureOpenAiCompatibleAuth({
-        scope: '',
-        authType: preset?.id ?? 'openai',
-        presetId: state.presetId,
-        model: state.model.trim(),
-        baseUrl: state.baseUrl.trim(),
+      await window.kurisuDesktop.configureProvider({
+        providerId: preset?.id ?? 'openai',
         apiKey: state.apiKey.trim(),
-        apiKeyEnvironmentVariable: envKey.trim(),
+        baseUrl: state.baseUrl.trim() || null,
       });
       const payload = await window.kurisuDesktop.bootstrap();
       setBootstrap(payload);
@@ -221,13 +215,11 @@ export default function WelcomeScreen() {
       setState((s) => ({ ...s, isSubmitting: false }));
     }
   }, [
-    envKey,
     preset,
     setBootstrap,
     state.apiKey,
     state.baseUrl,
     state.isSubmitting,
-    state.model,
     state.presetId,
     t,
     toast,

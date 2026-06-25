@@ -13,7 +13,7 @@ const WOBBLE_DELAY_MS = 480;
 
 function App() {
   const { t } = useTranslation();
-  const { authSnapshot, isReady } = useBootstrap();
+  const { providers, isReady } = useBootstrap();
   const [showSplash, setShowSplash] = useState(true);
   const [wobbleDone, setWobbleDone] = useState(false);
   const splashVisibleAtRef = useRef<number | null>(null);
@@ -51,8 +51,8 @@ function App() {
   }, [wobbleDone]);
 
   const appContent = useMemo(
-    () => (authSnapshot.status !== 'connected' ? <WelcomeScreen /> : <MainLayout />),
-    [authSnapshot.status],
+    () => (!providers.activeProviderId ? <WelcomeScreen /> : <MainLayout />),
+    [providers.activeProviderId],
   );
 
   return (

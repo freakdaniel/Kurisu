@@ -70,7 +70,7 @@ export interface AppBootstrapPayload {
   kurisuModels: RuntimeModelSnapshot;
   kurisuTools: ToolCatalogSnapshot;
   kurisuNativeHost: NativeToolHostSnapshot;
-  kurisuAuth: AuthStatusSnapshot;
+  kurisuProviders: ProviderListSnapshot;
   kurisuMcp: McpSnapshot;
   kurisuExtensions: ExtensionSnapshot;
   kurisuChannels: ChannelSnapshot;
@@ -153,19 +153,6 @@ export interface AssistantExecutionStats {
   successfulToolCallCount: number;
   failedToolCallCount: number;
   durationMs: number;
-}
-
-export interface AuthStatusSnapshot {
-  selectedType: string;
-  selectedScope: string;
-  displayName: string;
-  status: string;
-  model: string;
-  endpoint: string;
-  apiKeyEnvironmentVariable: string;
-  hasApiKey: boolean;
-  lastError: string;
-  lastAuthenticatedAtUtc: string | null;
 }
 
 export interface AvailableModel {
@@ -262,21 +249,10 @@ export interface CloseDirectConnectSessionRequest {
   directConnectSessionId: string;
 }
 
-export interface ConfigureCodingPlanAuthRequest {
-  scope: string;
-  region: string;
+export interface ConfigureProviderRequest {
+  providerId: string;
   apiKey: string;
-  model: string;
-}
-
-export interface ConfigureOpenAiCompatibleAuthRequest {
-  scope: string;
-  authType: string;
-  model: string;
-  baseUrl: string;
-  apiKey: string;
-  apiKeyEnvironmentVariable: string;
-  presetId: string;
+  baseUrl: string | null;
 }
 
 export interface CreateDirectConnectSessionRequest {
@@ -297,6 +273,10 @@ export interface CreateManagedWorktreeRequest {
   sessionId: string;
   name: string;
   baseBranch: string;
+}
+
+export interface DeconfigureProviderRequest {
+  providerId: string;
 }
 
 export type DesktopMode = 'code';
@@ -437,11 +417,6 @@ export interface DirectConnectSessionState {
   createdAtUtc: string;
   lastActivityAtUtc: string;
   latestEventSequence: number;
-}
-
-export interface DisconnectAuthRequest {
-  scope: string;
-  clearPersistedCredentials: boolean;
 }
 
 export interface DismissDirectConnectSessionTurnRequest {
@@ -698,10 +673,10 @@ export interface KurisuRuntimeProfile {
   contextFilePaths: string[];
   modelName: string;
   embeddingModel: string;
+  selectedAuthType: string;
   currentLocale: string;
   currentLanguage: string;
   chatCompression: RuntimeChatCompressionSettings | null;
-  telemetry: RuntimeTelemetrySettings | null;
   checkpointing: boolean;
   folderTrustEnabled: boolean;
   isWorkspaceTrusted: boolean;
@@ -893,6 +868,11 @@ export interface PromptRegistrySnapshot {
   prompts: PromptRegistryEntry[];
 }
 
+export interface ProviderListSnapshot {
+  activeProviderId: string;
+  providers: ProviderStatusSnapshot[];
+}
+
 export interface ProviderPresetSnapshot {
   id: string;
   name: string;
@@ -904,6 +884,16 @@ export interface ProviderPresetSnapshot {
   popularity: number;
   docsUrl: string | null;
   modelsSourceUrl: string | null;
+}
+
+export interface ProviderStatusSnapshot {
+  providerId: string;
+  displayName: string;
+  baseUrl: string;
+  apiKeyEnvironmentVariable: string;
+  hasApiKey: boolean;
+  status: string;
+  lastError: string;
 }
 
 export interface ReadDirectConnectSessionEventsRequest {
@@ -1011,16 +1001,6 @@ export interface RuntimeModelSnapshot {
   availableModels: AvailableModel[];
 }
 
-export interface RuntimeTelemetrySettings {
-  enabled: boolean;
-  target: string;
-  otlpEndpoint: string;
-  otlpProtocol: string;
-  logPrompts: boolean;
-  outfile: string;
-  useCollector: boolean;
-}
-
 export interface SelectProjectDirectoryResult {
   cancelled: boolean;
   selectedPath: string;
@@ -1111,12 +1091,8 @@ export interface KurisuDesktopBridge {
   cancelArenaSession(request: CancelArenaSessionRequest): Promise<CancelArenaSessionResult>;
   subscribeArenaEvents(callback: (payload: ArenaSessionEvent) => void): () => void;
   getActiveArenaSessions(): Promise<ActiveArenaSessionState[]>;
-  subscribeAuthChanged(callback: (payload: AuthStatusSnapshot) => void): () => void;
-  configureCodingPlanAuth(request: ConfigureCodingPlanAuthRequest): Promise<AuthStatusSnapshot>;
-  configureOpenAiCompatibleAuth(request: ConfigureOpenAiCompatibleAuthRequest): Promise<AuthStatusSnapshot>;
-  disconnectAuth(request: DisconnectAuthRequest): Promise<AuthStatusSnapshot>;
+  subscribeAuthChanged(callback: (payload: ProviderListSnapshot) => void): () => void;
   listProviderModels(request: ListProviderModelsRequest): Promise<ListProviderModelsResponse>;
-  getAuthStatus(): Promise<AuthStatusSnapshot>;
   approveChannelPairing(request: ApproveChannelPairingRequest): Promise<ChannelPairingSnapshot>;
   getChannelPairings(request: GetChannelPairingRequest): Promise<ChannelPairingSnapshot>;
   answerDirectConnectSessionQuestion(request: AnswerDirectConnectSessionQuestionRequest): Promise<DesktopSessionTurnResult>;
@@ -1147,6 +1123,9 @@ export interface KurisuDesktopBridge {
   removeMcpServer(request: RemoveMcpServerRequest): Promise<McpSnapshot>;
   getPromptRegistry(request: GetPromptRegistryRequest): Promise<PromptRegistrySnapshot>;
   invokeRegisteredPrompt(request: InvokePromptRegistryEntryRequest): Promise<McpPromptInvocationResult>;
+  configureProvider(request: ConfigureProviderRequest): Promise<ProviderListSnapshot>;
+  deconfigureProvider(request: DeconfigureProviderRequest): Promise<ProviderListSnapshot>;
+  listProviders(): Promise<ProviderListSnapshot>;
   answerPendingQuestion(request: AnswerDesktopSessionQuestionRequest): Promise<DesktopSessionTurnResult>;
   approvePendingTool(request: ApproveDesktopSessionToolRequest): Promise<DesktopSessionTurnResult>;
   cancelSessionTurn(request: CancelDesktopSessionTurnRequest): Promise<CancelDesktopSessionTurnResult>;
@@ -1175,11 +1154,7 @@ export const kurisuDesktopChannels = {
   subscribeArenaEvents: 'kurisu-desktop:arena:event',
   getActiveArenaSessions: 'kurisu-desktop:arena:get-active-sessions',
   subscribeAuthChanged: 'kurisu-desktop:auth:changed',
-  configureCodingPlanAuth: 'kurisu-desktop:auth:configure-coding-plan',
-  configureOpenAiCompatibleAuth: 'kurisu-desktop:auth:configure-openai-compatible',
-  disconnectAuth: 'kurisu-desktop:auth:disconnect',
   listProviderModels: 'kurisu-desktop:auth:list-provider-models',
-  getAuthStatus: 'kurisu-desktop:auth:status',
   approveChannelPairing: 'kurisu-desktop:channels:approve-pairing',
   getChannelPairings: 'kurisu-desktop:channels:get-pairings',
   answerDirectConnectSessionQuestion: 'kurisu-desktop:direct-connect:answer-question',
@@ -1210,6 +1185,9 @@ export const kurisuDesktopChannels = {
   removeMcpServer: 'kurisu-desktop:mcp:remove',
   getPromptRegistry: 'kurisu-desktop:prompts:get-registry',
   invokeRegisteredPrompt: 'kurisu-desktop:prompts:invoke',
+  configureProvider: 'kurisu-desktop:providers:configure',
+  deconfigureProvider: 'kurisu-desktop:providers:deconfigure',
+  listProviders: 'kurisu-desktop:providers:list',
   answerPendingQuestion: 'kurisu-desktop:sessions:answer-question',
   approvePendingTool: 'kurisu-desktop:sessions:approve-tool',
   cancelSessionTurn: 'kurisu-desktop:sessions:cancel-turn',

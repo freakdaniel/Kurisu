@@ -1,7 +1,7 @@
 import type {
   ActiveTurnState,
   AppBootstrapPayload,
-  AuthStatusSnapshot,
+  ProviderListSnapshot,
   DesktopSessionDetail,
   DesktopSessionEvent,
   McpSnapshot,
@@ -10,7 +10,7 @@ import type {
 
 export interface BootstrapState {
   bootstrap: AppBootstrapPayload;
-  authSnapshot: AuthStatusSnapshot;
+  providers: ProviderListSnapshot;
   mcpSnapshot: McpSnapshot;
   activeTurnSessions: Record<string, true>;
   liveSessionEvents: Record<string, DesktopSessionEvent[]>;
@@ -99,7 +99,7 @@ export type BootstrapAction =
   | { type: 'hydrate'; payload: AppBootstrapPayload }
   | { type: 'setReady'; ready: boolean }
   | { type: 'syncActiveTurns'; turns: ActiveTurnState[]; preferredSessionId?: string }
-  | { type: 'updateAuth'; snapshot: AuthStatusSnapshot }
+  | { type: 'updateProviders'; snapshot: ProviderListSnapshot }
   | { type: 'updateMcp'; snapshot: McpSnapshot }
   | { type: 'updateLocale'; locale: string }
   | { type: 'sessionTitleUpdated'; sessionId: string; title: string }
@@ -116,7 +116,7 @@ export function bootstrapReducer(
       return {
         ...state,
         bootstrap: payload,
-        authSnapshot: payload.kurisuAuth,
+        providers: payload.kurisuProviders,
         mcpSnapshot: payload.kurisuMcp,
         isReady: true,
       };
@@ -165,11 +165,11 @@ export function bootstrapReducer(
         latestSessionEvent,
       };
     }
-    case 'updateAuth': {
+    case 'updateProviders': {
       return {
         ...state,
-        authSnapshot: action.snapshot,
-        bootstrap: { ...state.bootstrap, kurisuAuth: action.snapshot },
+        providers: action.snapshot,
+        bootstrap: { ...state.bootstrap, kurisuProviders: action.snapshot },
       };
     }
     case 'updateMcp': {
