@@ -7,6 +7,7 @@ global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Options;
 global using Kurisu.Core.Agents;
 global using Kurisu.Core.Compatibility;
+global using Kurisu.Core.Config;
 global using Kurisu.App.Desktop;
 global using Kurisu.Core.Extensions;
 global using Kurisu.Core.Hooks;

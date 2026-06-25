@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Kurisu.Core.Agents;
 using Kurisu.Core.Channels;
 using Kurisu.Core.Compatibility;
+using Kurisu.Core.Config;
 using Kurisu.Core.Infrastructure;
 using Kurisu.Core.Models;
 using Kurisu.Core.Runtime;

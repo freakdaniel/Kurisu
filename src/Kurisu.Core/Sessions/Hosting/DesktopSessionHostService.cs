@@ -1,5 +1,5 @@
 using Kurisu.Core.Models;
-using Kurisu.Core.Compatibility;
+using Kurisu.Core.Config;
 using Kurisu.Core.Infrastructure;
 using Kurisu.Core.Followup;
 using Kurisu.Core.Hooks;

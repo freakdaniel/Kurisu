@@ -1,4 +1,4 @@
-using Kurisu.Core.Models;
+using Kurisu.Core.Config;
 using Kurisu.Core.Infrastructure;
 
 namespace Kurisu.Core.Compatibility;

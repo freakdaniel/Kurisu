@@ -1,9 +1,8 @@
-using Kurisu.Core.Config;
-using Kurisu.Core.Models;
 using Kurisu.Core.Infrastructure;
 using Kurisu.Core.Runtime.Providers;
+using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Kurisu.Core.Compatibility;
+namespace Kurisu.Core.Config;
 
 /// <summary>
 /// Represents the Kurisu Runtime Profile Service
@@ -19,7 +18,7 @@ public sealed class KurisuRuntimeProfileService(
     private static readonly StringComparer PathComparer =
         OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
     private readonly IConfigService config = configService ?? new RuntimeConfigService(environmentPaths);
-    private readonly RuntimeSelectionStore selection = selectionStore ?? new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance);
+    private readonly RuntimeSelectionStore selection = selectionStore ?? new RuntimeSelectionStore(environmentPaths, NullLogger<RuntimeSelectionStore>.Instance);
 
     /// <summary>
     /// Executes inspect
@@ -76,7 +75,7 @@ public sealed class KurisuRuntimeProfileService(
         };
     }
 
-    private static MergedQwenSettings BuildMergedSettings(
+    private static MergedLayeredSettings BuildMergedSettings(
         IReadOnlyList<SettingsLayer> settingsLayers)
     {
         string? runtimeOutputDirectory = null;
@@ -105,49 +104,31 @@ public sealed class KurisuRuntimeProfileService(
                 }
 
                 if (TryGetString(root, ["permissions", "defaultMode"], out var permissionDefaultMode))
-                {
                     defaultApprovalMode = permissionDefaultMode;
-                }
 
                 if (TryGetBoolean(root, ["permissions", "confirmShellCommands"], out var shellConfirmValue))
-                {
                     confirmShellCommands = shellConfirmValue;
-                }
 
                 if (TryGetBoolean(root, ["permissions", "confirmFileEdits"], out var editConfirmValue))
-                {
                     confirmFileEdits = editConfirmValue;
-                }
 
                 if (TryGetStringArray(root, ["permissions", "allow"], out var currentAllowRules))
-                {
                     allowRules = currentAllowRules;
-                }
 
                 if (TryGetStringArray(root, ["permissions", "ask"], out var currentAskRules))
-                {
                     askRules = currentAskRules;
-                }
 
                 if (TryGetStringArray(root, ["permissions", "deny"], out var currentDenyRules))
-                {
                     denyRules = currentDenyRules;
-                }
 
                 if (TryGetBoolean(root, ["security", "folderTrust", "enabled"], out var currentFolderTrustEnabled))
-                {
                     folderTrustEnabled = currentFolderTrustEnabled;
-                }
 
                 if (TryGetStringArray(root, ["context", "fileName"], out var currentContextFiles))
-                {
                     contextFileNames = currentContextFiles;
-                }
                 else if (TryGetString(root, ["context", "fileName"], out var singleContextFile) &&
                          !string.IsNullOrWhiteSpace(singleContextFile))
-                {
                     contextFileNames = [singleContextFile];
-                }
             }
             catch
             {
@@ -155,7 +136,7 @@ public sealed class KurisuRuntimeProfileService(
             }
         }
 
-        return new MergedQwenSettings(
+        return new MergedLayeredSettings(
             RuntimeOutputDirectory: runtimeOutputDirectory,
             RuntimeSource: runtimeSource,
             DefaultApprovalMode: string.IsNullOrWhiteSpace(defaultApprovalMode) ? "default" : defaultApprovalMode,
@@ -192,9 +173,7 @@ public sealed class KurisuRuntimeProfileService(
         value = default;
         if (!TryNavigate(root, path, out var element) ||
             (element.ValueKind != JsonValueKind.True && element.ValueKind != JsonValueKind.False))
-        {
             return false;
-        }
 
         value = element.GetBoolean();
         return true;
@@ -204,9 +183,7 @@ public sealed class KurisuRuntimeProfileService(
     {
         values = [];
         if (!TryNavigate(root, path, out var element) || element.ValueKind != JsonValueKind.Array)
-        {
             return false;
-        }
 
         values = element.EnumerateArray()
             .Where(static item => item.ValueKind == JsonValueKind.String)
@@ -221,12 +198,8 @@ public sealed class KurisuRuntimeProfileService(
     {
         result = element;
         foreach (var segment in path)
-        {
             if (result.ValueKind != JsonValueKind.Object || !result.TryGetProperty(segment, out result))
-            {
                 return false;
-            }
-        }
 
         return true;
     }
@@ -300,7 +273,7 @@ public sealed class KurisuRuntimeProfileService(
     private static string ComputeProjectHash(string path)
     {
         var normalizedPath = OperatingSystem.IsWindows() ? path.ToLowerInvariant() : path;
-        var bytes = SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(normalizedPath));
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(normalizedPath));
         return Convert.ToHexString(bytes).ToLowerInvariant();
     }
 
@@ -416,7 +389,7 @@ public sealed class KurisuRuntimeProfileService(
             ? StringComparison.OrdinalIgnoreCase
             : StringComparison.Ordinal;
 
-    private sealed record MergedQwenSettings(
+    private sealed record MergedLayeredSettings(
         string? RuntimeOutputDirectory,
         string RuntimeSource,
         string DefaultApprovalMode,

@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
-using Kurisu.Core.Compatibility;
+using Kurisu.Core.Config;
 using Kurisu.Core.Models;
 using Kurisu.Core.Runtime;
 using Kurisu.Core.Sessions;

@@ -1,5 +1,5 @@
 using Kurisu.Core.Models;
-using Kurisu.Core.Compatibility;
+using Kurisu.Core.Config;
 using Kurisu.Core.Runtime;
 
 namespace Kurisu.Core.Sessions;

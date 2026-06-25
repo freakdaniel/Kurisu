@@ -1,6 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Kurisu.Core.Compatibility;
+
 using Kurisu.Core.Infrastructure;
 using Kurisu.Core.Runtime;
 using Kurisu.Core.Runtime.Providers;

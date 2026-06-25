@@ -1,5 +1,3 @@
-using Kurisu.Core.Models;
-
 namespace Kurisu.Core.Compatibility;
 
 /// <summary>

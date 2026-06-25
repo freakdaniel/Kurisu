@@ -1,5 +1,5 @@
 using Kurisu.Core.Agents;
-using Kurisu.Core.Compatibility;
+using Kurisu.Core.Config;
 using Kurisu.Core.Models;
 using Kurisu.Core.Sessions;
 

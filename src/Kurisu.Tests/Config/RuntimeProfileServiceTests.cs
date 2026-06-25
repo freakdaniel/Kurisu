@@ -1,4 +1,4 @@
-namespace Kurisu.Tests.Compatibility;
+namespace Kurisu.Tests.Config;
 
 public sealed class RuntimeProfileServiceTests
 {

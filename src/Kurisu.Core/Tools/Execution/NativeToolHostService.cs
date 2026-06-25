@@ -1,5 +1,6 @@
 using Kurisu.Core.Agents;
 using Kurisu.Core.Compatibility;
+using Kurisu.Core.Config;
 using Kurisu.Core.Hooks;
 using Kurisu.Core.Infrastructure;
 using Kurisu.Core.Mcp;

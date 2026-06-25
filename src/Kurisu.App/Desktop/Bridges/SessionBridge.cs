@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
-using Kurisu.Core.Compatibility;
+using Kurisu.Core.Config;
 using Kurisu.Core.Infrastructure;
 using Kurisu.Core.Models;
 using Kurisu.Core.Sessions;

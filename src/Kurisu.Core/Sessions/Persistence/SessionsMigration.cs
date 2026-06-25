@@ -1,4 +1,4 @@
-using Kurisu.Core.Compatibility;
+using Kurisu.Core.Config;
 using Kurisu.Core.Infrastructure;
 using Kurisu.Core.Sessions.Memory;
 using Microsoft.Extensions.Hosting;
