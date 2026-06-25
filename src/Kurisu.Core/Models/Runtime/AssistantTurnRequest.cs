@@ -88,9 +88,11 @@ public sealed class AssistantTurnRequest
     public string ModelOverride { get; init; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the auth type override
+    /// Gets or sets the provider id override. When set, the request bypasses
+    /// the runtime selection and uses this provider directly (e.g. "anthropic",
+    /// "openai", "deepseek"). Empty means "use the runtime selection".
     /// </summary>
-    public string AuthTypeOverride { get; init; } = string.Empty;
+    public string ProviderIdOverride { get; init; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the endpoint override

@@ -145,6 +145,7 @@ public sealed class RuntimeSelectionStore
                 SelectedEmbeddingModelId = _current.SelectedEmbeddingModelId,
             };
             var tmpPath = $"{_filePath}.tmp.{Guid.NewGuid():N}";
+            Directory.CreateDirectory(Path.GetDirectoryName(_filePath)!);
             File.WriteAllText(tmpPath, JsonSerializer.Serialize(dto, JsonOpts));
             if (File.Exists(_filePath))
             {

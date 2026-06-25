@@ -1,4 +1,5 @@
 using Kurisu.Core.Models;
+using Kurisu.Core.Runtime.Providers;
 
 namespace Kurisu.Core.Runtime;
 
@@ -10,7 +11,7 @@ namespace Kurisu.Core.Runtime;
 /// <param name="toolCallScheduler">The tool call scheduler</param>
 /// <param name="loopDetectionService">The loop detection service</param>
 /// <param name="tokenLimitService">The token limit service</param>
-/// <param name="providerConfigurationResolver">The provider configuration resolver</param>
+/// <param name="ProviderConfigurationService">The provider configuration resolver</param>
 /// <param name="options">The options</param>
 /// <param name="webToolService">The web tool service</param>
 public sealed class AssistantTurnRuntime(
@@ -19,7 +20,7 @@ public sealed class AssistantTurnRuntime(
     IToolCallScheduler toolCallScheduler,
     ILoopDetectionService loopDetectionService,
     ITokenLimitService tokenLimitService,
-    ProviderConfigurationResolver providerConfigurationResolver,
+    ProviderConfigurationService ProviderConfigurationService,
     IOptions<NativeAssistantRuntimeOptions> options,
     IWebToolService? webToolService = null) : IAssistantTurnRuntime
 {
@@ -51,7 +52,7 @@ public sealed class AssistantTurnRuntime(
         });
 
         request = ApplyDynamicToolAvailability(request);
-        var resolvedConfiguration = providerConfigurationResolver.Resolve(request, _options);
+        var resolvedConfiguration = ProviderConfigurationService.Resolve(request);
         var tokenLimits = tokenLimitService.Resolve(resolvedConfiguration.Model, _options);
         var promptContext = await promptAssembler.AssembleAsync(request, tokenLimits, cancellationToken);
         if (promptContext.WasBudgetTrimmed)
@@ -190,7 +191,7 @@ public sealed class AssistantTurnRuntime(
             SystemPromptOverride = request.SystemPromptOverride,
             AllowedToolNames = allowedToolNames,
             ModelOverride = request.ModelOverride,
-            AuthTypeOverride = request.AuthTypeOverride,
+            ProviderIdOverride = request.ProviderIdOverride,
             EndpointOverride = request.EndpointOverride,
             ApiKeyOverride = request.ApiKeyOverride,
             DisableTools = request.DisableTools

@@ -1,4 +1,3 @@
-using Kurisu.Core.Auth;
 using Kurisu.Core.Channels;
 using Kurisu.Core.Config;
 using Kurisu.App.Desktop;
@@ -70,7 +69,8 @@ public sealed class DesktopProjectionServiceTests
             Assert.False(string.IsNullOrWhiteSpace(payload.KurisuRuntime.ApprovalProfile.DefaultMode));
             Assert.True(payload.KurisuTools.TotalCount >= 0);
             Assert.True(payload.KurisuNativeHost.RegisteredCount >= 0);
-            Assert.False(string.IsNullOrWhiteSpace(payload.KurisuAuth.SelectedType));
+            Assert.False(string.IsNullOrWhiteSpace(payload.KurisuProviders.ActiveProviderId));
+            Assert.NotEmpty(payload.KurisuProviders.Providers);
             Assert.True(payload.KurisuWorkspace.Discovery.VisibleFileCount >= 0);
             Assert.True(payload.KurisuWorkspace.Git.ManagedSessionCount >= 0);
         }
@@ -114,7 +114,9 @@ public sealed class DesktopProjectionServiceTests
                 compatibilityService,
                 runtimeProfileService);
             var gitHistoryService = new GitHistoryService(new GitCliService(), runtimeProfileService);
-            var authFlowService = new AuthFlowService(runtimeProfileService, environmentPaths);
+            var providerSettings = new ProviderSettingsStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<ProviderSettingsStore>.Instance);
+            var selectionStore = new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance);
+            var providerListService = new ProviderListService(providerSettings, selectionStore, environmentPaths);
             var toolRegistry = new ToolCatalogService(runtimeProfileService, approvalPolicyService);
             var toolExecutor = new NativeToolHostService(runtimeProfileService, approvalPolicyService);
             var workspaceInspectionService = new WorkspaceInspectionService(
@@ -175,7 +177,7 @@ public sealed class DesktopProjectionServiceTests
                     channelRegistry,
                     extensionCatalog,
                     workspaceInspectionService,
-                    authFlowService,
+                    providerListService,
                     mcpConnectionManager,
                     modelRegistry,
                     transcriptStore,
@@ -186,10 +188,7 @@ public sealed class DesktopProjectionServiceTests
                     new FakeSessionTitleGenerationService(),
                     new LocaleStateService(shellOptions)),
                 new ArenaBridge(arenaSessionRegistry),
-                new AuthBridge(
-                    shellOptions,
-                    workspacePathResolver,
-                    authFlowService),
+                providerListService,
                 new ChannelBridge(
                     shellOptions,
                     workspacePathResolver,
@@ -337,7 +336,9 @@ public sealed class DesktopProjectionServiceTests
             var settingsResolver = new DesktopSettingsResolver(
                 compatibilityService,
                 runtimeProfileService);
-            var authFlowService = new AuthFlowService(runtimeProfileService, environmentPaths);
+            var providerSettings = new ProviderSettingsStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<ProviderSettingsStore>.Instance);
+            var selectionStore = new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance);
+            var providerListService = new ProviderListService(providerSettings, selectionStore, environmentPaths);
             var toolRegistry = new ToolCatalogService(runtimeProfileService, approvalPolicyService);
             var toolExecutor = new NativeToolHostService(runtimeProfileService, approvalPolicyService);
             var workspaceInspectionService = new WorkspaceInspectionService(
@@ -423,7 +424,7 @@ public sealed class DesktopProjectionServiceTests
                     channelRegistry,
                     extensionCatalog,
                     workspaceInspectionService,
-                    authFlowService,
+                    providerListService,
                     mcpConnectionManager,
                     modelRegistry,
                     transcriptStore,
@@ -434,10 +435,7 @@ public sealed class DesktopProjectionServiceTests
                     new FakeSessionTitleGenerationService(),
                     new LocaleStateService(shellOptions)),
                 new ArenaBridge(arenaSessionRegistry),
-                new AuthBridge(
-                    shellOptions,
-                    workspacePathResolver,
-                    authFlowService),
+                providerListService,
                 new ChannelBridge(
                     shellOptions,
                     workspacePathResolver,

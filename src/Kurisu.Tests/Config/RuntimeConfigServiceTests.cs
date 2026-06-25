@@ -187,10 +187,10 @@ public sealed class RuntimeConfigServiceTests
             var workspace = new WorkspacePaths { WorkspaceRoot = workspaceRoot };
 
             Assert.Equal(
-                Path.Combine(workspaceRoot, ".kurisu", "settings.json"),
+                Path.Combine(workspaceRoot, ".kurisu", "Settings.json"),
                 service.ResolveSettingsPath(workspace, "project"));
             Assert.Equal(
-                Path.Combine(homeRoot, ".kurisu", "settings.json"),
+                Path.Combine(homeRoot, ".kurisu", "Settings.json"),
                 service.ResolveSettingsPath(workspace, "user"));
         }
         finally

@@ -20,7 +20,7 @@ public interface IDesktopSurface
     /// <summary>
     /// Occurs when Auth Changed
     /// </summary>
-    event EventHandler<AuthStatusSnapshot>? AuthChanged;
+    event EventHandler<ProviderListSnapshot>? AuthChanged;
 
     /// <summary>
     /// Occurs when Arena Event
@@ -81,31 +81,24 @@ public interface IDesktopSurface
     Task<DesktopStateChangedEvent> SetLocaleAsync(string locale);
 
     /// <summary>
-    /// Gets auth status async
+    /// Gets configured providers snapshot (multi-provider state).
     /// </summary>
-    /// <returns>A task that resolves to auth status snapshot</returns>
-    Task<AuthStatusSnapshot> GetAuthStatusAsync();
+    /// <returns>A task that resolves to provider list snapshot</returns>
+    Task<ProviderListSnapshot> GetProvidersAsync();
 
     /// <summary>
-    /// Executes configure open ai compatible auth async
+    /// Configures a single provider with the given api key + optional base URL override.
     /// </summary>
-    /// <param name="request">The request payload</param>
-    /// <returns>A task that resolves to auth status snapshot</returns>
-    Task<AuthStatusSnapshot> ConfigureOpenAiCompatibleAuthAsync(ConfigureOpenAiCompatibleAuthRequest request);
+    /// <param name="request">The configuration request</param>
+    /// <returns>A task that resolves to provider list snapshot</returns>
+    Task<ProviderListSnapshot> ConfigureProviderAsync(ConfigureProviderRequest request);
 
     /// <summary>
-    /// Executes configure coding plan auth async
+    /// Removes (forgets) the api key + base URL override for the given provider.
     /// </summary>
-    /// <param name="request">The request payload</param>
-    /// <returns>A task that resolves to auth status snapshot</returns>
-    Task<AuthStatusSnapshot> ConfigureCodingPlanAuthAsync(ConfigureCodingPlanAuthRequest request);
-
-    /// <summary>
-    /// Disconnects auth async
-    /// </summary>
-    /// <param name="request">The request payload</param>
-    /// <returns>A task that resolves to auth status snapshot</returns>
-    Task<AuthStatusSnapshot> DisconnectAuthAsync(DisconnectAuthRequest request);
+    /// <param name="request">The deconfiguration request</param>
+    /// <returns>A task that resolves to provider list snapshot</returns>
+    Task<ProviderListSnapshot> DeconfigureProviderAsync(DeconfigureProviderRequest request);
 
     /// <summary>
     /// Lists available models for a provider preset.

@@ -104,9 +104,9 @@ public sealed class AppBootstrapPayload
     public required NativeToolHostSnapshot KurisuNativeHost { get; init; }
 
     /// <summary>
-    /// Gets or sets the kurisu auth
+    /// Gets or sets the list of configured providers (multi-provider state).
     /// </summary>
-    public required AuthStatusSnapshot KurisuAuth { get; init; }
+    public required ProviderListSnapshot KurisuProviders { get; init; }
 
     /// <summary>
     /// Gets or sets the kurisu mcp

@@ -124,7 +124,6 @@ public static class AppComposition
 
         #region Auth
         services.AddSingleton<IAuthUrlLauncher, ShellAuthUrlLauncher>();
-        services.AddSingleton<IAuthFlowService, AuthFlowService>();
         #endregion
 
         #region Channels
@@ -211,7 +210,7 @@ public static class AppComposition
 
         #region Runtime
         services.AddSingleton<HttpClient>();
-        services.AddSingleton<ProviderConfigurationResolver>();
+        services.AddSingleton<ProviderConfigurationService>();
         services.AddSingleton<ProviderModelLister>();
         services.AddSingleton<IModelRegistry, ModelRegistryService>();
         services.AddSingleton<IModelConfigResolver, ModelConfigResolver>();
@@ -285,7 +284,7 @@ public static class AppComposition
         services.AddSingleton<ILocaleStateService, LocaleStateService>();
         services.AddSingleton<IBootstrapBridge, BootstrapBridge>();
         services.AddSingleton<IArenaBridge, ArenaBridge>();
-        services.AddSingleton<IAuthBridge, AuthBridge>();
+        services.AddSingleton<ProviderListService>();
         services.AddSingleton<IChannelBridge, ChannelBridge>();
         services.AddSingleton<IMcpBridge, McpBridge>();
         services.AddSingleton<IPromptBridge, PromptBridge>();

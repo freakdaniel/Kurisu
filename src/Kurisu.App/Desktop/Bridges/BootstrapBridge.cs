@@ -2,7 +2,6 @@ using System.IO;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 using Kurisu.Core.Agents;
-using Kurisu.Core.Auth;
 using Kurisu.Core.Channels;
 using Kurisu.Core.Compatibility;
 using Kurisu.Core.Infrastructure;
@@ -30,7 +29,7 @@ namespace Kurisu.App.Desktop.Bridges;
 /// <param name="channelRegistryService">The channel registry service</param>
 /// <param name="extensionCatalogService">The extension catalog service</param>
 /// <param name="workspaceInspectionService">The workspace inspection service</param>
-/// <param name="authFlowService">The auth flow service</param>
+/// <param name="providerListService">The multi-provider list service</param>
 /// <param name="mcpConnectionManager">The mcp connection manager</param>
 /// <param name="modelRegistry">The model registry</param>
 /// <param name="transcriptStore">The transcript store</param>
@@ -50,7 +49,7 @@ public sealed class BootstrapBridge(
     IChannelRegistryService channelRegistryService,
     IExtensionCatalogService extensionCatalogService,
     IWorkspaceInspectionService workspaceInspectionService,
-    IAuthFlowService authFlowService,
+    ProviderListService providerListService,
     IMcpConnectionManager mcpConnectionManager,
     IModelRegistry modelRegistry,
     ITranscriptStore transcriptStore,
@@ -101,7 +100,7 @@ public sealed class BootstrapBridge(
             KurisuChannels = channelRegistryService.Inspect(workspace),
             KurisuExtensions = extensionCatalogService.Inspect(workspace),
             KurisuWorkspace = workspaceInspectionService.Inspect(workspace),
-            KurisuAuth = authFlowService.GetStatus(workspace),
+            KurisuProviders = providerListService.CreateSnapshot(),
             KurisuMcp = CreateMcpSnapshot(mcpConnectionManager.ListServersWithStatus(workspace)),
             KurisuProviderPresets = ProviderCatalog.Builtins
                 .Select(manifest => new ProviderPresetSnapshot(

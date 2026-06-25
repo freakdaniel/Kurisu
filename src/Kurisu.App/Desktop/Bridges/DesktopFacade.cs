@@ -10,7 +10,7 @@ namespace Kurisu.App.Desktop.Bridges;
 /// <param name="localeStateService">The locale state service</param>
 /// <param name="bootstrapProjectionService">The bootstrap projection service</param>
 /// <param name="arenaProjectionService">The arena projection service</param>
-/// <param name="authProjectionService">The auth projection service</param>
+/// <param name="providerListService">The multi-provider list service</param>
 /// <param name="channelProjectionService">The channel projection service</param>
 /// <param name="workspaceProjectionService">The workspace projection service</param>
 /// <param name="mcpProjectionService">The mcp projection service</param>
@@ -24,7 +24,7 @@ public sealed class DesktopFacade(
     ILocaleStateService localeStateService,
     IBootstrapBridge bootstrapProjectionService,
     IArenaBridge arenaProjectionService,
-    IAuthBridge authProjectionService,
+    ProviderListService providerListService,
     IChannelBridge channelProjectionService,
     IWorkspaceBridge workspaceProjectionService,
     IMcpBridge mcpProjectionService,
@@ -41,12 +41,12 @@ public sealed class DesktopFacade(
     public event EventHandler<DesktopStateChangedEvent>? StateChanged;
 
     /// <summary>
-    /// Occurs when Auth Changed
+    /// Occurs when providers change (added/removed/active changed).
     /// </summary>
-    public event EventHandler<AuthStatusSnapshot>? AuthChanged
+    public event EventHandler<ProviderListSnapshot>? AuthChanged
     {
-        add => authProjectionService.AuthChanged += value;
-        remove => authProjectionService.AuthChanged -= value;
+        add => providerListService.ProvidersChanged += value;
+        remove => providerListService.ProvidersChanged -= value;
     }
 
     /// <summary>
@@ -102,35 +102,22 @@ public sealed class DesktopFacade(
     }
 
     /// <summary>
-    /// Gets auth status async
+    /// Gets configured providers snapshot (multi-provider state).
     /// </summary>
-    /// <returns>A task that resolves to auth status snapshot</returns>
-    public Task<AuthStatusSnapshot> GetAuthStatusAsync() =>
-        Task.FromResult(authProjectionService.CreateSnapshot());
+    public Task<ProviderListSnapshot> GetProvidersAsync() =>
+        Task.FromResult(providerListService.CreateSnapshot());
 
     /// <summary>
-    /// Executes configure open ai compatible auth async
+    /// Configures a single provider (api key + optional base URL override).
     /// </summary>
-    /// <param name="request">The request payload</param>
-    /// <returns>A task that resolves to auth status snapshot</returns>
-    public Task<AuthStatusSnapshot> ConfigureOpenAiCompatibleAuthAsync(ConfigureOpenAiCompatibleAuthRequest request) =>
-        authProjectionService.ConfigureOpenAiCompatibleAsync(request);
+    public Task<ProviderListSnapshot> ConfigureProviderAsync(ConfigureProviderRequest request) =>
+        providerListService.ConfigureAsync(request);
 
     /// <summary>
-    /// Executes configure coding plan auth async
+    /// Removes (forgets) the api key + base URL override for the given provider.
     /// </summary>
-    /// <param name="request">The request payload</param>
-    /// <returns>A task that resolves to auth status snapshot</returns>
-    public Task<AuthStatusSnapshot> ConfigureCodingPlanAuthAsync(ConfigureCodingPlanAuthRequest request) =>
-        authProjectionService.ConfigureCodingPlanAsync(request);
-
-    /// <summary>
-    /// Disconnects auth async
-    /// </summary>
-    /// <param name="request">The request payload</param>
-    /// <returns>A task that resolves to auth status snapshot</returns>
-    public Task<AuthStatusSnapshot> DisconnectAuthAsync(DisconnectAuthRequest request) =>
-        authProjectionService.DisconnectAsync(request);
+    public Task<ProviderListSnapshot> DeconfigureProviderAsync(DeconfigureProviderRequest request) =>
+        providerListService.DeconfigureAsync(request);
 
     /// <summary>
     /// Lists available models for a provider preset.

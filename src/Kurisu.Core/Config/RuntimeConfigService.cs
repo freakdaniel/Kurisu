@@ -188,9 +188,7 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
                     });
                 if (JsonSerializer.SerializeToNode(document.RootElement) is JsonObject layerRoot)
                 {
-                    // Strip junk that has moved to dedicated stores.
-                    StripLegacyRuntimeState(layerRoot);
-                    // Keep only whitelisted keys (recursively).
+                    // legacy shiii
                     Prune(layerRoot, SettingsSchema);
                     MergeObjects(mergedRoot, layerRoot);
                 }
@@ -452,57 +450,40 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
         bool folderTrustEnabled)
     {
         if (!folderTrustEnabled)
-        {
             return new WorkspaceTrustDecision(true, string.Empty);
-        }
 
         var trustedFoldersPath = Path.Combine(globalKurisuDirectory, "trustedFolders.json");
         if (!File.Exists(trustedFoldersPath))
-        {
             return new WorkspaceTrustDecision(false, string.Empty);
-        }
 
         try
         {
             using var stream = File.OpenRead(trustedFoldersPath);
             using var document = JsonDocument.Parse(stream);
             if (document.RootElement.ValueKind != JsonValueKind.Object)
-            {
                 return new WorkspaceTrustDecision(false, string.Empty);
-            }
 
             foreach (var property in document.RootElement.EnumerateObject())
             {
                 if (property.Value.ValueKind != JsonValueKind.String)
-                {
                     continue;
-                }
 
                 var trustValue = property.Value.GetString();
                 if (!IsRecognizedTrustValue(trustValue))
-                {
                     continue;
-                }
 
                 var normalizedEntry = NormalizePath(property.Name);
                 var normalizedProjectRoot = NormalizePath(projectRoot);
                 if (string.Equals(trustValue, "DO_NOT_TRUST", StringComparison.OrdinalIgnoreCase) &&
                     PathComparer.Equals(normalizedEntry, normalizedProjectRoot))
-                {
                     return new WorkspaceTrustDecision(false, "file");
-                }
 
                 if (PathComparer.Equals(normalizedEntry, normalizedProjectRoot))
-                {
                     return new WorkspaceTrustDecision(true, "file");
-                }
 
                 if (string.Equals(trustValue, "TRUST_PARENT", StringComparison.OrdinalIgnoreCase) &&
                     IsParentPath(normalizedEntry, normalizedProjectRoot))
-                {
                     return new WorkspaceTrustDecision(true, "parent");
-                }
-
             }
         }
         catch
@@ -524,9 +505,7 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
     private static bool IsParentPath(string parent, string candidate)
     {
         if (PathComparer.Equals(parent, candidate))
-        {
             return true;
-        }
 
         var prefix = parent.EndsWith(Path.DirectorySeparatorChar) || parent.EndsWith(Path.AltDirectorySeparatorChar)
             ? parent
@@ -547,19 +526,11 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
         {
             if (pair.Value is JsonObject sourceObject)
             {
-                if (target[pair.Key] is JsonObject targetObject)
-                {
+                if (target[pair.Key] is JsonObject targetObject) 
                     MergeObjects(targetObject, sourceObject);
-                }
-                else
-                {
-                    target[pair.Key] = sourceObject.DeepClone();
-                }
+                else target[pair.Key] = sourceObject.DeepClone();
             }
-            else
-            {
-                target[pair.Key] = pair.Value?.DeepClone();
-            }
+            else target[pair.Key] = pair.Value?.DeepClone();
         }
     }
 
@@ -582,6 +553,11 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
         ["tools"] = new JsonObject(),
         ["hooks"] = new JsonObject(),
         ["webSearch"] = new JsonObject(),
+        // legacy runtime-state keys
+        ["model"] = new JsonObject { ["name"] = string.Empty },
+        ["embeddingModel"] = string.Empty,
+        ["modelProviders"] = new JsonObject(),
+        ["env"] = new JsonObject(),
         ["advanced"] = new JsonObject { ["runtimeOutputDir"] = string.Empty },
         ["preferences"] = new JsonObject
         {
@@ -604,19 +580,12 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
         var allowed = new HashSet<string>(schema.Select(static kv => kv.Key), StringComparer.Ordinal);
         var toRemove = root.Select(kv => kv.Key).Where(key => !allowed.Contains(key)).ToArray();
         foreach (var key in toRemove)
-        {
             root.Remove(key);
-        }
-        // Recurse only into known-structured nested objects. Freeform
-        // dictionaries like mcpServers are kept verbatim (only their
-        // top-level presence is checked by the schema above).
         foreach (var (key, value) in root.ToArray())
         {
             if (schema[key] is not JsonObject childSchema) continue;
             if (value is JsonObject child)
             {
-                // The empty schema for mcpServers/hooks/tools/etc. means
-                // "freeform dict, don't recurse into its values".
                 if (childSchema.Count == 0) continue;
                 Prune(child, childSchema);
             }
@@ -626,10 +595,11 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
     /// <summary>
     /// Removes junk fields that used to be persisted but are now stored in
     /// dedicated stores (<see cref="RuntimeSelectionStore"/>,
-    /// <see cref="Kurisu.Core.Runtime.Providers.ProviderSettingsStore"/>).
+    /// <see cref="Runtime.Providers.ProviderSettingsStore"/>).
     /// </summary>
     internal static void StripLegacyRuntimeState(JsonObject root)
     {
+        // removes the legacy runtime-state keys that have dedicated stores
         root.Remove("model");
         root.Remove("embeddingModel");
         root.Remove("env");
@@ -657,9 +627,7 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
         value = default;
         if (!TryNavigate(root, path, out var element) ||
             (element.ValueKind != JsonValueKind.True && element.ValueKind != JsonValueKind.False))
-        {
             return false;
-        }
 
         value = element.GetBoolean();
         return true;
@@ -669,9 +637,7 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
     {
         value = default;
         if (!TryNavigate(root, path, out var element) || element.ValueKind != JsonValueKind.Number)
-        {
             return false;
-        }
 
         return element.TryGetDouble(out value);
     }
@@ -680,16 +646,13 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
     {
         values = [];
         if (!TryNavigate(root, path, out var element) || element.ValueKind != JsonValueKind.Array)
-        {
             return false;
-        }
 
-        values = element.EnumerateArray()
+        values = [.. element.EnumerateArray()
             .Where(static item => item.ValueKind == JsonValueKind.String)
             .Select(item => item.GetString())
             .OfType<string>()
-            .Where(static item => !string.IsNullOrWhiteSpace(item))
-            .ToArray();
+            .Where(static item => !string.IsNullOrWhiteSpace(item))];
         return true;
     }
 
@@ -697,12 +660,8 @@ public sealed class RuntimeConfigService(IDesktopEnvironmentPaths environmentPat
     {
         result = element;
         foreach (var segment in path)
-        {
             if (result.ValueKind != JsonValueKind.Object || !result.TryGetProperty(segment, out result))
-            {
                 return false;
-            }
-        }
 
         return true;
     }

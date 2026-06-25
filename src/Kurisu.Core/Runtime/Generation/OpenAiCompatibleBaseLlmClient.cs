@@ -5,6 +5,7 @@ using System.Text.Json.Nodes;
 using Microsoft.Extensions.Options;
 using Kurisu.Core.Models;
 using Kurisu.Core.Runtime;
+using Kurisu.Core.Runtime.Providers;
 
 namespace Kurisu.Core.Runtime;
 
@@ -18,7 +19,7 @@ namespace Kurisu.Core.Runtime;
 /// <param name="options">The options</param>
 public sealed class OpenAiCompatibleBaseLlmClient(
     HttpClient httpClient,
-    ProviderConfigurationResolver configurationResolver,
+    ProviderConfigurationService configurationResolver,
     IModelConfigResolver modelConfigResolver,
     ITokenLimitService tokenLimitService,
     IOptions<NativeAssistantRuntimeOptions> options) : IBaseLlmClient
@@ -36,7 +37,7 @@ public sealed class OpenAiCompatibleBaseLlmClient(
         CancellationToken cancellationToken = default)
     {
         var assistantRequest = ToAssistantTurnRequest(request);
-        var configuration = configurationResolver.Resolve(assistantRequest, runtimeOptions);
+        var configuration = configurationResolver.Resolve(assistantRequest);
         if (string.IsNullOrWhiteSpace(configuration.Endpoint) || string.IsNullOrWhiteSpace(configuration.ApiKey))
         {
             return null;
@@ -132,12 +133,12 @@ public sealed class OpenAiCompatibleBaseLlmClient(
             RuntimeProfile = request.RuntimeProfile,
             ToolExecution = CreateNoOpToolExecution(request.WorkingDirectory),
             ModelOverride = request.ModelOverride,
-            AuthTypeOverride = request.AuthTypeOverride,
+            ProviderIdOverride = request.ProviderIdOverride,
             EndpointOverride = request.EndpointOverride,
             ApiKeyOverride = request.ApiKeyOverride,
             DisableTools = true
         };
-        var configuration = configurationResolver.Resolve(assistantRequest, runtimeOptions);
+        var configuration = configurationResolver.Resolve(assistantRequest);
         if (string.IsNullOrWhiteSpace(configuration.ApiKey))
         {
             return null;
@@ -147,7 +148,7 @@ public sealed class OpenAiCompatibleBaseLlmClient(
         var embeddingModel = modelConfigResolver.Resolve(
             new WorkspacePaths { WorkspaceRoot = request.RuntimeProfile.ProjectRoot },
             request.ModelOverride,
-            request.AuthTypeOverride,
+            request.ProviderIdOverride,
             embedding: true).Id;
         var payload = new JsonObject
         {
@@ -243,7 +244,7 @@ public sealed class OpenAiCompatibleBaseLlmClient(
             PromptMode = request.PromptMode,
             SystemPromptOverride = request.SystemPrompt,
             ModelOverride = request.ModelOverride,
-            AuthTypeOverride = request.AuthTypeOverride,
+            ProviderIdOverride = request.ProviderIdOverride,
             EndpointOverride = request.EndpointOverride,
             ApiKeyOverride = request.ApiKeyOverride,
             DisableTools = request.DisableTools

@@ -1,3 +1,4 @@
+using Kurisu.Core.Runtime.Providers;
 using Kurisu.Core.Telemetry;
 
 namespace Kurisu.Core.Runtime;
@@ -11,7 +12,7 @@ namespace Kurisu.Core.Runtime;
 /// <param name="telemetryService">The telemetry service</param>
 public sealed class DashScopeAssistantResponseProvider(
     HttpClient httpClient,
-    ProviderConfigurationResolver configurationResolver,
+    ProviderConfigurationService configurationResolver,
     ITokenLimitService tokenLimitService,
     ITelemetryService? telemetryService = null) : IAssistantResponseProvider
 {
@@ -43,7 +44,7 @@ public sealed class DashScopeAssistantResponseProvider(
             return null;
         }
 
-        var configuration = configurationResolver.Resolve(request, options);
+        var configuration = configurationResolver.Resolve(request);
         if (string.IsNullOrWhiteSpace(configuration.Endpoint) || string.IsNullOrWhiteSpace(configuration.ApiKey))
         {
             return null;
@@ -192,7 +193,7 @@ public sealed class DashScopeAssistantResponseProvider(
             var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
             var statusCode = (int)response.StatusCode;
             var shouldRetry = attempt < AssistantProviderRetryPolicy.MaxAttempts &&
-                              AssistantProviderRetryPolicy.ShouldRetry(configuration.AuthType, response.StatusCode, responseBody);
+                              AssistantProviderRetryPolicy.ShouldRetry(configuration.ProviderId, response.StatusCode, responseBody);
             var hasRetryAfter = AssistantProviderRetryPolicy.TryGetRetryAfterDelay(response.Headers, out var retryDelay);
 
             response.Dispose();

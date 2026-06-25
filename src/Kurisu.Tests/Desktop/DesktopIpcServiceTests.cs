@@ -198,7 +198,7 @@ public sealed class DesktopIpcServiceTests
     {
         public event EventHandler<DesktopStateChangedEvent>? StateChanged;
         public event EventHandler<DesktopSessionEvent>? SessionEvent;
-        public event EventHandler<AuthStatusSnapshot>? AuthChanged;
+        public event EventHandler<ProviderListSnapshot>? AuthChanged;
         public event EventHandler<ArenaSessionEvent>? ArenaEvent;
 
         public Task<AppBootstrapPayload> GetBootstrapAsync() => throw new NotSupportedException();
@@ -209,10 +209,9 @@ public sealed class DesktopIpcServiceTests
         public Task<RemoveDesktopSessionResult> RemoveSessionAsync(RemoveDesktopSessionRequest request) => throw new NotSupportedException();
         public Task<RenameDesktopSessionResult> RenameSessionAsync(RenameDesktopSessionRequest request) => throw new NotSupportedException();
         public Task<DesktopStateChangedEvent> SetLocaleAsync(string locale) => throw new NotSupportedException();
-        public Task<AuthStatusSnapshot> GetAuthStatusAsync() => throw new NotSupportedException();
-        public Task<AuthStatusSnapshot> ConfigureOpenAiCompatibleAuthAsync(ConfigureOpenAiCompatibleAuthRequest request) => throw new NotSupportedException();
-        public Task<AuthStatusSnapshot> ConfigureCodingPlanAuthAsync(ConfigureCodingPlanAuthRequest request) => throw new NotSupportedException();
-        public Task<AuthStatusSnapshot> DisconnectAuthAsync(DisconnectAuthRequest request) => throw new NotSupportedException();
+        public Task<ProviderListSnapshot> GetProvidersAsync() => throw new NotSupportedException();
+        public Task<ProviderListSnapshot> ConfigureProviderAsync(ConfigureProviderRequest request) => throw new NotSupportedException();
+        public Task<ProviderListSnapshot> DeconfigureProviderAsync(DeconfigureProviderRequest request) => throw new NotSupportedException();
         public Task<ListProviderModelsResponse> ListProviderModelsAsync(ListProviderModelsRequest request) => throw new NotSupportedException();
         public Task<ChannelPairingSnapshot> GetChannelPairingsAsync(GetChannelPairingRequest request) => throw new NotSupportedException();
         public Task<ChannelPairingSnapshot> ApproveChannelPairingAsync(ApproveChannelPairingRequest request) => throw new NotSupportedException();

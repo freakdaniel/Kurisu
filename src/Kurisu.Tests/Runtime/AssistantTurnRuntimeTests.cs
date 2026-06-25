@@ -1,3 +1,6 @@
+using Kurisu.Core.Config;
+using Kurisu.Core.Runtime.Providers;
+
 namespace Kurisu.Tests.Runtime;
 
 public sealed class AssistantTurnRuntimeTests
@@ -129,7 +132,7 @@ public sealed class AssistantTurnRuntimeTests
                     new LoopDetectionService()),
                 new LoopDetectionService(),
                 new TokenLimitService(),
-                new ProviderConfigurationResolver(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)),
+                new ProviderConfigurationService(new ProviderSettingsStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<ProviderSettingsStore>.Instance), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance), new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Options.Create(new NativeAssistantRuntimeOptions())),
                 Options.Create(new NativeAssistantRuntimeOptions
                 {
                     Provider = "loop-provider",
@@ -464,7 +467,7 @@ public sealed class AssistantTurnRuntimeTests
                     new LoopDetectionService()),
                 new LoopDetectionService(),
                 new TokenLimitService(),
-                new ProviderConfigurationResolver(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)),
+                new ProviderConfigurationService(new ProviderSettingsStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<ProviderSettingsStore>.Instance), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance), new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Options.Create(new NativeAssistantRuntimeOptions())),
                 Options.Create(new NativeAssistantRuntimeOptions
                 {
                     Provider = "failing-provider",

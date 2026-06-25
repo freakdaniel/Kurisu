@@ -78,7 +78,7 @@ public sealed class ProviderBackedFollowupSuggestionGenerator(
                     SystemPrompt = request.SystemPromptOverride,
                     PromptMode = request.PromptMode,
                     ModelOverride = request.ModelOverride,
-                    AuthTypeOverride = request.AuthTypeOverride,
+                    ProviderIdOverride = request.ProviderIdOverride,
                     EndpointOverride = request.EndpointOverride,
                     ApiKeyOverride = request.ApiKeyOverride,
                     TemperatureOverride = runtimeOptions.Temperature,

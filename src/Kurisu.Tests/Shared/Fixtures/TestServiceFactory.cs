@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Kurisu.Core.Auth;
 using Kurisu.Core.Channels;
 using Kurisu.App.Desktop.Bridges;
@@ -30,7 +31,9 @@ internal static class TestServiceFactory
         var workspacePathResolver = new WorkspacePathResolver(environmentPaths);
         var shellOptions = Options.Create(options ?? new DesktopShellOptions());
         var authHttpClient = new HttpClient(new RecordingHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound))));
-        var authFlowService = new AuthFlowService(runtimeProfileService, environmentPaths);
+        var providerSettings = new ProviderSettingsStore(environmentPaths, NullLogger<ProviderSettingsStore>.Instance);
+        var selectionStore = new RuntimeSelectionStore(environmentPaths, NullLogger<RuntimeSelectionStore>.Instance);
+        var providerListService = new ProviderListService(providerSettings, selectionStore, environmentPaths);
         var compatibilityService = new KurisuCompatibilityService(environmentPaths);
         var settingsResolver = new DesktopSettingsResolver(
             compatibilityService,
@@ -113,7 +116,7 @@ internal static class TestServiceFactory
                 channelRegistry,
                 extensionCatalog,
                 workspaceInspectionService,
-                authFlowService,
+                providerListService,
                 mcpConnectionManager,
                 new ModelRegistryService(
                     new RuntimeConfigService(environmentPaths),
@@ -127,10 +130,7 @@ internal static class TestServiceFactory
                 new FakeSessionTitleGenerationService(),
                 new LocaleStateService(shellOptions)),
             new ArenaBridge(arenaSessionRegistry),
-            new AuthBridge(
-                shellOptions,
-                workspacePathResolver,
-                authFlowService),
+            providerListService,
             new ChannelBridge(
                 shellOptions,
                 workspacePathResolver,
@@ -241,6 +241,8 @@ internal static class TestServiceFactory
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData));
         var configService = new RuntimeConfigService(environmentPaths);
+        var providerSettings = new ProviderSettingsStore(environmentPaths, NullLogger<ProviderSettingsStore>.Instance);
+        var selectionStore = new RuntimeSelectionStore(environmentPaths, NullLogger<RuntimeSelectionStore>.Instance);
         var modelConfigResolver = new ModelConfigResolver(
             new ModelRegistryService(
                 configService,
@@ -252,10 +254,11 @@ internal static class TestServiceFactory
             {
                 new OpenAiCompatibleAssistantResponseProvider(
                     new HttpClient(),
-                    new ProviderConfigurationResolver(
+                    new ProviderConfigurationService(
+                        providerSettings ?? new ProviderSettingsStore(environmentPaths, NullLogger<ProviderSettingsStore>.Instance),
+                        selectionStore ?? new RuntimeSelectionStore(environmentPaths, NullLogger<RuntimeSelectionStore>.Instance),
                         environmentPaths,
-                        configService: configService,
-                        modelConfigResolver: modelConfigResolver),
+                        Options.Create(new NativeAssistantRuntimeOptions())),
                     new TokenLimitService()),
                 new FallbackAssistantResponseProvider()
             }
@@ -273,10 +276,11 @@ internal static class TestServiceFactory
                 new LoopDetectionService()),
             new LoopDetectionService(),
             new TokenLimitService(),
-            new ProviderConfigurationResolver(
+            new ProviderConfigurationService(
+                providerSettings ?? new ProviderSettingsStore(environmentPaths, NullLogger<ProviderSettingsStore>.Instance),
+                selectionStore ?? new RuntimeSelectionStore(environmentPaths, NullLogger<RuntimeSelectionStore>.Instance),
                 environmentPaths,
-                configService: configService,
-                modelConfigResolver: modelConfigResolver),
+                Options.Create(new NativeAssistantRuntimeOptions())),
             Options.Create(new NativeAssistantRuntimeOptions
             {
                 Provider = primaryProvider?.Name ?? "fallback"

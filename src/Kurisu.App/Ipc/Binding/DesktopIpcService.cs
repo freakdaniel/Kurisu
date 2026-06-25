@@ -54,21 +54,17 @@ public sealed class DesktopIpcService(
     public Task<DesktopStateChangedEvent> SetLocale(SetLocaleRequest request)
         => desktopProjectionService.SetLocaleAsync(request.Locale);
 
-    [IpcInvoke("kurisu-desktop:auth:status")]
-    public Task<AuthStatusSnapshot> GetAuthStatus()
-        => desktopProjectionService.GetAuthStatusAsync();
+    [IpcInvoke("kurisu-desktop:providers:list")]
+    public Task<ProviderListSnapshot> ListProviders()
+        => desktopProjectionService.GetProvidersAsync();
 
-    [IpcInvoke("kurisu-desktop:auth:configure-openai-compatible")]
-    public Task<AuthStatusSnapshot> ConfigureOpenAiCompatibleAuth(ConfigureOpenAiCompatibleAuthRequest request)
-        => desktopProjectionService.ConfigureOpenAiCompatibleAuthAsync(request);
+    [IpcInvoke("kurisu-desktop:providers:configure")]
+    public Task<ProviderListSnapshot> ConfigureProvider(ConfigureProviderRequest request)
+        => desktopProjectionService.ConfigureProviderAsync(request);
 
-    [IpcInvoke("kurisu-desktop:auth:configure-coding-plan")]
-    public Task<AuthStatusSnapshot> ConfigureCodingPlanAuth(ConfigureCodingPlanAuthRequest request)
-        => desktopProjectionService.ConfigureCodingPlanAuthAsync(request);
-
-    [IpcInvoke("kurisu-desktop:auth:disconnect")]
-    public Task<AuthStatusSnapshot> DisconnectAuth(DisconnectAuthRequest request)
-        => desktopProjectionService.DisconnectAuthAsync(request);
+    [IpcInvoke("kurisu-desktop:providers:deconfigure")]
+    public Task<ProviderListSnapshot> DeconfigureProvider(DeconfigureProviderRequest request)
+        => desktopProjectionService.DeconfigureProviderAsync(request);
 
     [IpcInvoke("kurisu-desktop:auth:list-provider-models")]
     public Task<ListProviderModelsResponse> ListProviderModels(ListProviderModelsRequest request)
@@ -254,7 +250,7 @@ public sealed class DesktopIpcService(
         => desktopProjectionService.StateChanged += (_, state) => emit(state);
 
     [IpcEvent("kurisu-desktop:auth:changed")]
-    public void SubscribeAuthChanged(Action<AuthStatusSnapshot> emit) 
+    public void SubscribeAuthChanged(Action<ProviderListSnapshot> emit) 
         => desktopProjectionService.AuthChanged += (_, state) => emit(state);
 
     [IpcEvent("kurisu-desktop:sessions:event")]

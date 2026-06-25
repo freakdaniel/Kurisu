@@ -15,7 +15,7 @@ public sealed class IpcGenerationParityTests
         var output = emitter.Emit(methods);
 
         Assert.Contains("export interface AppBootstrapPayload", output);
-        Assert.Contains("export interface AuthStatusSnapshot", output);
+        Assert.Contains("export interface ProviderListSnapshot", output);
         Assert.Contains("export interface DesktopSessionDetail", output);
         Assert.Contains("export interface DirectConnectServerState", output);
         Assert.Contains("export interface DirectConnectSessionState", output);

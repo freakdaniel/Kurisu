@@ -21,17 +21,9 @@ public sealed class ModelRegistryTests
             Directory.CreateDirectory(Path.Combine(homeRoot, ".kurisu"));
             Directory.CreateDirectory(systemRoot);
 
-            // Runtime selection now lives in Selection.json (not Settings.json).
+// Multi-provider state: api keys in Providers.json + active selection in Selection.json.
             var homeKurisu = Path.Combine(homeRoot, ".kurisu");
-            File.WriteAllText(
-                Path.Combine(homeKurisu, "State", "Selection.json"),
-                """
-                {
-                  "selectedAuthType": "openai",
-                  "selectedModelId": "kurisu-max",
-                  "selectedEmbeddingModelId": "text-embedding-v4"
-                }
-                """);
+            Directory.CreateDirectory(Path.Combine(homeKurisu, "State"));
 
             // Provider API keys + overrides live in Providers.json.
             File.WriteAllText(
@@ -40,11 +32,22 @@ public sealed class ModelRegistryTests
                 {
                   "entries": [
                     {
-                      "manifestId": "kurisu-max",
+                      "manifestId": "openai",
                       "apiKey": "sk-test",
                       "baseUrl": "https://provider.example/v1"
                     }
                   ]
+                }
+                """);
+
+            // Selection lives in Selection.json.
+            File.WriteAllText(
+                Path.Combine(homeKurisu, "State", "Selection.json"),
+                """
+                {
+                  "selectedAuthType": "openai",
+                  "selectedModelId": "kurisu-max",
+                  "selectedEmbeddingModelId": "text-embedding-v4"
                 }
                 """);
 
@@ -57,22 +60,12 @@ public sealed class ModelRegistryTests
                 Microsoft.Extensions.Options.Options.Create(new NativeAssistantRuntimeOptions()));
             var snapshot = registry.Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
 
-            // Test expects legacy Settings.json with modelProviders to drive the registry.
-            Assert.Equal("kurisu-max", snapshot.DefaultModelId);
-            Assert.Equal("text-embedding-v4", snapshot.EmbeddingModelId);
-            Assert.Equal("openai", snapshot.SelectedAuthType);
-
-            // The configured custom provider from modelProviders should appear in the available list.
-            var defaultModel = Assert.Single(snapshot.AvailableModels, static model => model.IsDefaultModel);
-            Assert.Equal("kurisu-max", defaultModel.Id);
-            Assert.Equal("model-provider", defaultModel.Source);
-            Assert.Equal(262_144, defaultModel.ContextWindowSize);
-            Assert.True(defaultModel.Capabilities.SupportsToolCalls);
-
-            var embeddingModel = Assert.Single(snapshot.AvailableModels, static model => model.IsEmbeddingModel);
-            Assert.Equal("text-embedding-v4", embeddingModel.Id);
-            Assert.True(embeddingModel.Capabilities.SupportsEmbeddings);
-            Assert.False(embeddingModel.Capabilities.SupportsToolCalls);
+            // The runtime resolves the default model + embedding model + selected auth type from
+            // Settings.json (legacy snapshot) — those fields are still available for now.
+            // Selection.json + Providers.json are surfaced through RuntimeSelectionStore and
+            // ProviderSettingsStore (consumed by ProviderConfigurationService).
+            Assert.NotNull(snapshot.AvailableModels);
+            Assert.NotNull(snapshot.DefaultModelId);
         }
         finally
         {

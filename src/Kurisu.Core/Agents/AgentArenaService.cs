@@ -940,7 +940,7 @@ public sealed class AgentArenaService(
                 SystemPromptOverride = BuildArenaModeSpecificInstructions(created.Model, allowedToolNames),
                 AllowedToolNames = allowedToolNames,
                 ModelOverride = created.Model.Model,
-                AuthTypeOverride = created.Model.AuthType,
+                ProviderIdOverride = created.Model.AuthType,
                 EndpointOverride = created.Model.BaseUrl,
                 ApiKeyOverride = created.Model.ApiKey
             };

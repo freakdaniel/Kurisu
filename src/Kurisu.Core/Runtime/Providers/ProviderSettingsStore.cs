@@ -204,6 +204,7 @@ public sealed class ProviderSettingsStore : IDisposable
             };
             var tmpPath = $"{_filePath}.tmp.{Guid.NewGuid():N}";
             var json = JsonSerializer.Serialize(dto, JsonOpts);
+            Directory.CreateDirectory(Path.GetDirectoryName(_filePath)!);
             File.WriteAllText(tmpPath, json);
             if (File.Exists(_filePath))
             {

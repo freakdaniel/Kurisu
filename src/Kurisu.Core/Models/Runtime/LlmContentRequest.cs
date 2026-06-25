@@ -61,7 +61,7 @@ public sealed class LlmContentRequest
     /// <summary>
     /// Gets or sets the auth type override
     /// </summary>
-    public string AuthTypeOverride { get; init; } = string.Empty;
+    public string ProviderIdOverride { get; init; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the endpoint override

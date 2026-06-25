@@ -1,8 +1,10 @@
 using Kurisu.Core.Compatibility;
+using Kurisu.Core.Config;
 using Kurisu.Core.Hooks;
 using Kurisu.Core.Infrastructure;
 using Kurisu.Core.Models;
 using Kurisu.Core.Runtime;
+using Kurisu.Core.Runtime.Providers;
 using Kurisu.Core.Telemetry;
 using Kurisu.Core.Tools;
 
@@ -288,7 +290,11 @@ public sealed class SubagentCoordinatorService(
                 new LoopDetectionService()),
             new LoopDetectionService(),
             new TokenLimitService(),
-            new ProviderConfigurationResolver(new DesktopEnvironmentPaths()),
+            new ProviderConfigurationService(
+                new ProviderSettingsStore(new DesktopEnvironmentPaths(), Microsoft.Extensions.Logging.Abstractions.NullLogger<ProviderSettingsStore>.Instance),
+                new RuntimeSelectionStore(new DesktopEnvironmentPaths(), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance),
+                new DesktopEnvironmentPaths(),
+                Microsoft.Extensions.Options.Options.Create(new NativeAssistantRuntimeOptions())),
             Microsoft.Extensions.Options.Options.Create(new NativeAssistantRuntimeOptions
             {
                 Provider = "fallback"
@@ -323,7 +329,7 @@ public sealed class SubagentCoordinatorService(
             SystemPromptOverride = BuildModeSpecificInstructions(agent),
             AllowedToolNames = agent.Tools,
             ModelOverride = modelSelection.Inherits ? string.Empty : modelSelection.ModelId,
-            AuthTypeOverride = modelSelection.Inherits ? string.Empty : modelSelection.AuthType
+            ProviderIdOverride = modelSelection.Inherits ? string.Empty : modelSelection.AuthType
         };
 
     private static string BuildDelegatedPrompt(string description, string prompt, SubagentDescriptor agent) =>
