@@ -55,6 +55,8 @@ internal static class ElectronWindowBootstrap
         _ = bootstrapTask.ContinueWith(
             task => Log.Logger.Error(task.Exception, "Desktop bootstrap services failed during startup"),
             TaskContinuationOptions.OnlyOnFaulted);
+
+        Electron.Menu.SetApplicationMenu([]);
     }
 
     private static BrowserWindowOptions BuildWindowOptions(IConfiguration configuration)
@@ -75,13 +77,11 @@ internal static class ElectronWindowBootstrap
             {
                 WebviewTag = false,
                 DevTools = true,
-            }
+            },
+            #pragma warning disable CA1416
+            AutoHideMenuBar = true
+            #pragma warning restore CA1416
         };
-
-        #pragma warning disable CA1416
-        if (!OperatingSystem.IsMacOS())
-            options.AutoHideMenuBar = true;
-        #pragma warning restore CA1416
 
         return options;
     }
