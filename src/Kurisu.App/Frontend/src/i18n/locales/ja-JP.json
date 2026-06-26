@@ -14,8 +14,12 @@
   "top": {
     "settings": "設定",
     "directConnect": "Remote connect",
-    "chats": "Chats",
-    "coder": "Coder"
+    "chats": "チャット",
+    "coder": "コード",
+    "skills": "スキルと統合",
+    "cowork": "共同作業",
+    "modeSwitch": "ワークスペース",
+    "coding": "コーディング"
   },
   "sidebar": {
     "newChat": "新しいチャット",
@@ -98,7 +102,8 @@
     "minimize": "最小化",
     "maximize": "最大化",
     "close": "閉じる",
-    "toggleSidebar": "サイドバー切替"
+    "toggleSidebar": "サイドバー切替",
+    "menu": "メニュー"
   },
   "search": {
     "placeholder": "名前でセッションをフィルタリング...",

@@ -56,7 +56,7 @@ function App() {
   );
 
   return (
-    <Box h="100vh" bg="gray.900" position="relative" overflow="hidden">
+    <Box h="100vh" bg="adwaita.windowBg" position="relative" overflow="hidden">
       <AnimatePresence mode="wait">
         {showSplash ? (
           <motion.div
@@ -108,8 +108,8 @@ function App() {
                   transition={{ duration: 0.42, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
                 >
                   <VStack spacing={1}>
-                    <Heading size="md" color="white">{t('titlebar.appName')}</Heading>
-                    <Text color="gray.400" fontSize="sm">{t('app.initializing')}</Text>
+                    <Heading size="md" color="adwaita.fg">{t('titlebar.appName')}</Heading>
+                    <Text color="adwaita.fgSecondary" fontSize="sm">{t('app.initializing')}</Text>
                   </VStack>
                 </motion.div>
               </VStack>

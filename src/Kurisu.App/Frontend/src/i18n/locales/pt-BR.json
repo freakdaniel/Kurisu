@@ -14,8 +14,12 @@
   "top": {
     "settings": "Configurações",
     "directConnect": "Remote connect",
-    "chats": "Chats",
-    "coder": "Coder"
+    "chats": "Conversas",
+    "coder": "Código",
+    "skills": "Habilidades e integrações",
+    "cowork": "Colaboração",
+    "modeSwitch": "Modo do espaço de trabalho",
+    "coding": "Programação"
   },
   "sidebar": {
     "newChat": "Novo Chat",
@@ -98,7 +102,8 @@
     "minimize": "Minimizar",
     "maximize": "Maximizar",
     "close": "Fechar",
-    "toggleSidebar": "Alternar barra lateral"
+    "toggleSidebar": "Alternar barra lateral",
+    "menu": "Menu"
   },
   "search": {
     "placeholder": "Filtrar sessões por nome...",

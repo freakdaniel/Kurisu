@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Box, Button, Portal } from '@chakra-ui/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Pencil, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { SessionPreview } from '@/types/desktop';
+import { AdwaitaIcon } from '@/components/ui/AdwaitaIcon';
+import { adwaitaIconSources } from '@/components/ui/adwaitaIconSources';
+import { adwaitaColors } from '@/lib/themeTokens';
 
 export interface SessionMenuState {
   session: SessionPreview;
@@ -73,9 +75,9 @@ export function SessionContextMenu({
               ref={menuRef}
               w="184px"
               p={1}
-              bg="gray.800"
+              bg={adwaitaColors.popoverBg}
               border="1px solid"
-              borderColor="gray.700"
+              borderColor={adwaitaColors.borderStrong}
               borderRadius="lg"
               shadow="xl"
             >
@@ -85,12 +87,12 @@ export function SessionContextMenu({
                 h="34px"
                 px={2}
                 justifyContent="flex-start"
-                leftIcon={<Pencil size={14} />}
-                color="gray.200"
+                leftIcon={<AdwaitaIcon source={adwaitaIconSources.edit} size={14} />}
+                color={adwaitaColors.fg}
                 fontSize="sm"
                 fontWeight="normal"
                 borderRadius="md"
-                _hover={{ bg: 'gray.700', color: 'white' }}
+                _hover={{ bg: adwaitaColors.cardBg, color: adwaitaColors.fg }}
                 onClick={() => {
                   const session = state.session;
                   onClose();
@@ -105,12 +107,12 @@ export function SessionContextMenu({
                 h="34px"
                 px={2}
                 justifyContent="flex-start"
-                leftIcon={<Trash2 size={14} />}
-                color="red.300"
+                leftIcon={<AdwaitaIcon source={adwaitaIconSources.trash} size={14} />}
+                color={adwaitaColors.destructive}
                 fontSize="sm"
                 fontWeight="normal"
                 borderRadius="md"
-                _hover={{ bg: 'rgba(248,113,113,0.12)', color: 'red.200' }}
+                _hover={{ bg: 'rgba(192,28,40,0.14)', color: '#fca5a5' }}
                 onClick={() => {
                   const session = state.session;
                   onClose();

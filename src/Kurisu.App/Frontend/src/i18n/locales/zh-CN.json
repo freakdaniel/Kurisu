@@ -14,8 +14,12 @@
   "top": {
     "settings": "设置",
     "directConnect": "Remote connect",
-    "chats": "Chats",
-    "coder": "Coder"
+    "chats": "聊天",
+    "coder": "代码",
+    "skills": "技能与集成",
+    "cowork": "协作",
+    "modeSwitch": "工作区模式",
+    "coding": "编码"
   },
   "sidebar": {
     "newChat": "新聊天",
@@ -98,7 +102,8 @@
     "minimize": "最小化",
     "maximize": "最大化",
     "close": "关闭",
-    "toggleSidebar": "切换侧栏"
+    "toggleSidebar": "切换侧栏",
+    "menu": "菜单"
   },
   "search": {
     "placeholder": "按名称筛选会话...",

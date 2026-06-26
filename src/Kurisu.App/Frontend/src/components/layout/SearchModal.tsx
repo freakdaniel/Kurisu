@@ -1,6 +1,5 @@
-import { Box, Button, HStack, IconButton, Input, Text, VStack } from '@chakra-ui/react';
+import { Box, Button, HStack, Input, Text, VStack } from '@chakra-ui/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Search, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -11,6 +10,9 @@ import {
   type SessionScopeOptions,
 } from '@/components/layout/sessionNavigation';
 import type { SessionPreview } from '@/types/desktop';
+import { AdwaitaIcon } from '@/components/ui/AdwaitaIcon';
+import { adwaitaIconSources } from '@/components/ui/adwaitaIconSources';
+import { adwaitaColors } from '@/lib/themeTokens';
 
 export interface SearchModalProps {
   open: boolean;
@@ -104,14 +106,14 @@ export function SearchModal({ open, onClose, onSelect, sessions, mode, scopeOpti
             <Box
               w="520px"
               maxW="90vw"
-              bg="gray.800"
+              bg={adwaitaColors.popoverBg}
               border="1px solid"
-              borderColor="gray.700"
+              borderColor={adwaitaColors.borderStrong}
               borderRadius="2xl"
               shadow="2xl"
             >
               <HStack px={4} py={3}>
-                <Search size={16} color="#9494a2" />
+                <AdwaitaIcon source={adwaitaIconSources.search} size={16} />
                 <Input
                   ref={inputRef}
                   placeholder={t('search.placeholder')}
@@ -119,30 +121,42 @@ export function SearchModal({ open, onClose, onSelect, sessions, mode, scopeOpti
                   onChange={(e) => setTerm(e.target.value)}
                   bg="transparent"
                   border="none"
-                  color="white"
+                  color={adwaitaColors.fg}
                   fontSize="sm"
                   p={0}
-                  _placeholder={{ color: 'gray.500' }}
+                  _placeholder={{ color: adwaitaColors.fgMuted }}
                   _focusVisible={{ boxShadow: 'none' }}
                   flex={1}
                 />
-                <IconButton
+                <button
+                  type="button"
                   aria-label={t('search.close')}
-                  icon={<X size={16} />}
-                  size="xs"
-                  variant="ghost"
-                  colorScheme="gray"
-                  color="gray.500"
-                  minW="24px"
-                  w="24px"
-                  h="24px"
-                  borderRadius="md"
                   onClick={close}
-                  _hover={{ bg: 'gray.700', color: 'white' }}
-                />
+                  style={{
+                    minWidth: '24px',
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: 'transparent',
+                    color: adwaitaColors.fgMuted,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                  }}
+                  onMouseEnter={(event) => {
+                    event.currentTarget.style.color = adwaitaColors.fg;
+                  }}
+                  onMouseLeave={(event) => {
+                    event.currentTarget.style.color = adwaitaColors.fgMuted;
+                  }}
+                >
+                  <AdwaitaIcon source={adwaitaIconSources.windowClose} size={14} />
+                </button>
               </HStack>
 
-              <Box borderTop="1px solid" borderColor="gray.700" />
+              <Box borderTop="1px solid" borderColor={adwaitaColors.border} />
 
               <motion.div
                 layout
@@ -164,7 +178,7 @@ export function SearchModal({ open, onClose, onSelect, sessions, mode, scopeOpti
                       <VStack spacing={1} align="stretch">
                         {grouped.map((group) => (
                           <Box key={group.name}>
-                            <Text fontSize="xs" color="gray.500" fontWeight="medium" px={1} mb={1}>
+                            <Text fontSize="11px" color={adwaitaColors.fgMuted} fontWeight={600} letterSpacing="0.02em" px={1} mb={1}>
                               {group.name}
                             </Text>
                             <VStack spacing={0} align="stretch">
@@ -178,11 +192,11 @@ export function SearchModal({ open, onClose, onSelect, sessions, mode, scopeOpti
                                   px={2}
                                   justifyContent="flex-start"
                                   bg="transparent"
-                                  _hover={{ bg: 'gray.700' }}
+                                  _hover={{ bg: adwaitaColors.cardBg }}
                                   borderRadius="md"
                                   whiteSpace="nowrap"
                                   fontSize="sm"
-                                  color="gray.200"
+                                  color={adwaitaColors.fg}
                                 >
                                   <Text overflow="hidden" textOverflow="ellipsis" flex={1} textAlign="left">
                                     {conv.title ?? ''}
@@ -205,11 +219,11 @@ export function SearchModal({ open, onClose, onSelect, sessions, mode, scopeOpti
                             px={2}
                             justifyContent="space-between"
                             bg="transparent"
-                            _hover={{ bg: 'gray.700' }}
+                            _hover={{ bg: adwaitaColors.cardBg }}
                             borderRadius="md"
                             whiteSpace="nowrap"
                             fontSize="sm"
-                            color="gray.200"
+                            color={adwaitaColors.fg}
                           >
                             <Text overflow="hidden" textOverflow="ellipsis" flex={1} textAlign="left">
                               {conv.title ?? getProjectNameFromWorkingDirectory(conv.workingDirectory, t('sidebar.otherProjects'))}
@@ -219,7 +233,7 @@ export function SearchModal({ open, onClose, onSelect, sessions, mode, scopeOpti
                       </VStack>
                     )
                   ) : (
-                    <Text textAlign="center" color="gray.500" fontSize="sm" py={4}>
+                    <Text textAlign="center" color={adwaitaColors.fgMuted} fontSize="sm" py={4}>
                       {term ? t('search.noResults') : t('search.startTyping')}
                     </Text>
                   )}

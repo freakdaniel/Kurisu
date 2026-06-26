@@ -10,13 +10,35 @@
 @import "@fontsource/noto-sans-kr/500.css";
 @import "@fontsource/noto-sans-kr/700.css";
 
+/*
+ * Adwaita dark palette (libadwaita 1.4+). Mirrors the CSS custom properties
+ * exposed by the GTK theme so the desktop shell feels native to GNOME users.
+ */
 :root {
+  --window-bg: #1e1e20;
+  --view-bg: #1e1e20;
+  --card-bg: #2a2a2d;
+  --headerbar-bg: #2e2e32;
+  --popover-bg: #36363a;
+  --sidebar-bg: #1a1a1c;
+  --composer-bg: #2c2c30;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.10);
+  --fg: #ffffff;
+  --fg-secondary: #c0bfbc;
+  --fg-muted: #8a8a8e;
+  --accent: #3584e4;
+  --accent-hover: #1c71d8;
+  --destructive: #c01c28;
+  --success: #33d17a;
+  --warning: #f6d32d;
+
   font-family: 'Google Sans Variable', 'Google Sans', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', system-ui, -apple-system, 'Segoe UI', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color-scheme: dark;
-  color: #f5f5f5;
-  background: #18181b;
+  color: var(--fg);
+  background: var(--window-bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -49,7 +71,7 @@ code, pre, kbd, samp {
 
 body {
   min-height: 100vh;
-  background: #18181b;
+  background: var(--window-bg);
   overflow: hidden;
 }
 
@@ -61,7 +83,7 @@ button, a {
   color: inherit;
 }
 
-/* Custom vertical scrollbar for sidebar */
+/* Custom vertical scrollbar – blends with Adwaita's low-contrast surfaces */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -69,11 +91,11 @@ button, a {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #46464f;
+  background: rgba(255, 255, 255, 0.10);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #72727f;
+  background: rgba(255, 255, 255, 0.20);
 }
 
 /* WebKitGTK compositor hints: avoid repainting/updating layers for
@@ -107,7 +129,7 @@ button, a {
 }
 
 .katex {
-  color: #f5f5f5;
+  color: var(--fg);
   font-size: 1.02em;
 }
 
@@ -135,10 +157,10 @@ button, a {
   display: inline-block;
   min-width: max-content;
   padding: 0.95rem 1.35rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border);
   border-radius: 20px;
   background:
-    radial-gradient(circle at top, rgba(133, 131, 246, 0.12), transparent 62%),
+    radial-gradient(circle at top, rgba(53, 132, 228, 0.12), transparent 62%),
     rgba(255, 255, 255, 0.025);
   box-shadow: 0 18px 48px -34px rgba(0, 0, 0, 0.9);
 }
@@ -152,6 +174,6 @@ button, a {
 }
 
 .katex-display::-webkit-scrollbar-thumb {
-  background: #46464f;
+  background: rgba(255, 255, 255, 0.10);
   border-radius: 999px;
 }

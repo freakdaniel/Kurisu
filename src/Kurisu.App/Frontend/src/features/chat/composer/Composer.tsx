@@ -7,15 +7,16 @@ import {
   Textarea as ChakraTextarea,
   Text,
 } from '@chakra-ui/react';
-import { ArrowUp, Paperclip, Square } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { AGENT_MODES, type AgentMode } from '@/types/ui';
-import { MODE_ICONS } from '@/features/chat/messages';
-import { ModeMenu } from '@/features/chat/composer/ModeMenu';
+import { ModeMenu, MODE_ICON_BY_VALUE } from '@/features/chat/composer/ModeMenu';
+import { AdwaitaIcon } from '@/components/ui/AdwaitaIcon';
+import { adwaitaIconSources } from '@/components/ui/adwaitaIconSources';
+import { adwaitaColors } from '@/lib/themeTokens';
 
-const ACCENT = '#615CED';
-const ACCENT_HOVER = '#4e49d9';
+const ACCENT = adwaitaColors.accent;
+const ACCENT_HOVER = adwaitaColors.accentHover;
 
 const ButtonUnstyled = forwardRef<HTMLButtonElement, { onClick: () => void; children: React.ReactNode }>(
   function ButtonUnstyled({ onClick, children }, ref) {
@@ -25,11 +26,11 @@ const ButtonUnstyled = forwardRef<HTMLButtonElement, { onClick: () => void; chil
         variant="unstyled"
         h="34px"
         px={0}
-        color="gray.400"
+        color={adwaitaColors.fgSecondary}
         minW={0}
         transition="color 0.2s ease"
-        _hover={{ color: 'white' }}
-        _active={{ color: 'white' }}
+        _hover={{ color: adwaitaColors.fg }}
+        _active={{ color: adwaitaColors.fg }}
         onClick={onClick}
         fontWeight="normal"
         sx={{
@@ -49,7 +50,7 @@ function ContextRing({ percent, accentColor }: { percent: number; accentColor: s
   const dashOffset = circumference - (percent / 100) * circumference;
   return (
     <svg width="28" height="28" viewBox="0 0 28 28" style={{ transform: 'rotate(-90deg)' }}>
-      <circle cx="14" cy="14" r="10" fill="none" stroke="#5b5b67" strokeWidth="2.5" />
+      <circle cx="14" cy="14" r="10" fill="none" stroke={adwaitaColors.fgMuted} strokeWidth="2.5" />
       <circle
         cx="14" cy="14" r="10" fill="none"
         stroke={percent > 0 ? accentColor : 'transparent'}
@@ -103,11 +104,11 @@ export function Composer(props: ComposerProps) {
   return (
     <Box>
       <Box
-        borderRadius="30px"
+        borderRadius="24px"
         overflow="visible"
         border="1px solid"
-        borderColor="rgba(255,255,255,0.06)"
-        bg="#26262c"
+        borderColor={adwaitaColors.border}
+        bg={adwaitaColors.composerBg}
         boxShadow="0 22px 70px -48px rgba(0,0,0,0.95)"
       >
         <Box px={5} pt={4}>
@@ -126,8 +127,8 @@ export function Composer(props: ComposerProps) {
             p={0}
             fontSize="sm"
             lineHeight="relaxed"
-            color="white"
-            _placeholder={{ color: '#8f8f9b' }}
+            color={adwaitaColors.fg}
+            _placeholder={{ color: adwaitaColors.fgMuted }}
             _focusVisible={{ boxShadow: 'none' }}
             sx={{ '&::-webkit-scrollbar': { display: 'none' } }}
           />
@@ -137,22 +138,24 @@ export function Composer(props: ComposerProps) {
           <HStack gap={3}>
             <IconButton
               aria-label={t('chat.message.attachFile')}
-              icon={<Paperclip size={14} />}
+              icon={<AdwaitaIcon source={adwaitaIconSources.tabNew} size={15} />}
               variant="ghost"
               size="sm"
-              w="36px"
-              h="36px"
-              borderRadius="full"
-              color="gray.400"
-              bg="rgba(255,255,255,0.03)"
-              _hover={{ bg: 'rgba(255,255,255,0.06)', color: 'white' }}
+              w="30px"
+              h="30px"
+              minW="30px"
+              borderRadius="8px"
+              color={adwaitaColors.fgSecondary}
+              bg="transparent"
+              _hover={{ bg: 'rgba(255,255,255,0.06)', color: adwaitaColors.fg }}
+              _active={{ bg: 'rgba(255,255,255,0.08)', color: adwaitaColors.fg }}
             />
             <Box position="relative">
               <ButtonUnstyled
                 ref={modeBtnRef}
                 onClick={() => setModeDropdownOpen((current) => !current)}
               >
-                <Box h="34px" display="flex" alignItems="center" overflow="hidden">
+                <Box h="32px" display="flex" alignItems="center" overflow="hidden">
                   <AnimatePresence mode="wait" initial={false}>
                     <motion.div
                       key={props.mode}
@@ -167,7 +170,7 @@ export function Composer(props: ComposerProps) {
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      {MODE_ICONS[props.mode]}
+                      <AdwaitaIcon source={MODE_ICON_BY_VALUE[props.mode]} size={14} />
                       <Text fontSize="xs" fontWeight="normal">{t(currentModeOption.labelKey)}</Text>
                     </motion.div>
                   </AnimatePresence>
@@ -210,15 +213,15 @@ export function Composer(props: ComposerProps) {
                     }}
                   >
                     <Box
-                      bg="gray.800"
+                      bg={adwaitaColors.popoverBg}
                       border="1px solid"
-                      borderColor="gray.700"
+                      borderColor={adwaitaColors.borderStrong}
                       borderRadius="lg"
                       px={3}
                       py={2}
                       shadow="lg"
                     >
-                      <Text fontSize="xs" color="gray.300" fontWeight="medium" wordBreak="break-word">
+                      <Text fontSize="xs" color={adwaitaColors.fg} fontWeight="medium" wordBreak="break-word">
                         {props.usedTokensLabel}
                       </Text>
                       <Text fontSize="xs" color={props.contextColor} mt={1}>
@@ -241,21 +244,24 @@ export function Composer(props: ComposerProps) {
                     animate={{ opacity: 1, scale: 1, rotate: 0 }}
                     exit={{ opacity: 0, scale: 0.72, rotate: props.isStopHighlighted ? 18 : -18 }}
                     transition={{ duration: 0.18, ease: 'easeOut' }}
-                    style={{ display: 'flex' }}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                   >
-                    {props.isStopHighlighted ? <Square size={13} fill="currentColor" /> : <ArrowUp size={16} />}
+                    <AdwaitaIcon
+                      source={props.isStopHighlighted ? adwaitaIconSources.stop : adwaitaIconSources.send}
+                      size={props.isStopHighlighted ? 13 : 15}
+                    />
                   </motion.span>
                 </AnimatePresence>
               )}
-              bg={props.isStopHighlighted ? 'rgba(239,68,68,0.92)' : ACCENT}
+              bg={props.isStopHighlighted ? adwaitaColors.destructive : ACCENT}
               color="white"
-              _hover={{ bg: props.isStopHighlighted ? 'rgba(220,38,38,0.98)' : ACCENT_HOVER }}
+              _hover={{ bg: props.isStopHighlighted ? adwaitaColors.destructiveHover : ACCENT_HOVER }}
               isDisabled={props.isStopHighlighted ? false : !props.canSubmit}
               onClick={props.isStopHighlighted ? props.onStop : props.onSubmit}
               borderRadius="full"
-              w="36px"
-              h="36px"
-              minW="36px"
+              w="34px"
+              h="34px"
+              minW="34px"
               transition="background-color 0.18s ease, transform 0.18s ease"
             />
           </HStack>

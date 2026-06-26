@@ -1,5 +1,8 @@
 {
-  "app": { "workspace": "Desktop shell", "initializing": "Initializing..." },
+  "app": {
+    "workspace": "Desktop shell",
+    "initializing": "Initializing..."
+  },
   "modes": {
     "title": "Code mode",
     "code": "Code",
@@ -12,8 +15,20 @@
     "bypassPermissions": "Bypass permissions",
     "bypassPermissionsDesc": "Accepts all permissions"
   },
-  "status": { "connected": "IPC attached", "local": "Local preview" },
-  "top": { "settings": "Settings", "skills": "Skills & Integrations", "directConnect": "Remote connect", "chats": "Chats", "coder": "Coder" },
+  "status": {
+    "connected": "IPC attached",
+    "local": "Local preview"
+  },
+  "top": {
+    "settings": "Settings",
+    "skills": "Skills & Integrations",
+    "directConnect": "Remote connect",
+    "chats": "Chats",
+    "coder": "Coder",
+    "cowork": "Cowork",
+    "modeSwitch": "Workspace surface",
+    "coding": "Coding"
+  },
   "sidebar": {
     "newChat": "New Chat",
     "search": "Search",
@@ -108,7 +123,8 @@
     "minimize": "Minimize",
     "maximize": "Maximize",
     "close": "Close",
-    "toggleSidebar": "Toggle sidebar"
+    "toggleSidebar": "Toggle sidebar",
+    "menu": "Menu"
   },
   "search": {
     "placeholder": "Filter sessions by name...",

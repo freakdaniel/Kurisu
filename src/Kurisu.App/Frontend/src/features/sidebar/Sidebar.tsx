@@ -3,26 +3,15 @@ import {
   VStack,
   Text,
   Button,
-  HStack,
-  IconButton,
 } from '@chakra-ui/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import {
-  ChevronRight,
-  FolderOpen,
-  Folder,
-  Plus,
-  Search,
-  Settings,
-  Puzzle,
-  MessageCircle,
-  Code2,
-  PanelLeftClose,
-} from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { SessionPreview } from '@/types/desktop';
-import kurisuLogo from '@/assets/logo.png';
+import { AdwaitaIcon } from '@/components/ui/AdwaitaIcon';
+import { ModeSwitch } from '@/components/ui/ModeSwitch';
+import { adwaitaIconSources } from '@/components/ui/adwaitaIconSources';
+import { adwaitaColors } from '@/lib/themeTokens';
 import {
   filterSessionsByNavigationMode,
   groupProjectSessions,
@@ -54,9 +43,10 @@ interface SidebarProps {
 
 const SIDEBAR_EXPANDED_WIDTH = 292;
 const SIDEBAR_COLLAPSED_WIDTH = 54;
-const APP_BACKGROUND = '#1f1f23';
-const SIDEBAR_BACKGROUND = '#17171b';
-const SIDEBAR_HOVER = { bg: 'transparent', color: 'white' };
+const APP_BACKGROUND = adwaitaColors.windowBg;
+const SIDEBAR_BACKGROUND = adwaitaColors.sidebarBg;
+const SIDEBAR_ITEM_HOVER = { bg: 'rgba(255,255,255,0.06)', color: adwaitaColors.fg };
+const SIDEBAR_ITEM_ACTIVE = { bg: 'rgba(255,255,255,0.08)', color: adwaitaColors.fg };
 
 const sessionsListVariants = {
   hidden: {
@@ -142,7 +132,7 @@ export default function Sidebar({
         align="stretch"
         bg="transparent"
         borderRight="1px solid"
-        borderColor="rgba(255,255,255,0.06)"
+        borderColor={adwaitaColors.border}
       >
         <AnimatePresence initial={false} mode="wait">
           {isOpen ? (
@@ -155,100 +145,98 @@ export default function Sidebar({
               style={{ width: SIDEBAR_EXPANDED_WIDTH, height: '100%', overflow: 'hidden' }}
             >
               <VStack h="100%" spacing={0} align="stretch">
-                <Box px={4} pt={3} pb={3}>
-                  <HStack justify="space-between" align="center">
-                    <img src={kurisuLogo} alt="Kurisu" style={{ width: '26px', height: '26px' }} draggable={false} />
-                    <IconButton
-                      aria-label={t('sidebar.collapseSidebar')}
-                      icon={<PanelLeftClose size={16} />}
-                      variant="ghost"
-                      size="sm"
-                      color="gray.400"
-                      borderRadius="10px"
-                      onClick={onClose}
-                      _hover={SIDEBAR_HOVER}
-                    />
-                  </HStack>
+                <Box px={3} pt={4} pb={3}>
+                  <ModeSwitch<SessionNavigationMode>
+                    fullWidth
+                    ariaLabel={t('top.modeSwitch')}
+                    value={mode}
+                    onChange={(next) => {
+                      if (next !== mode) onToggleMode();
+                    }}
+                    options={[
+                      {
+                        value: 'chats',
+                        label: t('top.chats'),
+                        ariaLabel: t('top.chats'),
+                        icon: <AdwaitaIcon source={adwaitaIconSources.chat} size={14} />,
+                      },
+                      {
+                        value: 'projects',
+                        label: t('top.coding'),
+                        ariaLabel: t('top.coding'),
+                        icon: <AdwaitaIcon source={adwaitaIconSources.code} size={14} />,
+                      },
+                    ]}
+                  />
                 </Box>
-                <Box px={3} pb={3}>
-                  <VStack spacing={0} align="stretch">
+
+                <Box px={2} pb={3}>
+                  <VStack spacing={1} align="stretch">
                     <Button
-                      leftIcon={<Plus size={15} />}
+                      leftIcon={<AdwaitaIcon source={adwaitaIconSources.plus} size={15} />}
                       variant="ghost"
                       size="sm"
                       width="100%"
-                      h="38px"
-                      borderRadius="14px"
+                      h="34px"
+                      borderRadius="8px"
                       justifyContent="flex-start"
-                      fontWeight="normal"
-                      color="gray.400"
+                      fontWeight={500}
+                      fontSize="13px"
+                      color={adwaitaColors.fg}
                       onClick={onNewChat}
-                      _hover={SIDEBAR_HOVER}
-                      _active={{ bg: 'transparent', color: 'white' }}
+                      _hover={SIDEBAR_ITEM_HOVER}
+                      _active={SIDEBAR_ITEM_HOVER}
                     >
                       {t('sidebar.newChat')}
                     </Button>
                     <Button
-                      leftIcon={<Search size={15} />}
+                      leftIcon={<AdwaitaIcon source={adwaitaIconSources.search} size={14} />}
                       variant="ghost"
                       size="sm"
                       width="100%"
-                      h="38px"
-                      borderRadius="14px"
+                      h="30px"
+                      borderRadius="8px"
                       justifyContent="flex-start"
                       fontWeight="normal"
-                      color="gray.400"
+                      fontSize="13px"
+                      color={adwaitaColors.fgSecondary}
                       onClick={onOpenSearch}
-                      _hover={SIDEBAR_HOVER}
-                      _active={{ bg: 'transparent', color: 'white' }}
+                      _hover={SIDEBAR_ITEM_HOVER}
+                      _active={SIDEBAR_ITEM_ACTIVE}
                     >
                       {t('sidebar.search')}
                     </Button>
                     <Button
-                      leftIcon={mode === 'projects' ? <MessageCircle size={15} /> : <Code2 size={15} />}
+                      leftIcon={<AdwaitaIcon source={adwaitaIconSources.extensions} size={14} />}
                       variant="ghost"
                       size="sm"
                       width="100%"
-                      h="38px"
-                      borderRadius="14px"
+                      h="30px"
+                      borderRadius="8px"
                       justifyContent="flex-start"
                       fontWeight="normal"
-                      color="gray.400"
-                      onClick={onToggleMode}
-                      _hover={SIDEBAR_HOVER}
-                      _active={{ bg: 'transparent', color: 'white' }}
-                    >
-                      {mode === 'projects' ? t('top.chats') : t('top.coder')}
-                    </Button>
-                    <Button
-                      leftIcon={<Puzzle size={15} />}
-                      variant="ghost"
-                      size="sm"
-                      width="100%"
-                      h="38px"
-                      borderRadius="14px"
-                      justifyContent="flex-start"
-                      fontWeight="normal"
-                      color="gray.400"
+                      fontSize="13px"
+                      color={adwaitaColors.fgSecondary}
                       onClick={onOpenSkills}
-                      _hover={SIDEBAR_HOVER}
-                      _active={{ bg: 'transparent', color: 'white' }}
+                      _hover={SIDEBAR_ITEM_HOVER}
+                      _active={SIDEBAR_ITEM_ACTIVE}
                     >
                       {t('top.skills')}
                     </Button>
                     <Button
-                      leftIcon={<Settings size={15} />}
+                      leftIcon={<AdwaitaIcon source={adwaitaIconSources.settings} size={14} />}
                       variant="ghost"
                       size="sm"
                       width="100%"
-                      h="38px"
-                      borderRadius="14px"
+                      h="30px"
+                      borderRadius="8px"
                       justifyContent="flex-start"
                       fontWeight="normal"
-                      color="gray.400"
+                      fontSize="13px"
+                      color={adwaitaColors.fgSecondary}
                       onClick={onOpenSettings}
-                      _hover={SIDEBAR_HOVER}
-                      _active={{ bg: 'transparent', color: 'white' }}
+                      _hover={SIDEBAR_ITEM_HOVER}
+                      _active={SIDEBAR_ITEM_ACTIVE}
                     >
                       {t('top.settings')}
                     </Button>
@@ -260,7 +248,7 @@ export default function Sidebar({
                   overflowY="auto"
                   overflowX="hidden"
                   py={1}
-                  px={3}
+                  px={2}
                   sx={{
                     scrollbarGutter: 'stable',
                     scrollbarWidth: 'none',
@@ -268,7 +256,7 @@ export default function Sidebar({
                     '&::-webkit-scrollbar': { width: '0px', height: '0px', display: 'none' },
                   }}
                 >
-                  <VStack spacing={1.5} align="stretch">
+                  <VStack spacing={0.5} align="stretch">
                     {mode === 'projects' ? groupedConversations.map((group) => {
                       const isGroupOpen = openGroups[group.name] !== false;
                       return (
@@ -276,32 +264,31 @@ export default function Sidebar({
                           <Button
                             variant="ghost"
                             w="full"
-                            h="28px"
+                            h="24px"
                             px={2}
                             justifyContent="flex-start"
-                            color="gray.500"
-                            fontSize="xs"
-                            fontWeight="normal"
-                            borderRadius="12px"
-                            _hover={{ bg: 'transparent', color: 'gray.200' }}
-                            _active={{ bg: 'transparent', color: 'gray.100' }}
+                            color={adwaitaColors.fgMuted}
+                            fontSize="11px"
+                            fontWeight={600}
+                            letterSpacing="0.02em"
+                            borderRadius="6px"
+                            _hover={{ bg: 'transparent', color: adwaitaColors.fgSecondary }}
+                            _active={{ bg: 'transparent', color: adwaitaColors.fg }}
                             transition="color 0.2s ease"
                             onClick={() => toggleGroup(group.name)}
                             leftIcon={
-                              <ChevronRight
-                                size={12}
-                                style={{
-                                  transition: 'transform 0.2s ease',
-                                  transform: isGroupOpen ? 'rotate(90deg)' : 'none',
-                                }}
-                              />
+                              <motion.span
+                                animate={{ rotate: isGroupOpen ? 90 : 0 }}
+                                transition={{ duration: 0.18, ease: 'easeOut' }}
+                                style={{ display: 'inline-flex' }}
+                              >
+                                <AdwaitaIcon source={adwaitaIconSources.arrowRight} size={11} />
+                              </motion.span>
                             }
                           >
-                            {isGroupOpen ? (
-                              <FolderOpen size={12} style={{ marginRight: '4px' }} />
-                            ) : (
-                              <Folder size={12} style={{ marginRight: '4px' }} />
-                            )}
+                            <span style={{ marginRight: '4px', display: 'inline-flex' }}>
+                              <AdwaitaIcon source={adwaitaIconSources.folder} size={11} />
+                            </span>
                             {group.name}
                           </Button>
 
@@ -314,7 +301,7 @@ export default function Sidebar({
                                 exit="hidden"
                                 style={{ overflow: 'hidden', width: '100%' }}
                               >
-                                <VStack spacing={1} align="stretch">
+                                <VStack spacing={0.5} align="stretch" pt={0.5}>
                                   {group.sessions.map((conv, idx) => (
                                     <motion.div
                                       key={conv.sessionId}
@@ -346,16 +333,17 @@ export default function Sidebar({
                       <Box key={section.key}>
                         <Text
                           px={2}
-                          pt={1}
-                          pb={2}
-                          fontSize="xs"
-                          color="gray.500"
-                          fontWeight="normal"
+                          pt={2}
+                          pb={1}
+                          fontSize="11px"
+                          fontWeight={600}
+                          letterSpacing="0.02em"
+                          color={adwaitaColors.fgMuted}
                           textTransform="none"
                         >
                           {section.label}
                         </Text>
-                        <VStack spacing={1} align="stretch">
+                        <VStack spacing={0.5} align="stretch">
                           {section.sessions.map((conv, idx) => (
                             <motion.div
                               key={conv.sessionId}

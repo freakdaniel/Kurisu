@@ -2,7 +2,6 @@ import { useEffect, type RefObject } from 'react';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Box, Button, Center, HStack, Input, Text, VStack, Portal } from '@chakra-ui/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, FilePlus, FolderOpen, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { normalizePathKey } from '@/lib/paths';
 import type { ProjectOption } from '@/features/chat/types';
@@ -11,8 +10,9 @@ import {
   getNoProjectsLabel,
   getProjectPickerSearchPlaceholder,
 } from '@/features/chat/composer/composerLabels';
-
-const ACCENT = '#615CED';
+import { AdwaitaIcon } from '@/components/ui/AdwaitaIcon';
+import { adwaitaIconSources } from '@/components/ui/adwaitaIconSources';
+import { adwaitaColors } from '@/lib/themeTokens';
 
 export interface ProjectPickerPosition {
   top: number;
@@ -92,33 +92,33 @@ export function ProjectPicker({
               display="flex"
               flexDirection="column"
               maxH={`${position.maxHeight}px`}
-              bg="gray.800"
+              bg={adwaitaColors.popoverBg}
               border="1px solid"
-              borderColor="gray.700"
+              borderColor={adwaitaColors.borderStrong}
               borderRadius="2xl"
               shadow="2xl"
               overflow="hidden"
             >
               <HStack px={3} py={1.5} spacing={3} minH="38px">
-                <Search size={13} color="#9494a2" />
+                <AdwaitaIcon source={adwaitaIconSources.search} size={13} />
                 <Input
                   value={query}
                   onChange={(e) => onQueryChange(e.target.value)}
                   placeholder={getProjectPickerSearchPlaceholder(t)}
                   bg="transparent"
                   border="none"
-                  color="white"
+                  color={adwaitaColors.fg}
                   fontSize="sm"
                   fontWeight="normal"
                   h="20px"
                   minH="20px"
                   p={0}
-                  _placeholder={{ color: 'gray.500' }}
+                  _placeholder={{ color: adwaitaColors.fgMuted }}
                   _focusVisible={{ boxShadow: 'none' }}
                 />
               </HStack>
 
-              <Box borderTop="1px solid" borderColor="gray.700" />
+              <Box borderTop="1px solid" borderColor={adwaitaColors.border} />
 
               <Box
                 h={`${projectListHeight}px`}
@@ -142,25 +142,25 @@ export function ProjectPicker({
                         h="40px"
                         px={3}
                         borderRadius="xl"
-                        color="gray.200"
+                        color={adwaitaColors.fg}
                         fontWeight="normal"
-                        _hover={{ bg: 'gray.700' }}
+                        _hover={{ bg: adwaitaColors.cardBg }}
                         onClick={() => onSelectProject(project)}
                       >
                         <HStack spacing={3} minW={0}>
-                          <FolderOpen size={14} />
+                          <AdwaitaIcon source={adwaitaIconSources.folder} size={14} />
                           <Text fontSize="sm" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
                             {project.name}
                           </Text>
                         </HStack>
                         {selectedProjectMode === 'project' && normalizePathKey(project.path) === normalizePathKey(selectedProjectPath) && (
-                          <Check size={16} color={ACCENT} />
+                          <AdwaitaIcon source={adwaitaIconSources.bookmark} size={14} />
                         )}
                       </Button>
                     ))
                   ) : (
                     <Center py={4}>
-                      <Text fontSize="sm" color="gray.500">
+                      <Text fontSize="sm" color={adwaitaColors.fgMuted}>
                         {getNoProjectsLabel(t)}
                       </Text>
                     </Center>
@@ -168,7 +168,7 @@ export function ProjectPicker({
                 </VStack>
               </Box>
 
-              <Box borderTop="1px solid" borderColor="gray.700" />
+              <Box borderTop="1px solid" borderColor={adwaitaColors.border} />
 
               <VStack spacing={1} align="stretch" px={2} py={2}>
                 <Button
@@ -177,13 +177,13 @@ export function ProjectPicker({
                   h="40px"
                   px={3}
                   borderRadius="xl"
-                  color="gray.200"
+                  color={adwaitaColors.fg}
                   fontWeight="normal"
-                  _hover={{ bg: 'gray.700' }}
+                  _hover={{ bg: adwaitaColors.cardBg }}
                   onClick={onAddProject}
                 >
                   <HStack spacing={3} minW={0}>
-                    <FilePlus size={14} />
+                    <AdwaitaIcon source={adwaitaIconSources.tabNew} size={14} />
                     <Text fontSize="sm" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
                       {getAddProjectLabel(t)}
                     </Text>

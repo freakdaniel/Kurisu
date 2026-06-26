@@ -1,10 +1,12 @@
 import { Box, Button, HStack, Skeleton, Text } from '@chakra-ui/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { MoreHorizontal } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatRelativeTime } from '@/lib/time';
 import type { SessionPreview } from '@/types/desktop';
+import { AdwaitaIcon } from '@/components/ui/AdwaitaIcon';
+import { adwaitaIconSources } from '@/components/ui/adwaitaIconSources';
+import { adwaitaColors } from '@/lib/themeTokens';
 
 interface SessionRowProps {
   session: SessionPreview;
@@ -16,7 +18,7 @@ interface SessionRowProps {
   onActionsClick: (session: SessionPreview, x: number, y: number) => void;
 }
 
-const SESSION_HOVER_BACKGROUND = 'rgba(255,255,255,0.045)';
+const SESSION_HOVER_BACKGROUND = 'rgba(255,255,255,0.06)';
 const sessionItemVariants = {
   hidden: { opacity: 0, x: -8 },
   visible: (i: number) => ({
@@ -52,7 +54,7 @@ export function SessionRow({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered((current) => (current ? false : current))}
       className="session-row"
-      h="38px"
+      h="30px"
       px={3}
       py={0}
       alignItems="center"
@@ -60,25 +62,25 @@ export function SessionRow({
       w="full"
       minW={0}
       position="relative"
-      bg={isSelected ? '#3a3a42' : 'transparent'}
-      color={isSelected ? 'white' : 'gray.200'}
-      _hover={{ bg: isSelected ? '#3a3a42' : SESSION_HOVER_BACKGROUND, color: 'white' }}
-      _active={{ bg: isSelected ? '#3a3a42' : SESSION_HOVER_BACKGROUND, color: 'white' }}
-      borderRadius="full"
+      bg={isSelected ? adwaitaColors.sidebarSelectedBg : 'transparent'}
+      color={isSelected ? adwaitaColors.fg : adwaitaColors.fgSecondary}
+      _hover={{ bg: isSelected ? adwaitaColors.sidebarSelectedBg : SESSION_HOVER_BACKGROUND, color: adwaitaColors.fg }}
+      _active={{ bg: isSelected ? adwaitaColors.sidebarSelectedBg : SESSION_HOVER_BACKGROUND, color: adwaitaColors.fg }}
+      borderRadius="8px"
       fontSize="13px"
       fontWeight="normal"
       lineHeight="normal"
       overflow="visible"
       boxShadow={isSelected ? '0 0 0 1px rgba(255,255,255,0.04) inset' : 'none'}
     >
-      <Box flex={1} minW={0} h="22px" pr={showSessionActions ? 9 : 2} display="flex" alignItems="center" position="relative" zIndex={1}>
+      <Box flex={1} minW={0} h="20px" pr={showSessionActions ? 9 : 2} display="flex" alignItems="center" position="relative" zIndex={1}>
         {session.title === null ? (
           <Skeleton
-            h="14px"
+            h="12px"
             w="120px"
             borderRadius="sm"
-            startColor="gray.700"
-            endColor="gray.600"
+            startColor={adwaitaColors.cardBg}
+            endColor={adwaitaColors.headerbarBg}
             flexShrink={0}
           />
         ) : (
@@ -92,7 +94,7 @@ export function SessionRow({
             textOverflow="ellipsis"
             whiteSpace="nowrap"
             textAlign="left"
-            lineHeight="22px"
+            lineHeight="20px"
           >
             {session.title}
           </Text>
@@ -100,13 +102,13 @@ export function SessionRow({
       </Box>
       {mode !== 'chats' && (
         <HStack spacing={2} ml={3} flexShrink={0}>
-          <Text fontSize="xs" color={isSelected ? 'gray.300' : 'gray.500'}>
+          <Text fontSize="11px" color={isSelected ? adwaitaColors.fgSecondary : adwaitaColors.fgMuted}>
             {formatRelativeTime(session.lastActivity, t)}
           </Text>
           <Box
             boxSize="6px"
             borderRadius="full"
-            bg={isRunning ? 'green.400' : 'transparent'}
+            bg={isRunning ? adwaitaColors.success : 'transparent'}
             transition="background-color 0.2s ease"
           />
         </HStack>
@@ -115,7 +117,7 @@ export function SessionRow({
         <Box
           boxSize="6px"
           borderRadius="full"
-          bg="green.400"
+          bg={adwaitaColors.success}
           flexShrink={0}
           transition="background-color 0.2s ease"
           position="relative"
@@ -137,11 +139,11 @@ export function SessionRow({
                 top: 0,
                 bottom: 0,
                 width: '76px',
-                borderRadius: '999px',
+                borderRadius: '8px',
                 pointerEvents: 'none',
                 background: isSelected
-                  ? 'linear-gradient(to right, rgba(58,58,66,0), rgba(58,58,66,0.82) 32%, rgba(58,58,66,1) 72%)'
-                  : 'linear-gradient(to right, rgba(29,29,33,0), rgba(29,29,33,0.42) 30%, rgba(31,31,35,0.92) 72%)',
+                  ? `linear-gradient(to right, ${adwaitaColors.sidebarSelectedBg}00, ${adwaitaColors.sidebarSelectedBg}d0 32%, ${adwaitaColors.sidebarSelectedBg} 72%)`
+                  : `linear-gradient(to right, transparent, rgba(255,255,255,0.10) 30%, rgba(255,255,255,0.18) 72%)`,
               }}
             />
             <Box
@@ -160,13 +162,13 @@ export function SessionRow({
               >
                 <Box
                   className="session-actions"
-                  w="24px"
-                  h="24px"
+                  w="22px"
+                  h="22px"
                   display="flex"
                   alignItems="center"
                   justifyContent="center"
                   borderRadius="full"
-                  color={isSelected ? 'gray.200' : 'gray.400'}
+                  color={isSelected ? adwaitaColors.fg : adwaitaColors.fgSecondary}
                   bg="transparent"
                   transition="color 0.14s ease"
                   role="button"
@@ -184,9 +186,9 @@ export function SessionRow({
                     const rect = event.currentTarget.getBoundingClientRect();
                     onActionsClick(session, rect.right, rect.bottom);
                   }}
-                  _hover={{ color: 'white', bg: 'transparent' }}
+                  _hover={{ color: adwaitaColors.fg, bg: 'transparent' }}
                 >
-                  <MoreHorizontal size={15} style={{ transform: 'rotate(90deg)' }} />
+                  <AdwaitaIcon source={adwaitaIconSources.more} size={15} />
                 </Box>
               </motion.div>
             </Box>

@@ -1,5 +1,8 @@
 {
-  "app": { "workspace": "Рабочая область", "initializing": "Инициализация..." },
+  "app": {
+    "workspace": "Рабочая область",
+    "initializing": "Инициализация..."
+  },
   "modes": {
     "title": "Режим кода",
     "code": "Код",
@@ -12,8 +15,20 @@
     "bypassPermissions": "Без ограничений",
     "bypassPermissionsDesc": "Принимать все разрешения"
   },
-  "status": { "connected": "IPC подключён", "local": "Локальный режим" },
-  "top": { "settings": "Настройки", "skills": "Навыки и интеграции", "directConnect": "Remote connect", "chats": "Чаты", "coder": "Coder" },
+  "status": {
+    "connected": "IPC подключён",
+    "local": "Локальный режим"
+  },
+  "top": {
+    "settings": "Настройки",
+    "skills": "Навыки и интеграции",
+    "directConnect": "Remote connect",
+    "chats": "Чаты",
+    "coder": "Coder",
+    "cowork": "Совместная работа",
+    "modeSwitch": "Режим рабочего пространства",
+    "coding": "Кодинг"
+  },
   "sidebar": {
     "newChat": "Новый чат",
     "search": "Поиск",
@@ -108,7 +123,8 @@
     "minimize": "Свернуть",
     "maximize": "Развернуть",
     "close": "Закрыть",
-    "toggleSidebar": "Показать/скрыть панель"
+    "toggleSidebar": "Показать/скрыть панель",
+    "menu": "Меню"
   },
   "search": {
     "placeholder": "Фильтровать сессии по названию...",

@@ -14,8 +14,12 @@
   "top": {
     "settings": "설정",
     "directConnect": "Remote connect",
-    "chats": "Chats",
-    "coder": "Coder"
+    "chats": "채팅",
+    "coder": "코드",
+    "skills": "기술 및 통합",
+    "cowork": "협업",
+    "modeSwitch": "작업 영역",
+    "coding": "코딩"
   },
   "sidebar": {
     "newChat": "새 채팅",
@@ -98,7 +102,8 @@
     "minimize": "최소화",
     "maximize": "최대화",
     "close": "닫기",
-    "toggleSidebar": "사이드바 전환"
+    "toggleSidebar": "사이드바 전환",
+    "menu": "메뉴"
   },
   "search": {
     "placeholder": "이름으로 세션 필터링...",

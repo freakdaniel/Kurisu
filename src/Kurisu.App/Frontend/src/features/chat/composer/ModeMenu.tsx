@@ -1,12 +1,23 @@
 import { useEffect, type RefObject } from 'react';
 import { Box, Button, Text, VStack } from '@chakra-ui/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AGENT_MODES, type AgentMode } from '@/types/ui';
-import { MODE_ICONS } from '@/features/chat/messages';
+import { AdwaitaIcon } from '@/components/ui/AdwaitaIcon';
+import { adwaitaIconSources } from '@/components/ui/adwaitaIconSources';
+import { adwaitaColors } from '@/lib/themeTokens';
 
-const ACCENT = '#615CED';
+/**
+ * Maps an {@link AgentMode} value to the matching Adwaita symbolic icon.
+ * Keeping the source of truth here ensures the inline composer pill, the
+ * dropdown rows and the selected state all share the same icon.
+ */
+const MODE_ICON_BY_VALUE: Record<AgentMode, string> = {
+  'default': adwaitaIconSources.modeAsk,
+  'auto-edit': adwaitaIconSources.modeEdit,
+  'plan': adwaitaIconSources.modePlan,
+  'yolo': adwaitaIconSources.modeBypass,
+};
 
 export interface ModeMenuProps {
   mode: AgentMode;
@@ -56,8 +67,8 @@ export function ModeMenu({ mode, isOpen, onSelect, onClose, containerRef }: Mode
               ref={containerRef}
               minW="300px"
               border="1px solid"
-              borderColor="gray.700"
-              bg="gray.800"
+              borderColor={adwaitaColors.borderStrong}
+              bg={adwaitaColors.popoverBg}
               borderRadius="20px"
               shadow="lg"
               p={1.5}
@@ -77,22 +88,24 @@ export function ModeMenu({ mode, isOpen, onSelect, onClose, containerRef }: Mode
                     onClick={() => { onSelect(m.value); }}
                     bg="transparent"
                     _hover={{ bg: 'rgba(255,255,255,0.05)' }}
-                    color="white"
+                    color={adwaitaColors.fg}
                     gap={3}
                     fontWeight="normal"
                   >
-                    <Box w={5} h={5} display="flex" alignItems="center" justifyContent="center" flexShrink={0}>
-                      {isSelected ? (
-                        <Check size={16} color={ACCENT} strokeWidth={2.5} />
-                      ) : (
-                        <Box color="gray.500">
-                          {MODE_ICONS[m.value]}
-                        </Box>
-                      )}
+                    <Box
+                      w={5}
+                      h={5}
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      flexShrink={0}
+                      color={isSelected ? adwaitaColors.accent : adwaitaColors.fgSecondary}
+                    >
+                      <AdwaitaIcon source={MODE_ICON_BY_VALUE[m.value]} size={15} />
                     </Box>
                     <VStack align="start" spacing={0.5} flex={1}>
                       <Text fontSize="sm" fontWeight="normal" textAlign="left" whiteSpace="nowrap">{t(m.labelKey)}</Text>
-                      <Text fontSize="xs" color="gray.500" whiteSpace="normal" textAlign="left">{t(m.descriptionKey)}</Text>
+                      <Text fontSize="xs" color={adwaitaColors.fgMuted} whiteSpace="normal" textAlign="left">{t(m.descriptionKey)}</Text>
                     </VStack>
                   </Button>
                 );
@@ -104,3 +117,5 @@ export function ModeMenu({ mode, isOpen, onSelect, onClose, containerRef }: Mode
     </AnimatePresence>
   );
 }
+
+export { MODE_ICON_BY_VALUE };

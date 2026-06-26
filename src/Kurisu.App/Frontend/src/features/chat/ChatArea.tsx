@@ -13,9 +13,10 @@ import { useMessageRouting } from '@/features/chat/useMessageRouting';
 import { useTurnActions } from '@/features/chat/useTurnActions';
 import { useApprovalActions } from '@/features/chat/useApprovalActions';
 import type { SessionNavigationMode } from '@/components/layout/sessionNavigation';
+import { adwaitaColors } from '@/lib/themeTokens';
 
-const APP_BACKGROUND = '#1f1f23';
-const SIDEBAR_BORDER = 'rgba(255,255,255,0.06)';
+const APP_BACKGROUND = adwaitaColors.windowBg;
+const SIDEBAR_BORDER = adwaitaColors.border;
 const CHAT_MAX_WIDTH = '4xl';
 
 export interface ChatAreaProps {
@@ -227,6 +228,48 @@ export default function ChatArea({
   const canSubmit = !isComposerBusy && prompt.trim().length > 0 && !!picker.selectedProjectWorkingDirectory;
   const isStopHighlighted = canStopActiveTurn;
 
+  // Compact composer (header + textarea + actions) used both in the centered
+  // welcome state and pinned at the bottom of an active conversation. Pulled
+  // out so the two layouts stay perfectly in sync.
+  const composerElement = (
+    <Box mx="auto" w="full" maxW={CHAT_MAX_WIDTH}>
+      <Composer
+        prompt={prompt}
+        onPromptChange={setPrompt}
+        mode={mode}
+        onModeChange={setMode}
+        onSubmit={() => { turn.handleSubmit(); }}
+        onStop={() => { turn.handleStopGeneration(); }}
+        isComposerBusy={isComposerBusy}
+        canSubmit={canSubmit}
+        contextPercent={contextPercent}
+        contextTooltipVisible={showContextTooltip}
+        onContextTooltipEnter={() => setShowContextTooltip(true)}
+        onContextTooltipLeave={() => setShowContextTooltip(false)}
+        usedTokensLabel={usedTokensLabel}
+        compressionLabel={compressionLabel}
+        isStopHighlighted={isStopHighlighted}
+        contextColor={contextPercent >= 70 ? adwaitaColors.warning : adwaitaColors.fgMuted}
+        textareaRef={textareaRef}
+        placeholder={sidebarMode === 'chats' ? t('chat.chatModePromptPlaceholder') : t('chat.promptPlaceholder')}
+      />
+    </Box>
+  );
+
+  const disclaimerElement = (
+    <Text
+      mx="auto"
+      mt={2}
+      px={2}
+      fontSize="11px"
+      color={adwaitaColors.fgMuted}
+      textAlign="center"
+      maxW={CHAT_MAX_WIDTH}
+    >
+      {t('chat.disclaimer')}
+    </Text>
+  );
+
   return (
     <HStack h="100%" spacing={0} bg={APP_BACKGROUND} align="stretch" overflow="hidden">
       <VStack flex={1} minW={0} h="100%" spacing={0} align="stretch" overflow="hidden">
@@ -241,7 +284,7 @@ export default function ChatArea({
             minH="60px"
             flexShrink={0}
           >
-            <Text fontWeight="semibold" color="white" fontSize="sm" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap" maxW="560px">
+            <Text fontWeight="semibold" color={adwaitaColors.fg} fontSize="sm" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap" maxW="560px">
               {selectedSession?.title ?? t('chat.newChat')}
             </Text>
           </HStack>
@@ -249,62 +292,97 @@ export default function ChatArea({
 
         <HStack flex={1} minH={0} spacing={0} align="stretch">
           <VStack flex={1} minW={0} h="100%" spacing={0} align="stretch" overflow="hidden">
-            <Box
-              ref={scrollContainerRef}
-              flex={1}
-              overflowY="scroll"
-              onScroll={updateStickToBottomState}
-              sx={{
-                '&::-webkit-scrollbar': { width: '6px' },
-                '&::-webkit-scrollbar-track': { background: 'transparent' },
-                '&::-webkit-scrollbar-thumb': { background: '#5b5b67', borderRadius: '3px' },
-                '&::-webkit-scrollbar-thumb:hover': { background: '#72727f' },
-              }}>
-              {hasSession ? (
-                <MessageList
-                  displaySessionDetail={routing.displaySessionDetail}
-                  isLoadingSession={isLoadingSession}
-                  isAwaitingAssistantText={isAwaitingAssistantText}
-                  loadingPhrase={defaultThinkingLabel}
-                  plainThinkingLabel={defaultThinkingLabel}
-                  liveReasoningAssistantId={routing.liveReasoningAssistantEntry?.id ?? ''}
-                  latestPendingUserEntryId={routing.latestPendingUserEntryId}
-                  animatedUserEntryIdsRef={animatedUserEntryIdsRef}
-                  locale={locale}
-                  reasoningArtifactsByAssistantId={routing.reasoningArtifactsByAssistantId}
-                  liveReasoningArtifacts={routing.liveReasoningArtifacts}
-                  latestLiveThinkingSnapshot={routing.latestLiveThinkingSnapshot}
-                  activePendingApprovalPresentation={approval.activePresentation}
-                  approvalFeedbackById={approval.feedbackById}
-                  onApprovalFeedbackChange={approval.onFeedbackChange}
-                  onApprovalAllowOnce={approval.onAllowOnce}
-                  onApprovalAlwaysAllow={approval.onAlwaysAllow}
-                  onApprovalSubmitFeedback={approval.onSubmitFeedback}
-                  onOpenReasoning={routing.handleOpenReasoning}
-                  onToggleLiveReasoning={routing.handleToggleLiveReasoning}
-                />
-              ) : (
-                <Flex h="100%" direction="column" align="center" justify="center" userSelect="none">
+            {hasSession ? (
+              <>
+                <Box
+                  ref={scrollContainerRef}
+                  flex={1}
+                  overflowY="scroll"
+                  onScroll={updateStickToBottomState}
+                  sx={{
+                    '&::-webkit-scrollbar': { width: '6px' },
+                    '&::-webkit-scrollbar-track': { background: 'transparent' },
+                    '&::-webkit-scrollbar-thumb': { background: '#5b5b67', borderRadius: '3px' },
+                    '&::-webkit-scrollbar-thumb:hover': { background: '#72727f' },
+                  }}>
+                  <MessageList
+                    displaySessionDetail={routing.displaySessionDetail}
+                    isLoadingSession={isLoadingSession}
+                    isAwaitingAssistantText={isAwaitingAssistantText}
+                    loadingPhrase={defaultThinkingLabel}
+                    plainThinkingLabel={defaultThinkingLabel}
+                    liveReasoningAssistantId={routing.liveReasoningAssistantEntry?.id ?? ''}
+                    latestPendingUserEntryId={routing.latestPendingUserEntryId}
+                    animatedUserEntryIdsRef={animatedUserEntryIdsRef}
+                    locale={locale}
+                    reasoningArtifactsByAssistantId={routing.reasoningArtifactsByAssistantId}
+                    liveReasoningArtifacts={routing.liveReasoningArtifacts}
+                    latestLiveThinkingSnapshot={routing.latestLiveThinkingSnapshot}
+                    activePendingApprovalPresentation={approval.activePresentation}
+                    approvalFeedbackById={approval.feedbackById}
+                    onApprovalFeedbackChange={approval.onFeedbackChange}
+                    onApprovalAllowOnce={approval.onAllowOnce}
+                    onApprovalAlwaysAllow={approval.onAlwaysAllow}
+                    onApprovalSubmitFeedback={approval.onSubmitFeedback}
+                    onOpenReasoning={routing.handleOpenReasoning}
+                    onToggleLiveReasoning={routing.handleToggleLiveReasoning}
+                  />
+                </Box>
+
+                <Box px={4} pb={4} pt={3} position="relative" bg={APP_BACKGROUND} flexShrink={0}>
+                  <Box
+                    position="absolute"
+                    top="-24px"
+                    left={0}
+                    right={0}
+                    h="24px"
+                    pointerEvents="none"
+                    zIndex={5}
+                    sx={{
+                      background: `linear-gradient(to bottom, transparent, ${APP_BACKGROUND})`,
+                    }}
+                  />
+                  {composerElement}
+                </Box>
+              </>
+            ) : (
+              // Centered welcome state (Claude-style): headline + composer
+              // float in the middle of the viewport, the message list area is
+              // intentionally empty until the first user turn arrives.
+              <Flex
+                flex={1}
+                direction="column"
+                align="center"
+                justify="center"
+                userSelect="none"
+                px={4}
+                py={10}
+                position="relative"
+              >
+                <Flex
+                  direction="column"
+                  align="center"
+                  w="full"
+                  maxW={CHAT_MAX_WIDTH}
+                  gap={5}
+                >
                   <img
                     src={newSessionLogo}
                     alt="WelcomeImg"
-                    style={{ height: '96px', width: '96px', opacity: 0.9, marginBottom: '16px' }}
+                    style={{ height: '88px', width: '88px', opacity: 0.92 }}
                     draggable={false}
                   />
-                  <Text fontSize="2xl" fontWeight="semibold" color="white" letterSpacing="tight">
+                  <Text fontSize="2xl" fontWeight={600} color={adwaitaColors.fg} letterSpacing="tight" textAlign="center">
                     {sidebarMode === 'chats' ? t('chat.chatModeWelcomeTitle') : t('chat.welcomeTitle')}
                   </Text>
                   {sidebarMode === 'projects' && (
-                    <>
-                      <Box mt={2} position="relative">
-                        <ProjectPickerTriggerButton
-                          ref={picker.buttonRef}
-                          label={picker.selectedProjectLabel}
-                          isOpen={picker.isOpen}
-                          onClick={picker.toggle}
-                        />
-                      </Box>
-
+                    <Box position="relative">
+                      <ProjectPickerTriggerButton
+                        ref={picker.buttonRef}
+                        label={picker.selectedProjectLabel}
+                        isOpen={picker.isOpen}
+                        onClick={picker.toggle}
+                      />
                       <ProjectPicker
                         isOpen={picker.isOpen}
                         position={picker.position}
@@ -319,53 +397,13 @@ export default function ChatArea({
                         onAddProject={picker.addProject}
                         onClose={picker.close}
                       />
-                    </>
+                    </Box>
                   )}
+                  {composerElement}
+                  {disclaimerElement}
                 </Flex>
-              )}
-            </Box>
-
-            <Box px={4} pb={4} pt={3} position="relative" bg={APP_BACKGROUND} flexShrink={0}>
-              <Box
-                position="absolute"
-                top="-24px"
-                left={0}
-                right={0}
-                h="24px"
-                pointerEvents="none"
-                zIndex={5}
-                sx={{
-                  background: `linear-gradient(to bottom, transparent, ${APP_BACKGROUND})`,
-                }}
-              />
-
-              <Box mx="auto" w="full" maxW={CHAT_MAX_WIDTH}>
-                <Composer
-                  prompt={prompt}
-                  onPromptChange={setPrompt}
-                  mode={mode}
-                  onModeChange={setMode}
-                  onSubmit={() => { turn.handleSubmit(); }}
-                  onStop={() => { turn.handleStopGeneration(); }}
-                  isComposerBusy={isComposerBusy}
-                  canSubmit={canSubmit}
-                  contextPercent={contextPercent}
-                  contextTooltipVisible={showContextTooltip}
-                  onContextTooltipEnter={() => setShowContextTooltip(true)}
-                  onContextTooltipLeave={() => setShowContextTooltip(false)}
-                  usedTokensLabel={usedTokensLabel}
-                  compressionLabel={compressionLabel}
-                  isStopHighlighted={isStopHighlighted}
-                  contextColor={contextPercent >= 70 ? 'orange.400' : 'gray.500'}
-                  textareaRef={textareaRef}
-                  placeholder={sidebarMode === 'chats' ? t('chat.chatModePromptPlaceholder') : t('chat.promptPlaceholder')}
-                />
-              </Box>
-
-              <Text mx="auto" mt={2} px={2} fontSize="11px" color="gray.600" textAlign="center" maxW={CHAT_MAX_WIDTH}>
-                {t('chat.disclaimer')}
-              </Text>
-            </Box>
+              </Flex>
+            )}
           </VStack>
 
           <ThinkingPanel
@@ -394,7 +432,7 @@ const ProjectPickerTriggerButton = forwardRef<
         background: 'transparent',
         border: 'none',
         padding: 0,
-        color: '#71717a',
+        color: adwaitaColors.fgSecondary,
         fontWeight: 400,
         cursor: 'pointer',
         display: 'inline-flex',
@@ -404,12 +442,12 @@ const ProjectPickerTriggerButton = forwardRef<
         gap: '4px',
       }}
     >
-      <span style={{ fontSize: '1.5rem', lineHeight: 1, fontWeight: 400, textAlign: 'center' }}>{label}</span>
+      <span style={{ fontSize: '1.25rem', lineHeight: 1, fontWeight: 500, textAlign: 'center' }}>{label}</span>
       <span
         style={{
           height: 0,
           borderBottom: '1px dashed currentColor',
-          opacity: isOpen ? 0.9 : 0.65,
+          opacity: isOpen ? 0.9 : 0.6,
         }}
       />
     </button>

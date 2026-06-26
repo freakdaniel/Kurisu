@@ -1,15 +1,19 @@
 import { Box, HStack } from '@chakra-ui/react';
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useBootstrap } from '@/hooks/useBootstrap';
 import { Sidebar } from '@/features/sidebar';
 import ChatArea from '@/features/chat/ChatArea';
+import { adwaitaColors } from '@/lib/themeTokens';
 import {
   isProjectlessSession,
   type SessionNavigationMode,
 } from './sessionNavigation';
 import { SearchModal } from './SearchModal';
+import { TitleBar } from './TitleBar';
 
 export default function MainLayout() {
+  const { t } = useTranslation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [sidebarMode, setSidebarMode] = useState<SessionNavigationMode>('projects');
   const [selectedSessionId, setSelectedSessionId] = useState('');
@@ -140,8 +144,15 @@ export default function MainLayout() {
   }, [lastSelectedChatSessionId, lastSelectedProjectSessionId, sessions]);
 
   return (
-    <Box h="100vh" w="100vw" overflow="hidden" bg="#1f1f23" position="relative">
-      <HStack h="100%" w="100%" spacing={0} align="stretch">
+    <Box h="100vh" w="100vw" overflow="hidden" bg={adwaitaColors.windowBg} position="relative">
+      <TitleBar
+        isSidebarOpen={isSidebarOpen}
+        onToggleSidebar={() => setIsSidebarOpen((current) => !current)}
+        onOpenSearch={openSearch}
+        onOpenMenu={() => console.log('Open menu')}
+        productName={t('titlebar.appName')}
+      />
+      <HStack h="calc(100% - 40px)" w="100%" spacing={0} align="stretch">
         <Sidebar
           isOpen={isSidebarOpen}
           onClose={() => setIsSidebarOpen((current) => !current)}
