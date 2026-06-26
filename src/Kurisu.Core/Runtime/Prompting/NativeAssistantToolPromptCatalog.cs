@@ -1,3 +1,5 @@
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Core.Runtime;
 
 internal static class NativeAssistantToolPromptCatalog
@@ -14,7 +16,7 @@ internal static class NativeAssistantToolPromptCatalog
             - After finding a likely tool, switch to that tool directly instead of repeatedly calling `tool_search`.
             """),
         new(
-            "web_search",
+            WellKnownToolNames.WebSearch,
             110,
             """
             ## `web_search`
@@ -24,7 +26,7 @@ internal static class NativeAssistantToolPromptCatalog
             - If one search result looks stale or weak, refine the query and search again instead of answering from shaky evidence.
             """),
         new(
-            "web_fetch",
+            WellKnownToolNames.WebFetch,
             120,
             """
             ## `web_fetch`
@@ -33,7 +35,7 @@ internal static class NativeAssistantToolPromptCatalog
             - If the URL 404s, redirects, or looks stale, recover by searching for a replacement source instead of treating the tool failure as the end of the task.
             """),
         new(
-            "todo_write",
+            WellKnownToolNames.TodoWrite,
             130,
             """
             ## `todo_write`

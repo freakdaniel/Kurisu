@@ -1,5 +1,7 @@
 using Kurisu.Core.Followup;
 
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Tests.Followup;
 
 public sealed class FollowupSuggestionServiceTests
@@ -22,7 +24,7 @@ public sealed class FollowupSuggestionServiceTests
             Directory.CreateDirectory(systemRoot);
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(environmentPaths);
             var transcriptStore = new DesktopSessionCatalogService(runtimeProfileService, new ChatRecordingService());
             var interruptedStore = new InterruptedTurnStore();
@@ -43,14 +45,14 @@ public sealed class FollowupSuggestionServiceTests
                     return new LlmContentResponse
                     {
                         Content = "run the tests",
-                        ProviderName = "kurisu-compatible",
+                        ProviderName = ProviderFlavors.OpenAiCompatible,
                         Model = "qwen3-coder-plus",
                         StopReason = "completed"
                     };
                 }),
                 Options.Create(new NativeAssistantRuntimeOptions
                 {
-                    Provider = "kurisu-compatible"
+                    Provider = ProviderFlavors.OpenAiCompatible
                 }));
             var service = new FollowupSuggestionService(
                 transcriptStore,
@@ -68,7 +70,7 @@ public sealed class FollowupSuggestionServiceTests
                     Prompt = "Write the implementation notes.",
                     SessionId = "followup-provider",
                     WorkingDirectory = workspaceRoot,
-                    ToolName = "write_file",
+                    ToolName = WellKnownToolNames.WriteFile,
                     ToolArgumentsJson = $$"""{"file_path":"{{targetFile.Replace("\\", "\\\\")}}","content":"implementation notes"}""",
                     ApproveToolExecution = true
                 });
@@ -82,7 +84,7 @@ public sealed class FollowupSuggestionServiceTests
 
             Assert.NotEmpty(snapshot.Suggestions);
             Assert.Equal("run the tests", snapshot.Suggestions[0].Text);
-            Assert.Equal("kurisu-compatible", snapshot.Suggestions[0].Source);
+            Assert.Equal(ProviderFlavors.OpenAiCompatible, snapshot.Suggestions[0].Source);
             Assert.NotNull(capturedRequest);
             Assert.Equal(AssistantPromptMode.FollowupSuggestion, capturedRequest!.PromptMode);
             Assert.True(capturedRequest.DisableTools);
@@ -111,7 +113,7 @@ public sealed class FollowupSuggestionServiceTests
             Directory.CreateDirectory(systemRoot);
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(environmentPaths);
             var transcriptStore = new DesktopSessionCatalogService(runtimeProfileService, new ChatRecordingService());
             var interruptedStore = new InterruptedTurnStore();
@@ -132,14 +134,14 @@ public sealed class FollowupSuggestionServiceTests
                     return new LlmContentResponse
                     {
                         Content = "run the tests",
-                        ProviderName = "kurisu-compatible",
+                        ProviderName = ProviderFlavors.OpenAiCompatible,
                         Model = "qwen3-coder-plus",
                         StopReason = "completed"
                     };
                 }),
                 Options.Create(new NativeAssistantRuntimeOptions
                 {
-                    Provider = "kurisu-compatible"
+                    Provider = ProviderFlavors.OpenAiCompatible
                 }));
             var service = new FollowupSuggestionService(
                 transcriptStore,
@@ -147,8 +149,7 @@ public sealed class FollowupSuggestionServiceTests
                 interruptedStore,
                 arenaRegistry,
                 runtimeProfileService,
-                generator,
-                new InMemoryFollowupSuggestionCache());
+                generator);
 
             var targetFile = Path.Combine(workspaceRoot, "notes.txt");
             var turnResult = await sessionHost.StartTurnAsync(
@@ -158,7 +159,7 @@ public sealed class FollowupSuggestionServiceTests
                     Prompt = "Write the implementation notes.",
                     SessionId = "followup-cache",
                     WorkingDirectory = workspaceRoot,
-                    ToolName = "write_file",
+                    ToolName = WellKnownToolNames.WriteFile,
                     ToolArgumentsJson = $$"""{"file_path":"{{targetFile.Replace("\\", "\\\\")}}","content":"implementation notes"}""",
                     ApproveToolExecution = true
                 });
@@ -208,7 +209,7 @@ public sealed class FollowupSuggestionServiceTests
             Directory.CreateDirectory(systemRoot);
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(environmentPaths);
             var transcriptStore = new DesktopSessionCatalogService(runtimeProfileService, new ChatRecordingService());
             var interruptedStore = new InterruptedTurnStore();
@@ -226,13 +227,13 @@ public sealed class FollowupSuggestionServiceTests
                 new StaticContentGenerator(static _ => new LlmContentResponse
                 {
                     Content = "Looks good",
-                    ProviderName = "kurisu-compatible",
+                    ProviderName = ProviderFlavors.OpenAiCompatible,
                     Model = "qwen3-coder-plus",
                     StopReason = "completed"
                 }),
                 Options.Create(new NativeAssistantRuntimeOptions
                 {
-                    Provider = "kurisu-compatible"
+                    Provider = ProviderFlavors.OpenAiCompatible
                 }));
             var service = new FollowupSuggestionService(
                 transcriptStore,
@@ -250,7 +251,7 @@ public sealed class FollowupSuggestionServiceTests
                     Prompt = "Write the implementation notes.",
                     SessionId = "followup-provider-filter",
                     WorkingDirectory = workspaceRoot,
-                    ToolName = "write_file",
+                    ToolName = WellKnownToolNames.WriteFile,
                     ToolArgumentsJson = $$"""{"file_path":"{{targetFile.Replace("\\", "\\\\")}}","content":"implementation notes"}""",
                     ApproveToolExecution = true
                 });
@@ -262,7 +263,7 @@ public sealed class FollowupSuggestionServiceTests
                     SessionId = turnResult.Session.SessionId
                 });
 
-            Assert.DoesNotContain(snapshot.Suggestions, item => string.Equals(item.Source, "kurisu-compatible", StringComparison.Ordinal));
+            Assert.DoesNotContain(snapshot.Suggestions, item => string.Equals(item.Source, ProviderFlavors.OpenAiCompatible, StringComparison.Ordinal));
             Assert.Contains(snapshot.Suggestions, item => item.Text == "review the changes");
         }
         finally
@@ -299,7 +300,7 @@ public sealed class FollowupSuggestionServiceTests
                 """);
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(environmentPaths);
             var transcriptStore = new DesktopSessionCatalogService(runtimeProfileService, new ChatRecordingService());
             var interruptedStore = new InterruptedTurnStore();
@@ -326,7 +327,7 @@ public sealed class FollowupSuggestionServiceTests
                     Prompt = "Queue an edit that needs approval.",
                     SessionId = "followup-approval",
                     WorkingDirectory = workspaceRoot,
-                    ToolName = "write_file",
+                    ToolName = WellKnownToolNames.WriteFile,
                     ToolArgumentsJson = $$"""{"file_path":"{{targetFile.Replace("\\", "\\\\")}}","content":"needs approval"}""",
                     ApproveToolExecution = false
                 });
@@ -364,7 +365,7 @@ public sealed class FollowupSuggestionServiceTests
             Directory.CreateDirectory(systemRoot);
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(environmentPaths);
             var transcriptStore = new DesktopSessionCatalogService(runtimeProfileService, new ChatRecordingService());
             var interruptedStore = new InterruptedTurnStore();
@@ -391,7 +392,7 @@ public sealed class FollowupSuggestionServiceTests
                     Prompt = "Write the implementation notes.",
                     SessionId = "followup-review",
                     WorkingDirectory = workspaceRoot,
-                    ToolName = "write_file",
+                    ToolName = WellKnownToolNames.WriteFile,
                     ToolArgumentsJson = $$"""{"file_path":"{{targetFile.Replace("\\", "\\\\")}}","content":"implementation notes"}""",
                     ApproveToolExecution = true
                 });

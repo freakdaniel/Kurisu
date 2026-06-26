@@ -5,11 +5,6 @@ namespace Kurisu.App.Desktop.Bridges;
 
 internal static class DesktopSurfaceCatalog
 {
-    internal static readonly IReadOnlyList<ResearchTrack> Tracks = [];
-    internal static readonly IReadOnlyList<string> CompatibilityGoals = [];
-    internal static readonly IReadOnlyList<CapabilityLane> CapabilityLanes = [];
-    internal static readonly IReadOnlyList<AdoptionPattern> AdoptionPatterns = [];
-
     internal static readonly IReadOnlyList<LocaleOption> SupportedLocales =
     [
         new() { Code = "en", Name = "English", NativeName = "English" },

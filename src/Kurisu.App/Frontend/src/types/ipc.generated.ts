@@ -31,14 +31,6 @@ export interface ActiveTurnState {
   lastUpdatedAtUtc: string;
 }
 
-export interface AdoptionPattern {
-  area: string;
-  qwenSource: string;
-  claudeReference: string;
-  desktopDirection: string;
-  deliveryState: string;
-}
-
 export interface AnswerDesktopSessionQuestionRequest {
   sessionId: string;
   entryId: string;
@@ -56,10 +48,6 @@ export interface AppBootstrapPayload {
   currentLocale: string;
   locales: LocaleOption[];
   workspaceRoot: string;
-  tracks: ResearchTrack[];
-  compatibilityGoals: string[];
-  capabilityLanes: CapabilityLane[];
-  adoptionPatterns: AdoptionPattern[];
   recentSessions: SessionPreview[];
   activeTurns: ActiveTurnState[];
   activeArenaSessions: ActiveArenaSessionState[];
@@ -192,12 +180,6 @@ export interface CancelDesktopSessionTurnResult {
 export interface CancelDirectConnectSessionTurnRequest {
   directConnectSessionId: string;
   turn: CancelDesktopSessionTurnRequest;
-}
-
-export interface CapabilityLane {
-  title: string;
-  summary: string;
-  responsibilities: string[];
 }
 
 export interface ChannelDefinition {
@@ -517,16 +499,16 @@ export interface ExtensionSnapshot {
 
 export interface FileDiscoverySnapshot {
   gitAware: boolean;
-  hasQwenIgnore: boolean;
+  hasKurisuIgnore: boolean;
   candidateFileCount: number;
   visibleFileCount: number;
   gitIgnoredCount: number;
-  qwenIgnoredCount: number;
-  qwenIgnorePatternCount: number;
+  kurisuIgnoredCount: number;
+  kurisuIgnorePatternCount: number;
   contextFiles: string[];
   sampleVisibleFiles: string[];
   sampleGitIgnoredFiles: string[];
-  sampleQwenIgnoredFiles: string[];
+  sampleKurisuIgnoredFiles: string[];
 }
 
 export interface FollowupSuggestion {
@@ -950,11 +932,6 @@ export interface RenameDesktopSessionResult {
   sessionId: string;
   title: string;
   recentSessions: SessionPreview[];
-}
-
-export interface ResearchTrack {
-  title: string;
-  summary: string;
 }
 
 export interface ResolvedCommand {

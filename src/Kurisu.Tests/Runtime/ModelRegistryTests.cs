@@ -100,21 +100,21 @@ public sealed class ModelRegistryTests
 
             var configService = new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var selectionStore = new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance);
-            var resolver = new ModelConfigResolver(
-                new ModelRegistryService(
-                    configService,
-                    selectionStore,
-                    new TokenLimitService(),
-                    Options.Create(new NativeAssistantRuntimeOptions())));
+            var registry = new ModelRegistryService(
+                configService,
+                selectionStore,
+                new TokenLimitService(),
+                Options.Create(new NativeAssistantRuntimeOptions()));
             var workspace = new WorkspacePaths { WorkspaceRoot = workspaceRoot };
 
-            var defaultModel = resolver.Resolve(workspace);
-            var embeddingModel = resolver.Resolve(workspace, embedding: true);
-
-            Assert.Equal("qwen3-coder-plus", defaultModel.Id);
-            Assert.False(defaultModel.IsEmbeddingModel);
-            Assert.Equal("text-embedding-v4", embeddingModel.Id);
-            Assert.True(embeddingModel.IsEmbeddingModel);
+            // ModelConfigResolver was inlined into OpenAiCompatibleBaseLlmClient
+            // (see ResolveEmbeddingModelId). The registry itself is the source
+            // of truth; verify the snapshot exposes both models.
+            var snapshot = registry.Inspect(workspace);
+            Assert.Equal("qwen3-coder-plus", snapshot.DefaultModelId);
+            Assert.Equal("text-embedding-v4", snapshot.EmbeddingModelId);
+            Assert.Contains(snapshot.AvailableModels, m => m.Id == "qwen3-coder-plus" && !m.IsEmbeddingModel);
+            Assert.Contains(snapshot.AvailableModels, m => m.Id == "text-embedding-v4" && m.IsEmbeddingModel);
         }
         finally
         {

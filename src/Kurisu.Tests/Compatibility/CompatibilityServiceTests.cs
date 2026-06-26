@@ -1,3 +1,5 @@
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Tests.Compatibility;
 
 public sealed class CompatibilityServiceTests
@@ -27,16 +29,16 @@ public sealed class CompatibilityServiceTests
                 """{ "privacy": {} }""");
             File.WriteAllText(Path.Combine(workspaceRoot, "KURISU.md"), "# project memory");
 
-            var previousDefaults = Environment.GetEnvironmentVariable("KURISU_SYSTEM_DEFAULTS_PATH");
-            var previousSettings = Environment.GetEnvironmentVariable("KURISU_SYSTEM_SETTINGS_PATH");
+            var previousDefaults = Environment.GetEnvironmentVariable("KurisuEnvVars.SystemDefaultsPath");
+            var previousSettings = Environment.GetEnvironmentVariable("KurisuEnvVars.SystemSettingsPath");
 
             try
             {
                 Environment.SetEnvironmentVariable(
-                    "KURISU_SYSTEM_DEFAULTS_PATH",
+                    "KurisuEnvVars.SystemDefaultsPath",
                     Path.Combine(systemRoot, "system-defaults.json"));
                 Environment.SetEnvironmentVariable(
-                    "KURISU_SYSTEM_SETTINGS_PATH",
+                    "KurisuEnvVars.SystemSettingsPath",
                     Path.Combine(systemRoot, "settings.json"));
 
                 var service = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
@@ -50,8 +52,8 @@ public sealed class CompatibilityServiceTests
             }
             finally
             {
-                Environment.SetEnvironmentVariable("KURISU_SYSTEM_DEFAULTS_PATH", previousDefaults);
-                Environment.SetEnvironmentVariable("KURISU_SYSTEM_SETTINGS_PATH", previousSettings);
+                Environment.SetEnvironmentVariable("KurisuEnvVars.SystemDefaultsPath", previousDefaults);
+                Environment.SetEnvironmentVariable("KurisuEnvVars.SystemSettingsPath", previousSettings);
             }
         }
         finally

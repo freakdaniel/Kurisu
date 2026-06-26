@@ -1,5 +1,7 @@
 using System.Text.Json;
 
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Core.Permissions;
 
 /// <summary>
@@ -24,7 +26,7 @@ public static class ApprovalRuleSuggestionService
         using var document = ParseArguments(pendingTool.Arguments);
         var arguments = document?.RootElement;
 
-        if (string.Equals(canonicalToolName, "run_shell_command", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(canonicalToolName, WellKnownToolNames.RunShellCommand, StringComparison.OrdinalIgnoreCase))
         {
             return BuildShellRule(arguments, pendingTool.WorkingDirectory, projectRoot);
         }
@@ -44,12 +46,12 @@ public static class ApprovalRuleSuggestionService
             return BuildLiteralRule("Skill", arguments, "skill_name");
         }
 
-        if (string.Equals(canonicalToolName, "exit_plan_mode", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(canonicalToolName, WellKnownToolNames.ExitPlanMode, StringComparison.OrdinalIgnoreCase))
         {
             return "ExitPlanMode";
         }
 
-        if (string.Equals(canonicalToolName, "web_fetch", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(canonicalToolName, WellKnownToolNames.WebFetch, StringComparison.OrdinalIgnoreCase))
         {
             return BuildDomainRule(arguments);
         }
@@ -139,7 +141,7 @@ public static class ApprovalRuleSuggestionService
             return BuildResolvedPathRule("Read", operation.FilePath, projectRoot, includeChildrenForDirectories: false);
         }
 
-        if (string.Equals(canonicalToolName, "write_file", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(canonicalToolName, WellKnownToolNames.WriteFile, StringComparison.OrdinalIgnoreCase))
         {
             return BuildResolvedPathRule("Write", operation.FilePath, projectRoot, includeChildrenForDirectories: false);
         }
@@ -166,7 +168,7 @@ public static class ApprovalRuleSuggestionService
             return "Read";
         }
 
-        return string.Equals(canonicalToolName, "write_file", StringComparison.OrdinalIgnoreCase) ? "Write" : "Edit";
+        return string.Equals(canonicalToolName, WellKnownToolNames.WriteFile, StringComparison.OrdinalIgnoreCase) ? "Write" : "Edit";
     }
 
     private static string BuildPathRule(

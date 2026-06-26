@@ -12,13 +12,13 @@ namespace Kurisu.Core.Config;
 /// <param name="selectionStore">Source of the active model / embedding model / provider selection</param>
 public sealed class KurisuRuntimeProfileService(
     IDesktopEnvironmentPaths environmentPaths,
-    IConfigService? configService = null,
-    RuntimeSelectionStore? selectionStore = null)
+    IConfigService configService,
+    RuntimeSelectionStore selectionStore)
 {
     private static readonly StringComparer PathComparer =
         OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
-    private readonly IConfigService config = configService ?? new RuntimeConfigService(environmentPaths);
-    private readonly RuntimeSelectionStore selection = selectionStore ?? new RuntimeSelectionStore(environmentPaths, NullLogger<RuntimeSelectionStore>.Instance);
+    private readonly IConfigService config = configService;
+    private readonly RuntimeSelectionStore selection = selectionStore;
 
     /// <summary>
     /// Executes inspect

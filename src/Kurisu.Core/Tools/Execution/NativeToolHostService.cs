@@ -8,6 +8,8 @@ using Kurisu.Core.Models;
 using Kurisu.Core.Permissions;
 using Kurisu.Core.Runtime;
 
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Core.Tools;
 
 /// <summary>
@@ -161,7 +163,7 @@ public sealed class NativeToolHostService(
                 };
             }
 
-            if (string.Equals(request.ToolName, "ask_user_question", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(request.ToolName, WellKnownToolNames.AskUserQuestion, StringComparison.OrdinalIgnoreCase))
             {
                 var questionResult = ExecuteAskUserQuestion(runtimeProfile, approvalContext.WorkingDirectory ?? runtimeProfile.ProjectRoot, document.RootElement, approval.State);
                 var askedResult = await ApplyPostToolHooksAsync(runtimeProfile, request, document.RootElement, questionResult, cancellationToken);
@@ -173,7 +175,7 @@ public sealed class NativeToolHostService(
                 var approvalRequiredResult = new NativeToolExecutionResult
                 {
                     ToolName = request.ToolName,
-                    Status = "approval-required",
+                    Status = ToolExecutionStatus.ApprovalRequired,
                     ApprovalState = approval.State,
                     WorkingDirectory = approvalContext.WorkingDirectory ?? runtimeProfile.ProjectRoot,
                     ErrorMessage = approval.Reason,
@@ -222,10 +224,10 @@ public sealed class NativeToolHostService(
                 "list_directory" => Task.FromResult(ExecuteListDirectory(runtimeProfile, arguments, approvalState)),
                 "glob" => Task.FromResult(ExecuteGlob(runtimeProfile, arguments, approvalState)),
                 "grep_search" => Task.FromResult(ExecuteGrep(runtimeProfile, arguments, approvalState)),
-                "run_shell_command" => ExecuteShellAsync(runtimeProfile, arguments, approvalState, cancellationToken),
-                "write_file" => ExecuteWriteFileAsync(runtimeProfile, arguments, approvalState, cancellationToken),
+                WellKnownToolNames.RunShellCommand => ExecuteShellAsync(runtimeProfile, arguments, approvalState, cancellationToken),
+                WellKnownToolNames.WriteFile => ExecuteWriteFileAsync(runtimeProfile, arguments, approvalState, cancellationToken),
                 "edit" => ExecuteEditAsync(runtimeProfile, arguments, approvalState, cancellationToken),
-                "todo_write" => ExecuteTodoWriteAsync(runtimeProfile, arguments, approvalState, cancellationToken),
+                WellKnownToolNames.TodoWrite => ExecuteTodoWriteAsync(runtimeProfile, arguments, approvalState, cancellationToken),
                 "task_create" => ExecuteTaskCreateAsync(runtimeProfile, arguments, approvalState, cancellationToken),
                 "task_list" => ExecuteTaskListAsync(runtimeProfile, arguments, approvalState, cancellationToken),
                 "task_get" => ExecuteTaskGetAsync(runtimeProfile, arguments, approvalState, cancellationToken),
@@ -236,13 +238,13 @@ public sealed class NativeToolHostService(
                 "arena" => ExecuteArenaAsync(paths, runtimeProfile, arguments, approvalState, eventSink, cancellationToken),
                 "skill" => ExecuteSkillAsync(runtimeProfile, arguments, approvalState, cancellationToken),
                 "tool_search" => Task.FromResult(ExecuteToolSearch(paths, runtimeProfile, arguments, approvalState)),
-                "exit_plan_mode" => Task.FromResult(ExecuteExitPlanMode(runtimeProfile, approvalState)),
-                "web_fetch" => ExecuteWebFetchAsync(runtimeProfile, arguments, approvalState, cancellationToken),
-                "web_search" => ExecuteWebSearchAsync(runtimeProfile, arguments, approvalState, cancellationToken),
+                WellKnownToolNames.ExitPlanMode => Task.FromResult(ExecuteExitPlanMode(runtimeProfile, approvalState)),
+                WellKnownToolNames.WebFetch => ExecuteWebFetchAsync(runtimeProfile, arguments, approvalState, cancellationToken),
+                WellKnownToolNames.WebSearch => ExecuteWebSearchAsync(runtimeProfile, arguments, approvalState, cancellationToken),
                 "mcp-client" => ExecuteMcpClientAsync(paths, runtimeProfile, arguments, approvalState, cancellationToken),
                 "mcp-tool" => ExecuteMcpToolAsync(paths, runtimeProfile, arguments, approvalState, cancellationToken),
                 "lsp" => lspTools.ExecuteAsync(runtimeProfile, arguments, approvalState, cancellationToken),
-                "ask_user_question" => Task.FromResult(ExecuteAskUserQuestion(runtimeProfile, runtimeProfile.ProjectRoot, arguments, approvalState)),
+                WellKnownToolNames.AskUserQuestion => Task.FromResult(ExecuteAskUserQuestion(runtimeProfile, runtimeProfile.ProjectRoot, arguments, approvalState)),
                 "cron_create" => Task.FromResult(ExecuteCronCreate(arguments, runtimeProfile, approvalState)),
                 "cron_list" => Task.FromResult(ExecuteCronList(runtimeProfile, approvalState)),
                 "cron_delete" => Task.FromResult(ExecuteCronDelete(arguments, runtimeProfile, approvalState)),
@@ -445,7 +447,7 @@ public sealed class NativeToolHostService(
         }
         catch (Exception exception)
         {
-            return Error("ask_user_question", exception.Message, workingDirectory, approvalState);
+            return Error(WellKnownToolNames.AskUserQuestion, exception.Message, workingDirectory, approvalState);
         }
     }
 
@@ -465,7 +467,7 @@ public sealed class NativeToolHostService(
         var filePath = toolName switch
         {
             "save_memory" => MemoryStore.ResolveMemoryFilePath(runtimeProfile, TryGetOptionalString(arguments, "scope")),
-            "todo_write" => TodoStore.ResolveTodoFilePath(
+            WellKnownToolNames.TodoWrite => TodoStore.ResolveTodoFilePath(
                 runtimeProfile,
                 TryGetOptionalString(arguments, "session_id") ?? TryGetOptionalString(arguments, "sessionId")),
             "task_create" or "task_list" or "task_get" or "task_update" or "task_stop" => TaskStore.ResolveTaskFilePath(
@@ -748,7 +750,7 @@ public sealed class NativeToolHostService(
     {
         if (!TryGetString(arguments, "command", out var command))
         {
-            return Error("run_shell_command", "Parameter 'command' is required.", runtimeProfile.ProjectRoot, approvalState);
+            return Error(WellKnownToolNames.RunShellCommand, "Parameter 'command' is required.", runtimeProfile.ProjectRoot, approvalState);
         }
 
         var workingDirectory = TryGetString(arguments, "directory", out var directory)
@@ -756,7 +758,7 @@ public sealed class NativeToolHostService(
             : runtimeProfile.ProjectRoot;
         if (!Directory.Exists(workingDirectory))
         {
-            return Error("run_shell_command", "Working directory does not exist.", runtimeProfile.ProjectRoot, approvalState);
+            return Error(WellKnownToolNames.RunShellCommand, "Working directory does not exist.", runtimeProfile.ProjectRoot, approvalState);
         }
 
         var shellResult = await shell.ExecuteAsync(
@@ -769,7 +771,7 @@ public sealed class NativeToolHostService(
 
         return new NativeToolExecutionResult
         {
-            ToolName = "run_shell_command",
+            ToolName = WellKnownToolNames.RunShellCommand,
             Status = shellResult.Cancelled
                 ? "cancelled"
                 : shellResult.TimedOut
@@ -795,18 +797,18 @@ public sealed class NativeToolHostService(
         var filePath = RequirePath(arguments, "file_path", runtimeProfile.ProjectRoot, absoluteOnly: true);
         if (filePath.IsError)
         {
-            return Error("write_file", filePath.ErrorMessage!, runtimeProfile.ProjectRoot, approvalState);
+            return Error(WellKnownToolNames.WriteFile, filePath.ErrorMessage!, runtimeProfile.ProjectRoot, approvalState);
         }
 
         if (!TryGetString(arguments, "content", out var content))
         {
-            return Error("write_file", "Parameter 'content' is required.", runtimeProfile.ProjectRoot, approvalState);
+            return Error(WellKnownToolNames.WriteFile, "Parameter 'content' is required.", runtimeProfile.ProjectRoot, approvalState);
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(filePath.Value!)!);
         await File.WriteAllTextAsync(filePath.Value!, content, cancellationToken);
 
-        return Success("write_file", approvalState, runtimeProfile.ProjectRoot, "File written.", [filePath.Value!]);
+        return Success(WellKnownToolNames.WriteFile, approvalState, runtimeProfile.ProjectRoot, "File written.", [filePath.Value!]);
     }
 
     private static async Task<NativeToolExecutionResult> ExecuteEditAsync(
@@ -865,11 +867,11 @@ public sealed class NativeToolHostService(
         try
         {
             var result = await TodoStore.SaveTodosAsync(runtimeProfile, arguments, cancellationToken);
-            return Success("todo_write", approvalState, runtimeProfile.RuntimeBaseDirectory, result.Summary, [result.FilePath]);
+            return Success(WellKnownToolNames.TodoWrite, approvalState, runtimeProfile.RuntimeBaseDirectory, result.Summary, [result.FilePath]);
         }
         catch (Exception exception)
         {
-            return Error("todo_write", exception.Message, runtimeProfile.RuntimeBaseDirectory, approvalState);
+            return Error(WellKnownToolNames.TodoWrite, exception.Message, runtimeProfile.RuntimeBaseDirectory, approvalState);
         }
     }
 
@@ -1140,7 +1142,7 @@ public sealed class NativeToolHostService(
         KurisuRuntimeProfile runtimeProfile,
         string approvalState) =>
         Success(
-            "exit_plan_mode",
+            WellKnownToolNames.ExitPlanMode,
             approvalState,
             runtimeProfile.ProjectRoot,
             "Plan mode exit requested in the native desktop runtime.",
@@ -1155,11 +1157,11 @@ public sealed class NativeToolHostService(
         try
         {
             var output = await webTools.FetchAsync(runtimeProfile, arguments, cancellationToken);
-            return Success("web_fetch", approvalState, runtimeProfile.ProjectRoot, output, []);
+            return Success(WellKnownToolNames.WebFetch, approvalState, runtimeProfile.ProjectRoot, output, []);
         }
         catch (Exception exception)
         {
-            return Error("web_fetch", ResolveWebFetchErrorMessage(exception), runtimeProfile.ProjectRoot, approvalState);
+            return Error(WellKnownToolNames.WebFetch, ResolveWebFetchErrorMessage(exception), runtimeProfile.ProjectRoot, approvalState);
         }
     }
 
@@ -1172,11 +1174,11 @@ public sealed class NativeToolHostService(
         try
         {
             var output = await webTools.SearchAsync(runtimeProfile, arguments, cancellationToken);
-            return Success("web_search", approvalState, runtimeProfile.ProjectRoot, output, []);
+            return Success(WellKnownToolNames.WebSearch, approvalState, runtimeProfile.ProjectRoot, output, []);
         }
         catch (Exception exception)
         {
-            return Error("web_search", exception.Message, runtimeProfile.ProjectRoot, approvalState);
+            return Error(WellKnownToolNames.WebSearch, exception.Message, runtimeProfile.ProjectRoot, approvalState);
         }
     }
 
@@ -1508,22 +1510,22 @@ public sealed class NativeToolHostService(
             "list_directory" => "Inspect the contents of a directory.",
             "glob" => "Find files by glob pattern.",
             "grep_search" => "Search file contents by regex or text pattern.",
-            "run_shell_command" => "Run shell commands for build, test, git, or environment work.",
-            "write_file" => "Write a full file to disk.",
+            WellKnownToolNames.RunShellCommand => "Run shell commands for build, test, git, or environment work.",
+            WellKnownToolNames.WriteFile => "Write a full file to disk.",
             "edit" => "Apply targeted text edits inside an existing file.",
-            "todo_write" => "Create or update a structured task list for the current session.",
+            WellKnownToolNames.TodoWrite => "Create or update a structured task list for the current session.",
             "save_memory" => "Persist durable user or project facts to memory files.",
             "agent" => "Delegate work to a subagent for parallel or specialized execution.",
             "arena" => "Run the same task across multiple models in an arena comparison.",
             "skill" => "Load a predefined skill workflow or instructions bundle.",
             "tool_search" => "Search the native tool catalog by intent, kind, or approval state.",
-            "exit_plan_mode" => "Exit plan mode after preparing a concrete plan.",
-            "web_fetch" => "Fetch and summarize a specific web page or URL.",
-            "web_search" => "Search the web for recent or external information.",
+            WellKnownToolNames.ExitPlanMode => "Exit plan mode after preparing a concrete plan.",
+            WellKnownToolNames.WebFetch => "Fetch and summarize a specific web page or URL.",
+            WellKnownToolNames.WebSearch => "Search the web for recent or external information.",
             "mcp-client" => "Inspect connected MCP servers, discover prompts or resources, and invoke MCP prompts.",
             "mcp-tool" => "Execute a concrete tool exposed by a connected MCP server.",
             "lsp" => "Query semantic code intelligence such as symbols, definitions, references, implementations, diagnostics, or call hierarchy.",
-            "ask_user_question" => "Pause and ask the user one or more structured follow-up questions.",
+            WellKnownToolNames.AskUserQuestion => "Pause and ask the user one or more structured follow-up questions.",
             "cron_create" => "Schedule a session-scoped recurring or one-shot automation.",
             "cron_list" => "List active session-scoped automation jobs.",
             "cron_delete" => "Cancel an active session-scoped automation job.",
@@ -1636,7 +1638,7 @@ public sealed class NativeToolHostService(
         var modelSelectionService = new SubagentModelSelectionService();
         var validationService = new SubagentValidationService(modelSelectionService);
         return new SubagentCoordinatorService(
-            new SubagentCatalogService(environmentPaths, validationService),
+            new SubagentCatalogService(environmentPaths, new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance)), validationService),
             new ToolCatalogService(runtimeProfileService, approvalPolicyService),
             new KurisuCompatibilityService(environmentPaths),
             modelSelectionService,

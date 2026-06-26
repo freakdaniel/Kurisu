@@ -83,7 +83,7 @@ public sealed class SubagentCoordinatorTests
                 """);
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(environmentPaths);
             var approvalPolicy = new ApprovalPolicyService();
             var modelSelectionService = new SubagentModelSelectionService();
@@ -93,7 +93,7 @@ public sealed class SubagentCoordinatorTests
                 new HookCommandRunner(),
                 new HookOutputAggregator());
             var coordinator = new SubagentCoordinatorService(
-                new SubagentCatalogService(environmentPaths, validationService),
+                new SubagentCatalogService(environmentPaths, new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance)), validationService),
                 new ToolCatalogService(runtimeProfileService, approvalPolicy),
                 compatibilityService,
                 modelSelectionService,
@@ -144,14 +144,14 @@ public sealed class SubagentCoordinatorTests
             Directory.CreateDirectory(systemRoot);
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(environmentPaths);
             var approvalPolicy = new ApprovalPolicyService();
             var modelSelectionService = new SubagentModelSelectionService();
             var validationService = new SubagentValidationService(modelSelectionService);
             var capturingRuntime = new CapturingTurnRuntime();
             var coordinator = new SubagentCoordinatorService(
-                new SubagentCatalogService(environmentPaths, validationService),
+                new SubagentCatalogService(environmentPaths, new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance)), validationService),
                 new ToolCatalogService(runtimeProfileService, approvalPolicy),
                 compatibilityService,
                 modelSelectionService,

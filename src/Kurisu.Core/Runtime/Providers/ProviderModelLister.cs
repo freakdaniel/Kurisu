@@ -1,7 +1,9 @@
-﻿using System.Net.Http.Headers;
+using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Kurisu.Core.Infrastructure;
+
+using Kurisu.Core.Infrastructure.Constants;
 
 namespace Kurisu.Core.Runtime.Providers;
 
@@ -56,7 +58,7 @@ public sealed class ProviderModelLister
     {
         if (manifest is null) throw new ArgumentNullException(nameof(manifest));
 
-        if (string.Equals(manifest.Id, "anthropic", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(manifest.Id, ProviderIds.Anthropic, StringComparison.OrdinalIgnoreCase))
         {
             return new ListProviderModelsResult(
                 models: AnthropicFallbackModels,
@@ -64,7 +66,7 @@ public sealed class ProviderModelLister
                 fromCache: false);
         }
 
-        if (string.Equals(manifest.Id, "custom", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(manifest.Id, ProviderIds.Custom, StringComparison.OrdinalIgnoreCase))
         {
             return new ListProviderModelsResult(
                 models: manifest.KnownModels?.Keys.ToArray() ?? [],
@@ -126,7 +128,7 @@ public sealed class ProviderModelLister
     }
 
     private static bool IsOllama(ProviderManifest manifest) =>
-        string.Equals(manifest.Id, "ollama", StringComparison.OrdinalIgnoreCase);
+        string.Equals(manifest.Id, ProviderIds.Ollama, StringComparison.OrdinalIgnoreCase);
 
     private static string? ResolveModelsUrl(ProviderManifest manifest)
     {

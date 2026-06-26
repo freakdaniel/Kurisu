@@ -88,9 +88,6 @@ public sealed class GitCliService : IGitCliService
                 process.Kill(entireProcessTree: true);
             }
         }
-        catch
-        {
-            // Best effort cleanup.
-        }
+        catch { }
     }
 }

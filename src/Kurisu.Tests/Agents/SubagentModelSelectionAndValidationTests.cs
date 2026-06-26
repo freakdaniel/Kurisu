@@ -1,3 +1,5 @@
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Tests.Agents;
 
 public sealed class SubagentModelSelectionAndValidationTests
@@ -7,10 +9,10 @@ public sealed class SubagentModelSelectionAndValidationTests
     {
         var service = new SubagentModelSelectionService();
 
-        var selection = service.Parse("kurisu-compatible:qwen3-coder-plus", "openai");
+        var selection = service.Parse(ProviderFlavors.OpenAiCompatible + ":qwen3-coder-plus", ProviderIds.OpenAI);
 
         Assert.False(selection.Inherits);
-        Assert.Equal("kurisu-compatible", selection.AuthType);
+        Assert.Equal(ProviderFlavors.OpenAiCompatible, selection.AuthType);
         Assert.Equal("qwen3-coder-plus", selection.ModelId);
     }
 
@@ -19,10 +21,10 @@ public sealed class SubagentModelSelectionAndValidationTests
     {
         var service = new SubagentModelSelectionService();
 
-        var selection = service.Parse("gpt-4o:online", "openai");
+        var selection = service.Parse("gpt-4o:online", ProviderIds.OpenAI);
 
         Assert.False(selection.Inherits);
-        Assert.Equal("openai", selection.AuthType);
+        Assert.Equal(ProviderIds.OpenAI, selection.AuthType);
         Assert.Equal("gpt-4o:online", selection.ModelId);
     }
 

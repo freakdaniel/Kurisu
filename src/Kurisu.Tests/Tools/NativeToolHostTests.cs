@@ -1,3 +1,5 @@
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Tests.Tools;
 
 public sealed class NativeToolHostTests
@@ -31,7 +33,7 @@ public sealed class NativeToolHostTests
                 """);
 
             var sourcePaths = new WorkspacePaths { WorkspaceRoot = workspaceRoot };
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var host = new NativeToolHostService(runtimeProfileService, new ApprovalPolicyService(), new InMemoryCronScheduler());
 
             var targetFile = Path.Combine(workspaceRoot, "notes.txt");
@@ -48,15 +50,15 @@ public sealed class NativeToolHostTests
 
             var gatedWrite = await host.ExecuteAsync(sourcePaths, new ExecuteNativeToolRequest
             {
-                ToolName = "write_file",
+                ToolName = WellKnownToolNames.WriteFile,
                 ArgumentsJson = $$"""{"file_path":"{{targetFile.Replace("\\", "\\\\")}}","content":"replaced"}"""
             });
 
-            Assert.Equal("approval-required", gatedWrite.Status);
+            Assert.Equal(ToolExecutionStatus.ApprovalRequired, gatedWrite.Status);
 
             var approvedWrite = await host.ExecuteAsync(sourcePaths, new ExecuteNativeToolRequest
             {
-                ToolName = "write_file",
+                ToolName = WellKnownToolNames.WriteFile,
                 ApproveExecution = true,
                 ArgumentsJson = $$"""{"file_path":"{{targetFile.Replace("\\", "\\\\")}}","content":"replaced"}"""
             });
@@ -104,7 +106,7 @@ public sealed class NativeToolHostTests
                 """);
 
             var sourcePaths = new WorkspacePaths { WorkspaceRoot = workspaceRoot };
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var host = new NativeToolHostService(runtimeProfileService, new ApprovalPolicyService(), new InMemoryCronScheduler());
 
             var docsFile = Path.Combine(docsRoot, "guide.md");
@@ -128,13 +130,13 @@ public sealed class NativeToolHostTests
 
             var gatedEdit = await host.ExecuteAsync(sourcePaths, new ExecuteNativeToolRequest
             {
-                ToolName = "write_file",
+                ToolName = WellKnownToolNames.WriteFile,
                 ArgumentsJson = $$"""{"file_path":"{{srcFile.Replace("\\", "\\\\")}}","content":"updated"}"""
             });
 
             var allowedShell = await host.ExecuteAsync(sourcePaths, new ExecuteNativeToolRequest
             {
-                ToolName = "run_shell_command",
+                ToolName = WellKnownToolNames.RunShellCommand,
                 ArgumentsJson = """{"command":"git --version"}""",
                 ApproveExecution = false
             });
@@ -143,7 +145,7 @@ public sealed class NativeToolHostTests
             Assert.Contains("docs-content", allowedRead.Output);
             Assert.Equal("blocked", deniedRead.Status);
             Assert.Contains("Read(.env)", deniedRead.ErrorMessage);
-            Assert.Equal("approval-required", gatedEdit.Status);
+            Assert.Equal(ToolExecutionStatus.ApprovalRequired, gatedEdit.Status);
             Assert.Contains("Edit(/src/**)", gatedEdit.ErrorMessage);
             Assert.Equal("completed", allowedShell.Status);
         }
@@ -193,12 +195,12 @@ public sealed class NativeToolHostTests
                 """);
 
             var sourcePaths = new WorkspacePaths { WorkspaceRoot = workspaceRoot };
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var host = new NativeToolHostService(runtimeProfileService, new ApprovalPolicyService(), new InMemoryCronScheduler());
 
             var allowedShellRead = await host.ExecuteAsync(sourcePaths, new ExecuteNativeToolRequest
             {
-                ToolName = "run_shell_command",
+                ToolName = WellKnownToolNames.RunShellCommand,
                 ArgumentsJson = JsonSerializer.Serialize(new
                 {
                     command = CrossPlatformTestSupport.GetReadFileShellCommand(
@@ -208,7 +210,7 @@ public sealed class NativeToolHostTests
 
             var gatedShellWrite = await host.ExecuteAsync(sourcePaths, new ExecuteNativeToolRequest
             {
-                ToolName = "run_shell_command",
+                ToolName = WellKnownToolNames.RunShellCommand,
                 ArgumentsJson = JsonSerializer.Serialize(new
                 {
                     command = CrossPlatformTestSupport.GetWriteFileShellCommand(
@@ -219,7 +221,7 @@ public sealed class NativeToolHostTests
 
             var deniedShellRead = await host.ExecuteAsync(sourcePaths, new ExecuteNativeToolRequest
             {
-                ToolName = "run_shell_command",
+                ToolName = WellKnownToolNames.RunShellCommand,
                 ArgumentsJson = JsonSerializer.Serialize(new
                 {
                     command = CrossPlatformTestSupport.GetReadFileShellCommand(".env")
@@ -228,7 +230,7 @@ public sealed class NativeToolHostTests
 
             Assert.Equal("completed", allowedShellRead.Status);
             Assert.Contains("docs through shell", allowedShellRead.Output);
-            Assert.Equal("approval-required", gatedShellWrite.Status);
+            Assert.Equal(ToolExecutionStatus.ApprovalRequired, gatedShellWrite.Status);
             Assert.Contains("Edit(/src/**)", gatedShellWrite.ErrorMessage);
             Assert.Equal("blocked", deniedShellRead.Status);
             Assert.Contains("Read(.env)", deniedShellRead.ErrorMessage);
@@ -257,7 +259,7 @@ public sealed class NativeToolHostTests
             Directory.CreateDirectory(systemRoot);
 
             var sourcePaths = new WorkspacePaths { WorkspaceRoot = workspaceRoot };
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var host = new NativeToolHostService(runtimeProfileService, new ApprovalPolicyService(), new InMemoryCronScheduler());
 
             var result = await host.ExecuteAsync(sourcePaths, new ExecuteNativeToolRequest
@@ -294,7 +296,7 @@ public sealed class NativeToolHostTests
             Directory.CreateDirectory(systemRoot);
 
             var sourcePaths = new WorkspacePaths { WorkspaceRoot = workspaceRoot };
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var host = new NativeToolHostService(runtimeProfileService, new ApprovalPolicyService(), new InMemoryCronScheduler());
 
             var createResult = await host.ExecuteAsync(sourcePaths, new ExecuteNativeToolRequest
@@ -365,7 +367,7 @@ public sealed class NativeToolHostTests
             Directory.CreateDirectory(systemRoot);
 
             var sourcePaths = new WorkspacePaths { WorkspaceRoot = workspaceRoot };
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var host = new NativeToolHostService(
                 runtimeProfileService,
                 new ApprovalPolicyService(),
@@ -374,7 +376,7 @@ public sealed class NativeToolHostTests
 
             var result = await host.ExecuteAsync(sourcePaths, new ExecuteNativeToolRequest
             {
-                ToolName = "run_shell_command",
+                ToolName = WellKnownToolNames.RunShellCommand,
                 ApproveExecution = true,
                 ArgumentsJson = """{"command":"sleep forever"}"""
             });
@@ -406,7 +408,7 @@ public sealed class NativeToolHostTests
             Directory.CreateDirectory(systemRoot);
 
             var sourcePaths = new WorkspacePaths { WorkspaceRoot = workspaceRoot };
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var host = new NativeToolHostService(
                 runtimeProfileService,
                 new ApprovalPolicyService(),
@@ -418,7 +420,7 @@ public sealed class NativeToolHostTests
 
             var result = await host.ExecuteAsync(sourcePaths, new ExecuteNativeToolRequest
             {
-                ToolName = "web_fetch",
+                ToolName = WellKnownToolNames.WebFetch,
                 ArgumentsJson = """{"url":"https://example.com"}"""
             });
 
@@ -449,7 +451,7 @@ public sealed class NativeToolHostTests
             Directory.CreateDirectory(systemRoot);
 
             var sourcePaths = new WorkspacePaths { WorkspaceRoot = workspaceRoot };
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var host = new NativeToolHostService(runtimeProfileService, new ApprovalPolicyService(), new InMemoryCronScheduler());
 
             var projectResult = await host.ExecuteAsync(sourcePaths, new ExecuteNativeToolRequest
@@ -500,13 +502,13 @@ public sealed class NativeToolHostTests
             Directory.CreateDirectory(systemRoot);
 
             var sourcePaths = new WorkspacePaths { WorkspaceRoot = workspaceRoot };
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var host = new NativeToolHostService(runtimeProfileService, new ApprovalPolicyService(), new InMemoryCronScheduler());
             var runtimeProfile = runtimeProfileService.Inspect(sourcePaths);
 
             var result = await host.ExecuteAsync(sourcePaths, new ExecuteNativeToolRequest
             {
-                ToolName = "todo_write",
+                ToolName = WellKnownToolNames.TodoWrite,
                 ApproveExecution = true,
                 ArgumentsJson =
                     """
@@ -553,17 +555,17 @@ public sealed class NativeToolHostTests
             Directory.CreateDirectory(systemRoot);
 
             var sourcePaths = new WorkspacePaths { WorkspaceRoot = workspaceRoot };
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var host = new NativeToolHostService(runtimeProfileService, new ApprovalPolicyService(), new InMemoryCronScheduler());
 
             var result = await host.ExecuteAsync(sourcePaths, new ExecuteNativeToolRequest
             {
-                ToolName = "exit_plan_mode",
+                ToolName = WellKnownToolNames.ExitPlanMode,
                 ArgumentsJson = "{}"
             });
 
             Assert.Equal("completed", result.Status);
-            Assert.Equal("exit_plan_mode", result.ToolName);
+            Assert.Equal(WellKnownToolNames.ExitPlanMode, result.ToolName);
             Assert.Contains("Plan mode exit requested", result.Output);
         }
         finally
@@ -599,7 +601,7 @@ public sealed class NativeToolHostTests
                 """);
 
             var sourcePaths = new WorkspacePaths { WorkspaceRoot = workspaceRoot };
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var scheduler = new InMemoryCronScheduler();
             var host = new NativeToolHostService(runtimeProfileService, new ApprovalPolicyService(), scheduler);
 
@@ -663,12 +665,12 @@ public sealed class NativeToolHostTests
             Directory.CreateDirectory(systemRoot);
 
             var sourcePaths = new WorkspacePaths { WorkspaceRoot = workspaceRoot };
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var host = new NativeToolHostService(runtimeProfileService, new ApprovalPolicyService(), new InMemoryCronScheduler());
 
             var result = await host.ExecuteAsync(sourcePaths, new ExecuteNativeToolRequest
             {
-                ToolName = "ask_user_question",
+                ToolName = WellKnownToolNames.AskUserQuestion,
                 ArgumentsJson =
                     """
                     {
@@ -688,7 +690,7 @@ public sealed class NativeToolHostTests
             });
 
             Assert.Equal("input-required", result.Status);
-            Assert.Equal("ask_user_question", result.ToolName);
+            Assert.Equal(WellKnownToolNames.AskUserQuestion, result.ToolName);
             var question = Assert.Single(result.Questions);
             Assert.Equal("Library", question.Header);
             Assert.Equal(2, question.Options.Count);
@@ -766,7 +768,7 @@ public sealed class NativeToolHostTests
                 """);
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var hookLifecycleService = new HookLifecycleService(
                 new HookRegistryService(environmentPaths),
                 new HookCommandRunner(),
@@ -782,7 +784,7 @@ public sealed class NativeToolHostTests
                 new WorkspacePaths { WorkspaceRoot = workspaceRoot },
                 new ExecuteNativeToolRequest
                 {
-                    ToolName = "write_file",
+                    ToolName = WellKnownToolNames.WriteFile,
                     ArgumentsJson = $$"""{"file_path":"{{targetFile.Replace("\\", "\\\\")}}","content":"should-not-be-written"}"""
                 });
 

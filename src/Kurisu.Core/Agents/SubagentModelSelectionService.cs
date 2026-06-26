@@ -1,5 +1,7 @@
 using Kurisu.Core.Models;
 
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Core.Agents;
 
 /// <summary>
@@ -9,12 +11,10 @@ public sealed class SubagentModelSelectionService : ISubagentModelSelectionServi
 {
     private static readonly HashSet<string> KnownAuthTypes =
     [
-        "openai",
-        "openai",
-        "openai",
-        "kurisu-compatible",
-        "anthropic",
-        "gemini",
+        ProviderIds.OpenAI,
+        ProviderIds.Anthropic,
+        ProviderIds.Gemini,
+        ProviderFlavors.OpenAiCompatible,
         "vertex-ai",
         "coding-plan"
     ];

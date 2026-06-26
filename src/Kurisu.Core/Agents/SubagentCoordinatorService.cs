@@ -20,7 +20,7 @@ namespace Kurisu.Core.Agents;
 /// <param name="hookLifecycleService">The hook lifecycle service</param>
 /// <param name="serviceProvider">The service provider</param>
 public sealed class SubagentCoordinatorService(
-    ISubagentCatalog subagentCatalog,
+    SubagentCatalogService subagentCatalog,
     IToolRegistry toolRegistry,
     KurisuCompatibilityService compatibilityService,
     ISubagentModelSelectionService modelSelectionService,
@@ -270,7 +270,7 @@ public sealed class SubagentCoordinatorService(
             new AssistantPromptAssembler(new ProjectSummaryService()),
             [new FallbackAssistantResponseProvider()],
             new ToolCallScheduler(
-                new NonInteractiveToolExecutor(new NoOpToolExecutor()),
+                new NoOpToolExecutor(),
                 new LoopDetectionService()),
             new LoopDetectionService(),
             new TokenLimitService(),
@@ -633,10 +633,7 @@ Operational rules:
         {
             _ = await TaskStore.UpdateTaskAsync(runtimeProfile, document.RootElement, cancellationToken);
         }
-        catch
-        {
-            // Best effort synchronization between delegated agents and task state.
-        }
+        catch { }
     }
 
     private static NativeToolExecutionResult Error(string message, string workingDirectory, string approvalState) =>

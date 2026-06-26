@@ -1,3 +1,5 @@
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Core.Models;
 
 /// <summary>
@@ -6,7 +8,7 @@ namespace Kurisu.Core.Models;
 /// </summary>
 public sealed class ConfigureProviderRequest
 {
-    /// <summary>Provider id (e.g. "openai", "anthropic", "deepseek").</summary>
+    /// <summary>Provider id (e.g. ProviderIds.OpenAI, ProviderIds.Anthropic, ProviderIds.DeepSeek).</summary>
     public required string ProviderId { get; init; }
 
     /// <summary>API key to store.</summary>
@@ -22,6 +24,6 @@ public sealed class ConfigureProviderRequest
 /// </summary>
 public sealed class DeconfigureProviderRequest
 {
-    /// <summary>Provider id to remove (e.g. "openai", "anthropic").</summary>
+    /// <summary>Provider id to remove (e.g. ProviderIds.OpenAI, ProviderIds.Anthropic).</summary>
     public required string ProviderId { get; init; }
 }

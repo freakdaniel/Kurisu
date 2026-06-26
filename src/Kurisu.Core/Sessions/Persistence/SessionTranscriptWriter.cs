@@ -1,11 +1,17 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Kurisu.Core.Runtime;
 
 namespace Kurisu.Core.Sessions;
 
 /// <summary>
-/// Represents the Session Transcript Writer
+/// Stateless helpers that append and read JSONL transcript entries on
+/// disk. All methods are thread-safe per-file (writes are line-atomic on
+/// POSIX; the OS handles POSIX semantics; on Windows the <c>FileShare.Read</c>
+/// default in <see cref="File.AppendAllTextAsync(string, string, CancellationToken)"/>
+/// is enough because each call opens its own handle).
 /// </summary>
-public sealed class SessionTranscriptWriter : ISessionTranscriptWriter
+public static class SessionTranscriptWriter
 {
     /// <summary>
     /// Executes append entry async
@@ -14,7 +20,7 @@ public sealed class SessionTranscriptWriter : ISessionTranscriptWriter
     /// <param name="payload">The payload</param>
     /// <param name="cancellationToken">The token that can be used to cancel the operation</param>
     /// <returns>A task that represents the asynchronous operation</returns>
-    public async Task AppendEntryAsync(string transcriptPath, object payload, CancellationToken cancellationToken)
+    public static async Task AppendEntryAsync(string transcriptPath, object payload, CancellationToken cancellationToken)
     {
         var line = JsonSerializer.Serialize(payload);
         await File.AppendAllTextAsync(
@@ -32,7 +38,7 @@ public sealed class SessionTranscriptWriter : ISessionTranscriptWriter
     /// <param name="resolvedAtUtc">The resolved at utc</param>
     /// <param name="cancellationToken">The token that can be used to cancel the operation</param>
     /// <returns>A task that represents the asynchronous operation</returns>
-    public async Task MarkToolEntryResolvedAsync(
+    public static async Task MarkToolEntryResolvedAsync(
         string transcriptPath,
         string entryId,
         string resolutionStatus,
@@ -83,7 +89,7 @@ public sealed class SessionTranscriptWriter : ISessionTranscriptWriter
     /// </summary>
     /// <param name="transcriptPath">The transcript path</param>
     /// <returns>The resulting string?</returns>
-    public string? TryReadLastEntryUuid(string transcriptPath)
+    public static string? TryReadLastEntryUuid(string transcriptPath)
     {
         if (!File.Exists(transcriptPath))
         {
@@ -125,7 +131,7 @@ public sealed class SessionTranscriptWriter : ISessionTranscriptWriter
     /// <param name="toolExecutions">The tool executions</param>
     /// <param name="cancellationToken">The token that can be used to cancel the operation</param>
     /// <returns>A task that resolves to string?</returns>
-    public async Task<string?> AppendAssistantToolExecutionsAsync(
+    public static async Task<string?> AppendAssistantToolExecutionsAsync(
         string transcriptPath,
         string sessionId,
         string? parentUuid,

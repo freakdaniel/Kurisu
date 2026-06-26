@@ -39,7 +39,7 @@ public sealed class ChannelDeliveryServiceTests
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, null);
             var router = new ChannelSessionRouterService(environmentPaths);
             _ = await router.ResolveAsync("ops", "user", "user-1", "chat-1", string.Empty, string.Empty, workspaceRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(environmentPaths);
             var settingsResolver = new DesktopSettingsResolver(compatibilityService, runtimeProfileService);
             var extensionCatalog = new ExtensionCatalogService(runtimeProfileService, environmentPaths);
@@ -106,7 +106,7 @@ public sealed class ChannelDeliveryServiceTests
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, null);
             var router = new ChannelSessionRouterService(environmentPaths);
             _ = await router.ResolveAsync("ops", "user", "user-1", "chat-1", string.Empty, string.Empty, workspaceRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(environmentPaths);
             var settingsResolver = new DesktopSettingsResolver(compatibilityService, runtimeProfileService);
             var extensionCatalog = new ExtensionCatalogService(runtimeProfileService, environmentPaths);
@@ -181,7 +181,7 @@ public sealed class ChannelDeliveryServiceTests
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, null);
             var router = new ChannelSessionRouterService(environmentPaths);
             var route = await router.ResolveAsync("ops", "user", "user-1", "chat-1", string.Empty, string.Empty, workspaceRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(environmentPaths);
             var settingsResolver = new DesktopSettingsResolver(compatibilityService, runtimeProfileService);
             var extensionCatalog = new ExtensionCatalogService(runtimeProfileService, environmentPaths);

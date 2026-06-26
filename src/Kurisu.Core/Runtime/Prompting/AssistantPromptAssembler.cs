@@ -4,6 +4,8 @@ using Kurisu.Core.Prompts;
 using Kurisu.Core.Sessions;
 using Kurisu.Core.Tools;
 
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Core.Runtime;
 
 /// <summary>
@@ -199,7 +201,7 @@ Trimmed context files: {{trimmedContextFileCount}}
                 }
 
                 if (type == "tool" &&
-                    string.Equals(status, "approval-required", StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(status, ToolExecutionStatus.ApprovalRequired, StringComparison.OrdinalIgnoreCase) &&
                     !string.IsNullOrWhiteSpace(resolutionStatus))
                 {
                     continue;

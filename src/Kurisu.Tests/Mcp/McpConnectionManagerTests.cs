@@ -98,7 +98,7 @@ public sealed class McpConnectionManagerTests
 
             var paths = new WorkspacePaths { WorkspaceRoot = workspaceRoot };
             var environment = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environment);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environment, new RuntimeConfigService(environment), new RuntimeSelectionStore(environment, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var registry = new McpRegistryService(
                 runtimeProfileService,
                 new FileMcpTokenStore(environment));
@@ -148,7 +148,7 @@ public sealed class McpConnectionManagerTests
 
             var paths = new WorkspacePaths { WorkspaceRoot = workspaceRoot };
             var environment = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environment);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environment, new RuntimeConfigService(environment), new RuntimeSelectionStore(environment, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var registry = new McpRegistryService(
                 runtimeProfileService,
                 new FileMcpTokenStore(environment));

@@ -2,6 +2,8 @@ using Kurisu.Core.Infrastructure;
 using Kurisu.Core.Models;
 using Kurisu.Core.Sessions;
 
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Core.Channels;
 
 /// <summary>
@@ -286,7 +288,7 @@ public sealed class ChannelDeliveryService : IChannelDeliveryService
                 sessionEvent.ContentDelta,
                 sessionEvent),
             DesktopSessionEventKind.AssistantCompleted => Create(route, "message", sessionEvent.Message, sessionEvent),
-            DesktopSessionEventKind.ToolApprovalRequired => Create(route, "approval-required", sessionEvent.Message, sessionEvent),
+            DesktopSessionEventKind.ToolApprovalRequired => Create(route, ToolExecutionStatus.ApprovalRequired, sessionEvent.Message, sessionEvent),
             DesktopSessionEventKind.UserInputRequired => Create(route, "input-required", sessionEvent.Message, sessionEvent),
             DesktopSessionEventKind.ToolFailed => Create(route, "tool-failed", sessionEvent.Message, sessionEvent),
             DesktopSessionEventKind.ToolBlocked => Create(route, "tool-blocked", sessionEvent.Message, sessionEvent),

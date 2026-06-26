@@ -1,5 +1,7 @@
 using Kurisu.Core.Models;
 
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Core.Runtime;
 
 /// <summary>
@@ -8,7 +10,7 @@ namespace Kurisu.Core.Runtime;
 /// <param name="toolExecutor">The tool executor</param>
 /// <param name="loopDetectionService">The loop detection service</param>
 public sealed class ToolCallScheduler(
-    INonInteractiveToolExecutor toolExecutor,
+    IToolExecutor toolExecutor,
     ILoopDetectionService loopDetectionService) : IToolCallScheduler
 {
     /// <summary>
@@ -100,8 +102,14 @@ public sealed class ToolCallScheduler(
             });
 
             var execution = await toolExecutor.ExecuteAsync(
-                request,
-                toolCall,
+                new WorkspacePaths { WorkspaceRoot = request.RuntimeProfile.ProjectRoot },
+                new ExecuteNativeToolRequest
+                {
+                    ToolName = toolCall.ToolName,
+                    ArgumentsJson = string.IsNullOrWhiteSpace(toolCall.ArgumentsJson) ? "{}" : toolCall.ArgumentsJson,
+                    SessionId = request.SessionId,
+                    ApproveExecution = false
+                },
                 toolEvent => eventSink?.Invoke(CloneNestedToolEvent(toolEvent, providerName, toolCall, toolCallGroupId)),
                 cancellationToken);
 
@@ -149,7 +157,7 @@ public sealed class ToolCallScheduler(
     private static bool ShouldPauseTurnLoop(string status) =>
         status switch
         {
-            "approval-required" => true,
+            ToolExecutionStatus.ApprovalRequired => true,
             "input-required" => true,
             "cancelled" => true,
             _ => false
@@ -158,7 +166,7 @@ public sealed class ToolCallScheduler(
     private static string BuildTerminalSummary(NativeToolExecutionResult execution) =>
         execution.Status switch
         {
-            "approval-required" => $"Tool '{execution.ToolName}' is waiting for approval before the turn can continue.",
+            ToolExecutionStatus.ApprovalRequired => $"Tool '{execution.ToolName}' is waiting for approval before the turn can continue.",
             "input-required" => $"Tool '{execution.ToolName}' is waiting for user input before the turn can continue.",
             "blocked" => $"Tool '{execution.ToolName}' was blocked by approval policy.",
             "error" => $"Tool '{execution.ToolName}' failed: {execution.ErrorMessage}",
@@ -168,7 +176,7 @@ public sealed class ToolCallScheduler(
     private static string MapToolStage(string status) =>
         status switch
         {
-            "approval-required" => "tool-approval-required",
+            ToolExecutionStatus.ApprovalRequired => "tool-approval-required",
             "input-required" => "user-input-required",
             "blocked" => "tool-blocked",
             "error" => "tool-failed",
@@ -178,7 +186,7 @@ public sealed class ToolCallScheduler(
     private static string BuildToolMessage(NativeToolExecutionResult execution) =>
         execution.Status switch
         {
-            "approval-required" => $"Tool '{execution.ToolName}' is waiting for approval.",
+            ToolExecutionStatus.ApprovalRequired => $"Tool '{execution.ToolName}' is waiting for approval.",
             "input-required" => $"Tool '{execution.ToolName}' is waiting for user input.",
             "blocked" => $"Tool '{execution.ToolName}' was blocked by approval policy.",
             "error" => $"Tool '{execution.ToolName}' failed: {execution.ErrorMessage}",

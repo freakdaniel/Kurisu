@@ -32,7 +32,7 @@ public sealed class WorkspacePathResolver(IDesktopEnvironmentPaths environmentPa
 
     private string ResolveWorkspaceRoot(string configuredWorkspaceRoot)
     {
-        var explicitRoot = ResolveExplicitPath("QWENCODE_WORKSPACE_ROOT", configuredWorkspaceRoot);
+        var explicitRoot = ResolveExplicitPath("KURISU_CODE_MAIN_ROOT", configuredWorkspaceRoot);
         if (!string.IsNullOrWhiteSpace(explicitRoot))
         {
             return explicitRoot;

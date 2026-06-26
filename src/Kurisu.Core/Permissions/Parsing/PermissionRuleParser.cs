@@ -1,3 +1,5 @@
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Core.Permissions;
 
 internal static class PermissionRuleParser
@@ -5,17 +7,17 @@ internal static class PermissionRuleParser
     private static readonly IReadOnlyDictionary<string, string> ToolNameAliases =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["run_shell_command"] = "run_shell_command",
-            ["Shell"] = "run_shell_command",
-            ["ShellTool"] = "run_shell_command",
-            ["Bash"] = "run_shell_command",
+            [WellKnownToolNames.RunShellCommand] = WellKnownToolNames.RunShellCommand,
+            ["Shell"] = WellKnownToolNames.RunShellCommand,
+            ["ShellTool"] = WellKnownToolNames.RunShellCommand,
+            ["Bash"] = WellKnownToolNames.RunShellCommand,
             ["edit"] = "edit",
             ["Edit"] = "edit",
             ["EditTool"] = "edit",
-            ["write_file"] = "write_file",
-            ["Write"] = "write_file",
-            ["WriteFile"] = "write_file",
-            ["WriteFileTool"] = "write_file",
+            [WellKnownToolNames.WriteFile] = WellKnownToolNames.WriteFile,
+            ["Write"] = WellKnownToolNames.WriteFile,
+            ["WriteFile"] = WellKnownToolNames.WriteFile,
+            ["WriteFileTool"] = WellKnownToolNames.WriteFile,
             ["read_file"] = "read_file",
             ["Read"] = "read_file",
             ["ReadFile"] = "read_file",
@@ -36,15 +38,15 @@ internal static class PermissionRuleParser
             ["save_memory"] = "save_memory",
             ["SaveMemory"] = "save_memory",
             ["SaveMemoryTool"] = "save_memory",
-            ["todo_write"] = "todo_write",
-            ["TodoWrite"] = "todo_write",
-            ["TodoWriteTool"] = "todo_write",
-            ["web_fetch"] = "web_fetch",
-            ["WebFetch"] = "web_fetch",
-            ["WebFetchTool"] = "web_fetch",
-            ["web_search"] = "web_search",
-            ["WebSearch"] = "web_search",
-            ["WebSearchTool"] = "web_search",
+            [WellKnownToolNames.TodoWrite] = WellKnownToolNames.TodoWrite,
+            ["TodoWrite"] = WellKnownToolNames.TodoWrite,
+            ["TodoWriteTool"] = WellKnownToolNames.TodoWrite,
+            [WellKnownToolNames.WebFetch] = WellKnownToolNames.WebFetch,
+            ["WebFetch"] = WellKnownToolNames.WebFetch,
+            ["WebFetchTool"] = WellKnownToolNames.WebFetch,
+            [WellKnownToolNames.WebSearch] = WellKnownToolNames.WebSearch,
+            ["WebSearch"] = WellKnownToolNames.WebSearch,
+            ["WebSearchTool"] = WellKnownToolNames.WebSearch,
             ["mcp-client"] = "mcp-client",
             ["McpClient"] = "mcp-client",
             ["McpClientTool"] = "mcp-client",
@@ -60,22 +62,22 @@ internal static class PermissionRuleParser
             ["skill"] = "skill",
             ["Skill"] = "skill",
             ["SkillTool"] = "skill",
-            ["exit_plan_mode"] = "exit_plan_mode",
-            ["ExitPlanMode"] = "exit_plan_mode",
-            ["ExitPlanModeTool"] = "exit_plan_mode",
+            [WellKnownToolNames.ExitPlanMode] = WellKnownToolNames.ExitPlanMode,
+            ["ExitPlanMode"] = WellKnownToolNames.ExitPlanMode,
+            ["ExitPlanModeTool"] = WellKnownToolNames.ExitPlanMode,
             ["lsp"] = "lsp",
             ["Lsp"] = "lsp",
             ["LspTool"] = "lsp",
             ["replace"] = "edit"
         };
 
-    private static readonly HashSet<string> ShellToolNames = ["run_shell_command"];
+    private static readonly HashSet<string> ShellToolNames = [WellKnownToolNames.RunShellCommand];
 
     private static readonly HashSet<string> ReadTools = ["read_file", "grep_search", "glob", "list_directory"];
 
-    private static readonly HashSet<string> EditTools = ["edit", "write_file"];
+    private static readonly HashSet<string> EditTools = ["edit", WellKnownToolNames.WriteFile];
 
-    private static readonly HashSet<string> WebFetchTools = ["web_fetch"];
+    private static readonly HashSet<string> WebFetchTools = [WellKnownToolNames.WebFetch];
 
     /// <summary>
     /// Executes parse

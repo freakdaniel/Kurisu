@@ -1,5 +1,4 @@
 using Kurisu.Core.Config;
-using Kurisu.Core.Auth;
 using Kurisu.Core.Infrastructure;
 using Kurisu.Core.Models;
 
@@ -105,8 +104,6 @@ Requested analysis: {prompt}
                         SearchWithTavilyAsync(query, tavily, cancellationToken),
                     WebSearchProviderConfiguration { Type: "google" } google =>
                         SearchWithGoogleAsync(query, google, cancellationToken),
-                    WebSearchProviderConfiguration { Type: "dashscope" } dashScope =>
-                        SearchWithDashScopeAsync(query, dashScope, cancellationToken),
                     _ => throw new InvalidOperationException($"Unknown web search provider '{provider.Type}'.")
                 });
             }
@@ -181,7 +178,7 @@ Requested analysis: {prompt}
         for (var redirectCount = 0; redirectCount <= MaxRedirects; redirectCount++)
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, currentUrl);
-            request.Headers.UserAgent.ParseAdd("QwenCodeDesktop/0.1");
+            request.Headers.UserAgent.ParseAdd("Kurisu/0.1.0");
             request.Headers.Accept.ParseAdd("text/html,application/xhtml+xml,application/xml;q=0.9,text/plain;q=0.8,*/*;q=0.7");
 
             HttpResponseMessage response;
@@ -231,7 +228,7 @@ Requested analysis: {prompt}
         };
 
         var client = new HttpClient(handler);
-        client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("QwenCodeDesktop", "0.1"));
+        client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Kurisu", "0.1.0"));
         return client;
     }
 
@@ -473,8 +470,6 @@ Call web_fetch again with the redirect URL if you want to inspect that destinati
             providers.AddRange(BuildEnvironmentProviders(merged));
         }
 
-        var selectedProviderId = string.Empty;
-        EnsureDashScopeProvider(providers, selectedProviderId);
         var availableProviders = providers
             .Select(static provider => provider with { Type = provider.Type.Trim().ToLowerInvariant() })
             .Where(provider => IsProviderAvailable(provider))
@@ -553,26 +548,12 @@ Call web_fetch again with the redirect URL if you want to inspect that destinati
         return providers;
     }
 
-    private static void EnsureDashScopeProvider(
-        ICollection<WebSearchProviderConfiguration> providers,
-        string authType)
-    {
-        if (!IsKurisuOAuth(authType) ||
-            providers.Any(static provider => provider.Type.Equals("dashscope", StringComparison.OrdinalIgnoreCase)))
-        {
-            return;
-        }
-
-        providers.Add(CreateProvider("dashscope"));
-    }
-
     private static bool IsProviderAvailable(WebSearchProviderConfiguration provider) =>
         provider.Type switch
         {
             "tavily" => !string.IsNullOrWhiteSpace(provider.ApiKey),
             "google" => !string.IsNullOrWhiteSpace(provider.ApiKey) &&
                         !string.IsNullOrWhiteSpace(provider.SearchEngineId),
-            "dashscope" => false,  // DashScope web search disabled
             _ => false
         };
 
@@ -673,85 +654,6 @@ Call web_fetch again with the redirect URL if you want to inspect that destinati
             : [];
 
         return new WebSearchResult(null, results);
-    }
-
-    private async Task<WebSearchResult> SearchWithDashScopeAsync(
-        string query,
-        WebSearchProviderConfiguration provider,
-        CancellationToken cancellationToken)
-    {
-        var authConfig = await ResolveDashScopeAuthConfigAsync(provider, cancellationToken);
-        if (string.IsNullOrWhiteSpace(authConfig.AccessToken))
-        {
-            throw new InvalidOperationException("DashScope web search requires an OAuth access token.");
-        }
-
-        using var linkedSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        linkedSource.CancelAfter(FetchTimeoutMilliseconds);
-
-        using var request = new HttpRequestMessage(HttpMethod.Post, authConfig.Endpoint);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authConfig.AccessToken);
-        request.Content = new StringContent(
-            JsonSerializer.Serialize(new
-            {
-                uq = query,
-                page = 1,
-                rows = provider.MaxResults <= 0 ? 10 : provider.MaxResults
-            }),
-            Encoding.UTF8,
-            "application/json");
-
-        using var response = await client.SendAsync(request, linkedSource.Token);
-        var body = await response.Content.ReadAsStringAsync(linkedSource.Token);
-        EnsureSuccess(response, body);
-
-        using var document = JsonDocument.Parse(body);
-        var root = document.RootElement;
-        if (root.TryGetProperty("status", out var statusElement) &&
-            statusElement.ValueKind == JsonValueKind.Number &&
-            statusElement.TryGetInt32(out var status) &&
-            status != 0)
-        {
-            var message = TryGetString(root, "message");
-            throw new InvalidOperationException($"DashScope web search failed: {FirstNonEmpty(message, $"status {status}")}");
-        }
-
-        var results = root.TryGetProperty("data", out var dataElement) &&
-                      dataElement.ValueKind == JsonValueKind.Object &&
-                      dataElement.TryGetProperty("docs", out var docsElement) &&
-                      docsElement.ValueKind == JsonValueKind.Array
-            ? docsElement.EnumerateArray().Select(item => new WebSearchResultItem(
-                Title: TryGetString(item, "title") ?? "Untitled",
-                Url: TryGetString(item, "url") ?? string.Empty,
-                Content: TryGetString(item, "snippet"),
-                Score: TryGetDouble(item, "_score"),
-                PublishedDate: TryGetString(item, "timestamp_format"))).ToArray()
-            : [];
-
-        return new WebSearchResult(null, results);
-    }
-
-    private Task<DashScopeAuthConfig> ResolveDashScopeAuthConfigAsync(
-        WebSearchProviderConfiguration provider,
-        CancellationToken cancellationToken)
-    {
-        throw new InvalidOperationException("DashScope web search is no longer supported (Qwen OAuth was removed in v1).");
-    }
-
-    private static string BuildDashScopeWebSearchEndpoint(string resourceUrl)
-    {
-        if (string.IsNullOrWhiteSpace(resourceUrl))
-        {
-            return string.Empty;
-        }
-
-        var normalizedBaseUrl = resourceUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase)
-            ? resourceUrl
-            : $"https://{resourceUrl}";
-        normalizedBaseUrl = normalizedBaseUrl.TrimEnd('/');
-        return normalizedBaseUrl.EndsWith("/api/v1/indices/plugin/web_search", StringComparison.OrdinalIgnoreCase)
-            ? normalizedBaseUrl
-            : $"{normalizedBaseUrl}/api/v1/indices/plugin/web_search";
     }
 
     private static string BuildSearchContent(WebSearchResult result)
@@ -888,7 +790,7 @@ Call web_fetch again with the redirect URL if you want to inspect that destinati
             return configuredDefault.Trim().ToLowerInvariant();
         }
 
-        foreach (var providerType in new[] { "tavily", "google", "dashscope" })
+        foreach (var providerType in new[] { "tavily", "google" })
         {
             if (providers.Any(provider => provider.Type.Equals(providerType, StringComparison.OrdinalIgnoreCase)))
             {
@@ -916,9 +818,6 @@ Call web_fetch again with the redirect URL if you want to inspect that destinati
             Country: string.Empty,
             Endpoint: string.Empty,
             ResourceUrl: string.Empty);
-
-    private static bool IsKurisuOAuth(string authType) =>
-        string.Equals(authType, "openai", StringComparison.OrdinalIgnoreCase);
 
     private static string RequireString(JsonElement arguments, string propertyName) =>
         TryGetString(arguments, propertyName) is { Length: > 0 } value
@@ -968,10 +867,6 @@ Call web_fetch again with the redirect URL if you want to inspect that destinati
         string Country,
         string Endpoint,
         string ResourceUrl);
-
-    private sealed record DashScopeAuthConfig(
-        string AccessToken,
-        string Endpoint);
 
     private sealed record WebSearchResult(
         string? Answer,

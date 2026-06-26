@@ -1,5 +1,7 @@
 using Kurisu.Core.Models;
 
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Core.Agents;
 
 /// <summary>
@@ -44,7 +46,7 @@ public sealed class SubagentValidationService(
         {
             try
             {
-                _ = modelSelectionService.Parse(descriptor.Model, "openai");
+                _ = modelSelectionService.Parse(descriptor.Model, ProviderIds.OpenAI);
             }
             catch (Exception exception)
             {

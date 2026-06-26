@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
-using Kurisu.Core.Auth;
 using Kurisu.Core.Channels;
 using Kurisu.App.Desktop.Bridges;
 using Kurisu.Core.Extensions;
@@ -24,7 +23,7 @@ internal static class TestServiceFactory
             Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
             Environment.CurrentDirectory,
             AppContext.BaseDirectory);
-        var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+        var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
         var approvalPolicyService = new ApprovalPolicyService();
         var approvalSessionRuleStore = new ApprovalSessionRuleStore();
         var workspacePathResolver = new WorkspacePathResolver(environmentPaths);
@@ -207,7 +206,6 @@ internal static class TestServiceFactory
         return new DesktopSessionHostService(
             runtimeProfileService,
             new CommandActionRuntime(
-                new SlashCommandRuntime(compatibilityService),
                 runtimeProfileService,
                 compatibilityService,
                 new ToolCatalogService(runtimeProfileService, approvalPolicyService)),
@@ -224,9 +222,9 @@ internal static class TestServiceFactory
             effectiveTranscriptStore,
             activeTurnRegistry ?? new ActiveTurnRegistry(effectiveInterruptedTurnStore),
             effectiveInterruptedTurnStore,
-            new SessionTranscriptWriter(),
             new SessionEventFactory(),
             sessionMessageBus,
+            followupSuggestionService: null,
             approvalSessionRuleStore: approvalSessionRuleStore);
     }
 
@@ -240,12 +238,6 @@ internal static class TestServiceFactory
         var configService = new RuntimeConfigService(environmentPaths);
         var providerSettings = new ProviderSettingsStore(environmentPaths, NullLogger<ProviderSettingsStore>.Instance);
         var selectionStore = new RuntimeSelectionStore(environmentPaths, NullLogger<RuntimeSelectionStore>.Instance);
-        var modelConfigResolver = new ModelConfigResolver(
-            new ModelRegistryService(
-                configService,
-                selectionStore,
-                new TokenLimitService(),
-                Options.Create(new NativeAssistantRuntimeOptions())));
 
         var providers = primaryProvider is null
             ? new IAssistantResponseProvider[]
@@ -266,11 +258,11 @@ internal static class TestServiceFactory
             new AssistantPromptAssembler(
                 new ProjectSummaryService(),
                 new DesktopSessionCatalogService(
-                    new KurisuRuntimeProfileService(environmentPaths),
+                    new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance)),
                     new ChatRecordingService())),
             providers,
             new ToolCallScheduler(
-                new NonInteractiveToolExecutor(toolExecutor ?? new FakeToolExecutor()),
+                toolExecutor ?? new FakeToolExecutor(),
                 new LoopDetectionService()),
             new LoopDetectionService(),
             new TokenLimitService(),

@@ -2,6 +2,8 @@ using Kurisu.Core.Extensions;
 using Kurisu.Core.Infrastructure;
 using Kurisu.Core.Models;
 
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Core.Hooks;
 
 /// <summary>
@@ -282,7 +284,7 @@ public sealed class HookRegistryService(
     }
 
     private string ResolveProgramDataRoot() =>
-        Environment.GetEnvironmentVariable("KURISU_SYSTEM_SETTINGS_PATH") is { Length: > 0 } overridePath
+        Environment.GetEnvironmentVariable("KurisuEnvVars.SystemSettingsPath") is { Length: > 0 } overridePath
             ? Path.GetDirectoryName(overridePath) ?? string.Empty
             : environmentPaths.ProgramDataDirectory is { Length: > 0 } commonAppData
                 ? Path.Combine(commonAppData, "kurisu")
@@ -290,7 +292,7 @@ public sealed class HookRegistryService(
 
     private static string GetSystemDefaultsPath(string programDataRoot)
     {
-        var overridePath = Environment.GetEnvironmentVariable("KURISU_SYSTEM_DEFAULTS_PATH");
+        var overridePath = Environment.GetEnvironmentVariable("KurisuEnvVars.SystemDefaultsPath");
         return string.IsNullOrWhiteSpace(overridePath)
             ? Path.Combine(programDataRoot, "system-defaults.json")
             : overridePath;
@@ -298,7 +300,7 @@ public sealed class HookRegistryService(
 
     private static string GetSystemSettingsPath(string programDataRoot)
     {
-        var overridePath = Environment.GetEnvironmentVariable("KURISU_SYSTEM_SETTINGS_PATH");
+        var overridePath = Environment.GetEnvironmentVariable("KurisuEnvVars.SystemSettingsPath");
         return string.IsNullOrWhiteSpace(overridePath)
             ? Path.Combine(programDataRoot, "settings.json")
             : overridePath;

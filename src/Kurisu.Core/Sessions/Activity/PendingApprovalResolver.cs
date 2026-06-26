@@ -1,5 +1,7 @@
 using Kurisu.Core.Models;
 
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Core.Sessions;
 
 /// <summary>
@@ -17,7 +19,7 @@ public sealed class PendingApprovalResolver : IPendingApprovalResolver
         detail.Entries
             .Where(static entry =>
                 entry.Type == "tool" &&
-                string.Equals(entry.Status, "approval-required", StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(entry.Status, ToolExecutionStatus.ApprovalRequired, StringComparison.OrdinalIgnoreCase) &&
                 string.IsNullOrWhiteSpace(entry.ResolutionStatus))
             .LastOrDefault(entry => string.IsNullOrWhiteSpace(entryId) || string.Equals(entry.Id, entryId, StringComparison.Ordinal))
         ?? throw new InvalidOperationException("No pending tool approval was found for this session.");
@@ -32,7 +34,7 @@ public sealed class PendingApprovalResolver : IPendingApprovalResolver
         detail.Entries
             .Where(static entry =>
                 entry.Type == "tool" &&
-                string.Equals(entry.ToolName, "ask_user_question", StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(entry.ToolName, WellKnownToolNames.AskUserQuestion, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(entry.Status, "input-required", StringComparison.OrdinalIgnoreCase) &&
                 string.IsNullOrWhiteSpace(entry.ResolutionStatus))
             .LastOrDefault(entry => string.IsNullOrWhiteSpace(entryId) || string.Equals(entry.Id, entryId, StringComparison.Ordinal))

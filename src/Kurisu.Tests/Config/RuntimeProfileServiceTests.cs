@@ -52,7 +52,7 @@ public sealed class RuntimeProfileServiceTests
                 }
                 """);
 
-            var service = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var service = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var profile = service.Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
 
             Assert.Equal(Path.Combine(workspaceRoot, ".kurisu-runtime"), profile.RuntimeBaseDirectory);
@@ -91,7 +91,7 @@ public sealed class RuntimeProfileServiceTests
             Directory.CreateDirectory(Path.Combine(homeRoot, ".kurisu"));
             Directory.CreateDirectory(systemRoot);
 
-            var service = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var service = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var profile = service.Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
 
             Assert.Equal(["KURISU.md", "AGENTS.md"], profile.ContextFileNames);
@@ -140,7 +140,7 @@ public sealed class RuntimeProfileServiceTests
                 Path.Combine(homeRoot, ".kurisu", "trustedFolders.json"),
                 BuildTrustedFoldersJson(workspaceRoot, "DO_NOT_TRUST"));
 
-            var service = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var service = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var profile = service.Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
 
             Assert.True(profile.FolderTrustEnabled);
@@ -205,7 +205,7 @@ public sealed class RuntimeProfileServiceTests
                 Path.Combine(homeRoot, ".kurisu", "trustedFolders.json"),
                 BuildTrustedFoldersJson(workspaceRoot, "DO_NOT_TRUST"));
 
-            var service = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var service = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var profile = service.Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
 
             Assert.True(profile.FolderTrustEnabled);

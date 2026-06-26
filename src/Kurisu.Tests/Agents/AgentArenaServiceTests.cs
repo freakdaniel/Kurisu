@@ -23,7 +23,7 @@ public sealed class AgentArenaServiceTests
             RunGit(workspaceRoot, "commit", "-m", "init");
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot, workspaceRoot, workspaceRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var runtime = new RecordingArenaTurnRuntime();
             var registry = new ArenaSessionRegistry();
             var service = new AgentArenaService(
@@ -177,7 +177,7 @@ public sealed class AgentArenaServiceTests
             RunGit(workspaceRoot, "commit", "-m", "init");
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot, workspaceRoot, workspaceRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var runtime = new RecordingArenaTurnRuntime();
             var registry = new ArenaSessionRegistry();
             var service = new AgentArenaService(
@@ -259,7 +259,7 @@ public sealed class AgentArenaServiceTests
             RunGit(workspaceRoot, "commit", "-m", "init");
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot, workspaceRoot, workspaceRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var runtime = new RecordingArenaTurnRuntime();
             var registry = new ArenaSessionRegistry();
             var service = new AgentArenaService(
@@ -363,7 +363,7 @@ public sealed class AgentArenaServiceTests
             RunGit(workspaceRoot, "commit", "-m", "init");
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot, workspaceRoot, workspaceRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var runtime = new BlockingArenaTurnRuntime(expectedCalls: 2);
             var registry = new ArenaSessionRegistry();
             var service = new AgentArenaService(
@@ -454,7 +454,7 @@ public sealed class AgentArenaServiceTests
             RunGit(workspaceRoot, "commit", "-m", "init");
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot, workspaceRoot, workspaceRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var runtime = new BlockingArenaTurnRuntime(expectedCalls: 2);
             var registry = new ArenaSessionRegistry();
             var service = new AgentArenaService(
@@ -543,7 +543,7 @@ public sealed class AgentArenaServiceTests
             RunGit(workspaceRoot, "commit", "-m", "init");
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot, workspaceRoot, workspaceRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var runtime = new ApplyingArenaTurnRuntime();
             var registry = new ArenaSessionRegistry();
             var service = new AgentArenaService(
@@ -661,7 +661,7 @@ public sealed class AgentArenaServiceTests
             RunGit(workspaceRoot, "commit", "-m", "init");
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot, workspaceRoot, workspaceRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var runtime = new RecordingArenaTurnRuntime();
             var registry = new ArenaSessionRegistry();
             var service = new AgentArenaService(

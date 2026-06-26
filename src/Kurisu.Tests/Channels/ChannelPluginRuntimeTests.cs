@@ -123,7 +123,7 @@ public sealed class ChannelPluginRuntimeTests
         ISessionHost sessionHost)
     {
         var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
-        var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+        var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
         var compatibilityService = new KurisuCompatibilityService(environmentPaths);
         var settingsResolver = new DesktopSettingsResolver(compatibilityService, runtimeProfileService);
         var extensionCatalog = new ExtensionCatalogService(runtimeProfileService, environmentPaths);

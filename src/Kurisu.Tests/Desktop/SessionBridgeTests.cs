@@ -31,7 +31,7 @@ public sealed class SessionBridgeTests
             });
             var environmentPaths = new FakeDesktopEnvironmentPaths(root, root, workspaceRoot, workspaceRoot);
             var workspacePathResolver = new WorkspacePathResolver(environmentPaths);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var transcriptStore = new DesktopSessionCatalogService(runtimeProfileService, new ChatRecordingService());
             var runtimeProfile = runtimeProfileService.Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
             Directory.CreateDirectory(runtimeProfile.ChatsDirectory);

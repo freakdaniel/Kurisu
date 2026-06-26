@@ -348,7 +348,7 @@ public sealed class ExtensionCatalogServiceTests
 
     private static ExtensionCatalogService CreateService(string homeRoot) =>
         new(
-            new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, null, homeRoot, homeRoot)),
+            new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, null, homeRoot, homeRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, null, homeRoot, homeRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, null, homeRoot, homeRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance)),
             new FakeDesktopEnvironmentPaths(homeRoot, null, homeRoot, homeRoot));
 
     private static string CreateExtensionSource(string root, string extensionName)

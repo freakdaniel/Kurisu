@@ -1,3 +1,5 @@
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Tests.Sessions;
 
 public sealed class SessionMessageBusTests
@@ -30,7 +32,7 @@ public sealed class SessionMessageBusTests
                 """);
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(environmentPaths);
             var sessionCatalog = new DesktopSessionCatalogService(runtimeProfileService, new ChatRecordingService());
             var sessionHost = CreateSessionHost(runtimeProfileService, compatibilityService, sessionCatalog);
@@ -53,7 +55,7 @@ public sealed class SessionMessageBusTests
                 {
                     Prompt = "Queue a pending edit for bus resolution.",
                     WorkingDirectory = workspaceRoot,
-                    ToolName = "write_file",
+                    ToolName = WellKnownToolNames.WriteFile,
                     ToolArgumentsJson = $$"""{"file_path":"{{targetFile.Replace("\\", "\\\\")}}","content":"bus write"}""",
                     ApproveToolExecution = false
                 });
@@ -67,7 +69,7 @@ public sealed class SessionMessageBusTests
             Assert.NotNull(pendingDetail);
             var pendingEntry = Assert.Single(
                 pendingDetail!.Entries,
-                entry => entry.Type == "tool" && entry.Status == "approval-required");
+                entry => entry.Type == "tool" && entry.Status == ToolExecutionStatus.ApprovalRequired);
 
             var response = await sessionMessageBus.RequestPendingToolApprovalAsync(
                 new PendingToolApprovalMessageRequest
@@ -106,7 +108,7 @@ public sealed class SessionMessageBusTests
             Directory.CreateDirectory(systemRoot);
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(environmentPaths);
             var sessionCatalog = new DesktopSessionCatalogService(runtimeProfileService, new ChatRecordingService());
             var sessionHost = CreateSessionHost(runtimeProfileService, compatibilityService, sessionCatalog);
@@ -129,7 +131,7 @@ public sealed class SessionMessageBusTests
                 {
                     Prompt = "Ask the user which runtime path to continue.",
                     WorkingDirectory = workspaceRoot,
-                    ToolName = "ask_user_question",
+                    ToolName = WellKnownToolNames.AskUserQuestion,
                     ToolArgumentsJson =
                         """
                         {

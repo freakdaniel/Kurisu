@@ -1,3 +1,5 @@
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Tests.Sessions;
 
 public sealed class InterruptedTurnStoreTests
@@ -28,7 +30,7 @@ public sealed class InterruptedTurnStoreTests
                 TranscriptPath = transcriptPath,
                 WorkingDirectory = "E:\\workspace",
                 GitBranch = "main",
-                ToolName = "write_file",
+                ToolName = WellKnownToolNames.WriteFile,
                 Stage = "response-delta",
                 Status = "streaming",
                 ContentSnapshot = "Partial assistant output.",
@@ -39,7 +41,7 @@ public sealed class InterruptedTurnStoreTests
             var firstListing = store.ListRecoverableTurns(chatsDirectory);
             var recoverable = Assert.Single(firstListing);
             Assert.Equal("recoverable-session", recoverable.SessionId);
-            Assert.Equal("write_file", recoverable.ToolName);
+            Assert.Equal(WellKnownToolNames.WriteFile, recoverable.ToolName);
 
             var transcriptAfterFirstListing = File.ReadAllLines(transcriptPath);
             Assert.Equal(2, transcriptAfterFirstListing.Length);

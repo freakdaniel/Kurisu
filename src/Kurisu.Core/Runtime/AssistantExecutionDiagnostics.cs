@@ -1,3 +1,5 @@
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Core.Runtime;
 
 internal static class AssistantExecutionDiagnostics
@@ -81,7 +83,7 @@ internal static class AssistantExecutionDiagnostics
     public static string ResolveStopReasonFromStatus(string? status) =>
         status switch
         {
-            "approval-required" => "tool-approval-required",
+            ToolExecutionStatus.ApprovalRequired => "tool-approval-required",
             "input-required" => "tool-input-required",
             "blocked" => "tool-blocked",
             "error" => "tool-error",

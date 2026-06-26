@@ -1,5 +1,7 @@
 using Kurisu.Core.Models;
 
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Core.Tools;
 
 /// <summary>
@@ -106,7 +108,7 @@ public sealed class UserQuestionToolService : IUserQuestionToolService
         var questions = ParseQuestions(arguments);
         return new NativeToolExecutionResult
         {
-            ToolName = "ask_user_question",
+            ToolName = WellKnownToolNames.AskUserQuestion,
             Status = "input-required",
             ApprovalState = string.IsNullOrWhiteSpace(approvalState) ? "ask" : approvalState,
             WorkingDirectory = workingDirectory,
@@ -133,7 +135,7 @@ public sealed class UserQuestionToolService : IUserQuestionToolService
         var normalizedAnswers = ValidateAnswers(questions, answers);
         return new NativeToolExecutionResult
         {
-            ToolName = "ask_user_question",
+            ToolName = WellKnownToolNames.AskUserQuestion,
             Status = "completed",
             ApprovalState = string.IsNullOrWhiteSpace(approvalState) ? "ask" : approvalState,
             WorkingDirectory = workingDirectory,

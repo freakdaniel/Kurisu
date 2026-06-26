@@ -157,7 +157,7 @@ export default function Sidebar({
               <VStack h="100%" spacing={0} align="stretch">
                 <Box px={4} pt={3} pb={3}>
                   <HStack justify="space-between" align="center">
-                    <img src={kurisuLogo} alt="Qwen" style={{ width: '26px', height: '26px' }} draggable={false} />
+                    <img src={kurisuLogo} alt="Kurisu" style={{ width: '26px', height: '26px' }} draggable={false} />
                     <IconButton
                       aria-label={t('sidebar.collapseSidebar')}
                       icon={<PanelLeftClose size={16} />}

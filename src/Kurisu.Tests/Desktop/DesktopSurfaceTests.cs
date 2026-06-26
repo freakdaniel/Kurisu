@@ -98,7 +98,7 @@ public sealed class DesktopProjectionServiceTests
         try
         {
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(environmentPaths);
             var approvalPolicyService = new ApprovalPolicyService();
             var workspacePathResolver = new WorkspacePathResolver(environmentPaths);
@@ -322,7 +322,7 @@ public sealed class DesktopProjectionServiceTests
         try
         {
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(environmentPaths);
             var approvalPolicyService = new ApprovalPolicyService();
             var workspacePathResolver = new WorkspacePathResolver(environmentPaths);

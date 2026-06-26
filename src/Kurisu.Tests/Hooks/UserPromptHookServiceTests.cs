@@ -73,7 +73,7 @@ public sealed class UserPromptHookServiceTests
                 """);
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
-            var runtimeProfile = new KurisuRuntimeProfileService(environmentPaths)
+            var runtimeProfile = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance))
                 .Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
             var hookLifecycleService = new HookLifecycleService(
                 new HookRegistryService(environmentPaths),
@@ -180,7 +180,7 @@ public sealed class UserPromptHookServiceTests
                 """);
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
-            var runtimeProfile = new KurisuRuntimeProfileService(environmentPaths)
+            var runtimeProfile = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance))
                 .Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
             var hookLifecycleService = new HookLifecycleService(
                 new HookRegistryService(environmentPaths),

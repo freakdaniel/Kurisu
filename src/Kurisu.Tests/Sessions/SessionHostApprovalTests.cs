@@ -1,3 +1,5 @@
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Tests.Sessions;
 
 public sealed class SessionHostApprovalTests
@@ -29,7 +31,7 @@ public sealed class SessionHostApprovalTests
                 }
                 """);
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var sessionCatalog = new DesktopSessionCatalogService(runtimeProfileService, new ChatRecordingService());
             var sessionHost = CreateSessionHost(runtimeProfileService, compatibilityService, sessionCatalog);
@@ -41,7 +43,7 @@ public sealed class SessionHostApprovalTests
                 {
                     Prompt = "Queue a pending edit for approval.",
                     WorkingDirectory = workspaceRoot,
-                    ToolName = "write_file",
+                    ToolName = WellKnownToolNames.WriteFile,
                     ToolArgumentsJson = $$"""{"file_path":"{{targetFile.Replace("\\", "\\\\")}}","content":"approved write"}""",
                     ApproveToolExecution = false
                 });
@@ -65,7 +67,7 @@ public sealed class SessionHostApprovalTests
                 });
 
             Assert.Equal("completed", approvalResult.ToolExecution.Status);
-            Assert.Equal("write_file", approvalResult.ToolExecution.ToolName);
+            Assert.Equal(WellKnownToolNames.WriteFile, approvalResult.ToolExecution.ToolName);
             Assert.Equal("approved write", File.ReadAllText(targetFile));
 
             var finalDetail = sessionCatalog.GetSession(
@@ -84,7 +86,7 @@ public sealed class SessionHostApprovalTests
 
             var completedExecutionEntry = finalDetail.Entries.Last(entry =>
                 entry.Type == "tool" &&
-                entry.ToolName == "write_file");
+                entry.ToolName == WellKnownToolNames.WriteFile);
             Assert.Equal("completed", completedExecutionEntry.Status);
             Assert.Contains("approved write", completedExecutionEntry.Arguments);
             Assert.Equal("executed-after-approval", completedExecutionEntry.ResolutionStatus);
@@ -122,7 +124,7 @@ public sealed class SessionHostApprovalTests
                 }
                 """);
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var sessionCatalog = new DesktopSessionCatalogService(runtimeProfileService, new ChatRecordingService());
             var sessionHost = CreateSessionHost(runtimeProfileService, compatibilityService, sessionCatalog);
@@ -134,7 +136,7 @@ public sealed class SessionHostApprovalTests
                 {
                     Prompt = "Queue a pending edit for event emission.",
                     WorkingDirectory = workspaceRoot,
-                    ToolName = "write_file",
+                    ToolName = WellKnownToolNames.WriteFile,
                     ToolArgumentsJson = $$"""{"file_path":"{{targetFile.Replace("\\", "\\\\")}}","content":"approved write"}""",
                     ApproveToolExecution = false
                 });
@@ -148,8 +150,8 @@ public sealed class SessionHostApprovalTests
             Assert.NotNull(pendingDetail);
             var pendingToolEntry = pendingDetail!.Entries.Last(entry =>
                 entry.Type == "tool" &&
-                entry.ToolName == "write_file" &&
-                entry.Status == "approval-required");
+                entry.ToolName == WellKnownToolNames.WriteFile &&
+                entry.Status == ToolExecutionStatus.ApprovalRequired);
 
             var emittedEvents = new List<DesktopSessionEvent>();
             sessionHost.SessionEvent += (_, sessionEvent) => emittedEvents.Add(sessionEvent);
@@ -172,7 +174,7 @@ public sealed class SessionHostApprovalTests
                 kind => Assert.Equal(DesktopSessionEventKind.TurnCompleted, kind));
 
             Assert.All(emittedEvents, item => Assert.Equal(startResult.Session.SessionId, item.SessionId));
-            Assert.Contains(emittedEvents, item => item.ToolName == "write_file");
+            Assert.Contains(emittedEvents, item => item.ToolName == WellKnownToolNames.WriteFile);
         }
         finally
         {
@@ -196,7 +198,7 @@ public sealed class SessionHostApprovalTests
             Directory.CreateDirectory(homeRoot);
             Directory.CreateDirectory(systemRoot);
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var sessionCatalog = new DesktopSessionCatalogService(runtimeProfileService, new ChatRecordingService());
             var sessionHost = CreateSessionHost(runtimeProfileService, compatibilityService, sessionCatalog);
@@ -207,7 +209,7 @@ public sealed class SessionHostApprovalTests
                 {
                     Prompt = "Ask the user which implementation path to take.",
                     WorkingDirectory = workspaceRoot,
-                    ToolName = "ask_user_question",
+                    ToolName = WellKnownToolNames.AskUserQuestion,
                     ToolArgumentsJson =
                         """
                         {
@@ -238,7 +240,7 @@ public sealed class SessionHostApprovalTests
 
             var pendingEntry = Assert.Single(pendingDetail.Entries, entry =>
                 entry.Type == "tool" &&
-                entry.ToolName == "ask_user_question" &&
+                entry.ToolName == WellKnownToolNames.AskUserQuestion &&
                 entry.Status == "input-required");
 
             var answerResult = await sessionHost.AnswerPendingQuestionAsync(
@@ -258,7 +260,7 @@ public sealed class SessionHostApprovalTests
                 });
 
             Assert.Equal("completed", answerResult.ToolExecution.Status);
-            Assert.Equal("ask_user_question", answerResult.ToolExecution.ToolName);
+            Assert.Equal(WellKnownToolNames.AskUserQuestion, answerResult.ToolExecution.ToolName);
             Assert.Contains("Native host", answerResult.ToolExecution.Output);
 
             var finalDetail = sessionCatalog.GetSession(
@@ -276,7 +278,7 @@ public sealed class SessionHostApprovalTests
 
             var completedQuestionEntry = finalDetail.Entries.Last(entry =>
                 entry.Type == "tool" &&
-                entry.ToolName == "ask_user_question" &&
+                entry.ToolName == WellKnownToolNames.AskUserQuestion &&
                 entry.Status == "completed");
             Assert.Equal("answered-by-user", completedQuestionEntry.ResolutionStatus);
             Assert.Single(completedQuestionEntry.Answers);
@@ -314,7 +316,7 @@ public sealed class SessionHostApprovalTests
                 }
                 """);
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var sessionCatalog = new DesktopSessionCatalogService(runtimeProfileService, new ChatRecordingService());
             var sessionHost = CreateSessionHost(runtimeProfileService, compatibilityService, sessionCatalog);
@@ -325,7 +327,7 @@ public sealed class SessionHostApprovalTests
                 {
                     Prompt = "Queue a shell approval.",
                     WorkingDirectory = workspaceRoot,
-                    ToolName = "run_shell_command",
+                    ToolName = WellKnownToolNames.RunShellCommand,
                     ToolArgumentsJson = """{"command":"dotnet help"}""",
                     ApproveToolExecution = false
                 });
@@ -340,7 +342,7 @@ public sealed class SessionHostApprovalTests
 
             var pendingEntry = Assert.Single(
                 pendingDetail!.Entries,
-                entry => entry.Type == "tool" && entry.Status == "approval-required");
+                entry => entry.Type == "tool" && entry.Status == ToolExecutionStatus.ApprovalRequired);
 
             await sessionHost.ApprovePendingToolAsync(
                 new WorkspacePaths { WorkspaceRoot = workspaceRoot },
@@ -361,12 +363,12 @@ public sealed class SessionHostApprovalTests
                 {
                     Prompt = "Run the same shell family again.",
                     WorkingDirectory = workspaceRoot,
-                    ToolName = "run_shell_command",
+                    ToolName = WellKnownToolNames.RunShellCommand,
                     ToolArgumentsJson = """{"command":"dotnet help"}""",
                     ApproveToolExecution = false
                 });
 
-            Assert.NotEqual("approval-required", secondTurn.ToolExecution.Status);
+            Assert.NotEqual(ToolExecutionStatus.ApprovalRequired, secondTurn.ToolExecution.Status);
 
             var secondDetail = sessionCatalog.GetSession(
                 new WorkspacePaths { WorkspaceRoot = workspaceRoot },
@@ -409,7 +411,7 @@ public sealed class SessionHostApprovalTests
                 }
                 """);
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var sessionCatalog = new DesktopSessionCatalogService(runtimeProfileService, new ChatRecordingService());
             var sessionHost = CreateSessionHost(runtimeProfileService, compatibilityService, sessionCatalog);
@@ -420,7 +422,7 @@ public sealed class SessionHostApprovalTests
                 {
                     Prompt = "Queue a session-scoped shell approval.",
                     WorkingDirectory = workspaceRoot,
-                    ToolName = "run_shell_command",
+                    ToolName = WellKnownToolNames.RunShellCommand,
                     ToolArgumentsJson = """{"command":"dotnet help"}""",
                     ApproveToolExecution = false
                 });
@@ -434,7 +436,7 @@ public sealed class SessionHostApprovalTests
             Assert.NotNull(pendingDetail);
             var pendingEntry = Assert.Single(
                 pendingDetail!.Entries,
-                entry => entry.Type == "tool" && entry.Status == "approval-required");
+                entry => entry.Type == "tool" && entry.Status == ToolExecutionStatus.ApprovalRequired);
             var extraPendingEntryId = Guid.NewGuid().ToString();
             await File.AppendAllTextAsync(
                 pendingDetail.Session.TranscriptPath,
@@ -448,10 +450,10 @@ public sealed class SessionHostApprovalTests
                     cwd = workspaceRoot,
                     version = "0.1.0",
                     gitBranch = string.Empty,
-                    toolName = "run_shell_command",
+                    toolName = WellKnownToolNames.RunShellCommand,
                     args = """{"command":"dotnet help"}""",
                     approvalState = "ask",
-                    status = "approval-required",
+                    status = ToolExecutionStatus.ApprovalRequired,
                     output = string.Empty,
                     errorMessage = "Approval is required for run_shell_command.",
                     exitCode = 0,
@@ -477,12 +479,12 @@ public sealed class SessionHostApprovalTests
                     SessionId = firstTurn.Session.SessionId,
                     Prompt = "Run the same shell family in the same session.",
                     WorkingDirectory = workspaceRoot,
-                    ToolName = "run_shell_command",
+                    ToolName = WellKnownToolNames.RunShellCommand,
                     ToolArgumentsJson = """{"command":"dotnet help"}""",
                     ApproveToolExecution = false
                 });
 
-            Assert.NotEqual("approval-required", sameSessionTurn.ToolExecution.Status);
+            Assert.NotEqual(ToolExecutionStatus.ApprovalRequired, sameSessionTurn.ToolExecution.Status);
             var finalDetail = sessionCatalog.GetSession(
                 new WorkspacePaths { WorkspaceRoot = workspaceRoot },
                 new GetDesktopSessionRequest
@@ -494,7 +496,7 @@ public sealed class SessionHostApprovalTests
             Assert.Contains(
                 finalDetail.Entries,
                 entry => entry.Type == "tool" &&
-                         entry.ToolName == "run_shell_command" &&
+                         entry.ToolName == WellKnownToolNames.RunShellCommand &&
                          entry.ResolutionStatus == "executed-after-auto-approval");
 
             var otherSessionTurn = await sessionHost.StartTurnAsync(
@@ -503,12 +505,12 @@ public sealed class SessionHostApprovalTests
                 {
                     Prompt = "Run the same shell family in another session.",
                     WorkingDirectory = workspaceRoot,
-                    ToolName = "run_shell_command",
+                    ToolName = WellKnownToolNames.RunShellCommand,
                     ToolArgumentsJson = """{"command":"dotnet help"}""",
                     ApproveToolExecution = false
                 });
 
-            Assert.Equal("approval-required", otherSessionTurn.ToolExecution.Status);
+            Assert.Equal(ToolExecutionStatus.ApprovalRequired, otherSessionTurn.ToolExecution.Status);
         }
         finally
         {
@@ -542,7 +544,7 @@ public sealed class SessionHostApprovalTests
                 }
                 """);
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var sessionCatalog = new DesktopSessionCatalogService(runtimeProfileService, new ChatRecordingService());
             var sessionHost = CreateSessionHost(runtimeProfileService, compatibilityService, sessionCatalog);
@@ -553,7 +555,7 @@ public sealed class SessionHostApprovalTests
                 {
                     Prompt = "Queue a user-scoped shell approval.",
                     WorkingDirectory = workspaceRoot,
-                    ToolName = "run_shell_command",
+                    ToolName = WellKnownToolNames.RunShellCommand,
                     ToolArgumentsJson = """{"command":"dotnet help"}""",
                     ApproveToolExecution = false
                 });
@@ -567,7 +569,7 @@ public sealed class SessionHostApprovalTests
             Assert.NotNull(pendingDetail);
             var pendingEntry = Assert.Single(
                 pendingDetail!.Entries,
-                entry => entry.Type == "tool" && entry.Status == "approval-required");
+                entry => entry.Type == "tool" && entry.Status == ToolExecutionStatus.ApprovalRequired);
 
             await sessionHost.ApprovePendingToolAsync(
                 new WorkspacePaths { WorkspaceRoot = workspaceRoot },
@@ -591,12 +593,12 @@ public sealed class SessionHostApprovalTests
                 {
                     Prompt = "Run the same shell family after a user-scoped allow.",
                     WorkingDirectory = workspaceRoot,
-                    ToolName = "run_shell_command",
+                    ToolName = WellKnownToolNames.RunShellCommand,
                     ToolArgumentsJson = """{"command":"dotnet help"}""",
                     ApproveToolExecution = false
                 });
 
-            Assert.NotEqual("approval-required", secondTurn.ToolExecution.Status);
+            Assert.NotEqual(ToolExecutionStatus.ApprovalRequired, secondTurn.ToolExecution.Status);
         }
         finally
         {
@@ -631,7 +633,7 @@ public sealed class SessionHostApprovalTests
                 }
                 """);
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var sessionCatalog = new DesktopSessionCatalogService(runtimeProfileService, new ChatRecordingService());
             var sessionHost = CreateSessionHost(runtimeProfileService, compatibilityService, sessionCatalog);
@@ -643,7 +645,7 @@ public sealed class SessionHostApprovalTests
                 {
                     Prompt = "Queue a pending edit for denial.",
                     WorkingDirectory = workspaceRoot,
-                    ToolName = "write_file",
+                    ToolName = WellKnownToolNames.WriteFile,
                     ToolArgumentsJson = $$"""{"file_path":"{{targetFile.Replace("\\", "\\\\")}}","content":"should not write"}""",
                     ApproveToolExecution = false
                 });
@@ -658,7 +660,7 @@ public sealed class SessionHostApprovalTests
 
             var pendingEntry = Assert.Single(
                 pendingDetail!.Entries,
-                entry => entry.Type == "tool" && entry.Status == "approval-required");
+                entry => entry.Type == "tool" && entry.Status == ToolExecutionStatus.ApprovalRequired);
 
             var denialResult = await sessionHost.ApprovePendingToolAsync(
                 new WorkspacePaths { WorkspaceRoot = workspaceRoot },
@@ -689,7 +691,7 @@ public sealed class SessionHostApprovalTests
 
             var blockedExecutionEntry = finalDetail.Entries.Last(entry =>
                 entry.Type == "tool" &&
-                entry.ToolName == "write_file");
+                entry.ToolName == WellKnownToolNames.WriteFile);
             Assert.Equal("blocked", blockedExecutionEntry.Status);
             Assert.Equal("blocked-by-user", blockedExecutionEntry.ResolutionStatus);
             Assert.Contains("denied approval", blockedExecutionEntry.Body, StringComparison.OrdinalIgnoreCase);

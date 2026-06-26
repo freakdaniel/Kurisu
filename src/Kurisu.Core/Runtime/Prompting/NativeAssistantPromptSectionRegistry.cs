@@ -1,3 +1,5 @@
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Core.Runtime;
 
 internal static class NativeAssistantPromptSectionRegistry
@@ -40,7 +42,7 @@ internal static class NativeAssistantPromptSectionRegistry
                     "- Break larger work into small steps, adapt the plan as you learn, and keep the current next step obvious."
                 };
 
-                if (context.CanUseTool("todo_write"))
+                if (context.CanUseTool(WellKnownToolNames.TodoWrite))
                 {
                     lines.Add("- When `todo_write` is available, use it proactively for complex or multi-step tasks so progress stays visible.");
                     lines.Add("- Mark a task in progress before starting it, complete it as soon as it is done, and do not batch multiple finished tasks before updating the tracker.");
@@ -143,7 +145,7 @@ internal static class NativeAssistantPromptSectionRegistry
                     return null;
                 }
 
-                var formatLabel = string.Equals(context.ProviderFlavor, "dashscope", StringComparison.OrdinalIgnoreCase)
+                var formatLabel = string.Equals(context.ProviderFlavor, ProviderIds.DashScope, StringComparison.OrdinalIgnoreCase)
                     ? "kurisu-compatible function calling"
                     : "OpenAI-compatible function calling";
                 var providerLabel = string.IsNullOrWhiteSpace(context.ProviderFlavor)
@@ -170,13 +172,13 @@ internal static class NativeAssistantPromptSectionRegistry
                     return null;
                 }
 
-                var shellExample = context.CanUseTool("run_shell_command")
+                var shellExample = context.CanUseTool(WellKnownToolNames.RunShellCommand)
                     ? "- Shell verification example: `run_shell_command` with `{\"command\":\"dotnet test D:\\\\repo\\\\src\\\\Kurisu.Tests\\\\Kurisu.Tests.csproj --filter DesktopPromptAndToolLoopTests\",\"workdir\":\"D:\\\\repo\"}`."
                     : "- Shell execution is not available in this turn, so prefer dedicated inspection or edit tools only.";
                 var parallelExample = context.CanUseTool("glob") && context.CanUseTool("grep_search")
                     ? "- Parallel research example: issue `glob` with `{\"pattern\":\"**/*.cs\",\"path\":\"D:\\\\repo\"}` together with `grep_search` using `{\"pattern\":\"BuildSystemPrompt\",\"path\":\"D:\\\\repo\"}` when both results are independent."
                     : "- Parallel tool calls are appropriate only when the calls are independent and do not need each other's output.";
-                var providerHint = string.Equals(context.ProviderFlavor, "dashscope", StringComparison.OrdinalIgnoreCase)
+                var providerHint = string.Equals(context.ProviderFlavor, ProviderIds.DashScope, StringComparison.OrdinalIgnoreCase)
                     ? "For Kurisu-compatible providers, the same rule applies: emit native function calls directly instead of writing fake `<tool_call>` wrappers in normal text."
                     : "For OpenAI-compatible providers, emit native `tool_calls` instead of describing the tool call in prose.";
 
@@ -205,7 +207,7 @@ internal static class NativeAssistantPromptSectionRegistry
                 };
 
                 var directWorkspaceTools = new List<string>();
-                foreach (var toolName in new[] { "read_file", "list_directory", "glob", "grep_search", "edit", "write_file" })
+                foreach (var toolName in new[] { "read_file", "list_directory", "glob", "grep_search", "edit", WellKnownToolNames.WriteFile })
                 {
                     if (context.CanUseTool(toolName))
                     {
@@ -218,7 +220,7 @@ internal static class NativeAssistantPromptSectionRegistry
                     lines.Add($"- Prefer `{string.Join("`, `", directWorkspaceTools)}` for workspace inspection and file edits instead of shell equivalents when possible.");
                 }
 
-                if (context.CanUseTool("run_shell_command"))
+                if (context.CanUseTool(WellKnownToolNames.RunShellCommand))
                 {
                     lines.Add("- Use `run_shell_command` for build, test, lint, git, or environment tasks that genuinely need a shell.");
                 }
@@ -361,12 +363,12 @@ internal static class NativeAssistantPromptSectionRegistry
                     "- For codebase facts, inspect files or search the workspace instead of guessing from prior turns."
                 };
 
-                if (context.CanUseTool("web_search"))
+                if (context.CanUseTool(WellKnownToolNames.WebSearch))
                 {
                     lines.Add("- Use `web_search` for recent or uncertain external facts, and prefer it over unsupported guesswork.");
                 }
 
-                if (context.CanUseTool("web_fetch"))
+                if (context.CanUseTool(WellKnownToolNames.WebFetch))
                 {
                     lines.Add("- Use `web_fetch` when you already have a URL and need the contents of that specific page, article, or document.");
                 }
@@ -380,7 +382,7 @@ internal static class NativeAssistantPromptSectionRegistry
             "web_research_workflow",
             static context =>
             {
-                if (!context.CanUseTool("web_search") && !context.CanUseTool("web_fetch"))
+                if (!context.CanUseTool(WellKnownToolNames.WebSearch) && !context.CanUseTool(WellKnownToolNames.WebFetch))
                 {
                     return null;
                 }
@@ -393,12 +395,12 @@ internal static class NativeAssistantPromptSectionRegistry
                     $"- When searching for recent information, include the current year ({currentYear}) or another concrete year/range when it materially improves recall."
                 };
 
-                if (context.CanUseTool("web_search"))
+                if (context.CanUseTool(WellKnownToolNames.WebSearch))
                 {
                     lines.Add("- Use `web_search` first when you need to discover the right source, compare multiple sources, or recover from a missing or stale URL.");
                 }
 
-                if (context.CanUseTool("web_fetch"))
+                if (context.CanUseTool(WellKnownToolNames.WebFetch))
                 {
                     lines.Add("- Use `web_fetch` after you already have a promising URL and need the contents of that exact page, release note, article, or document.");
                     lines.Add("- If `web_fetch` fails because the page moved, redirected, or returned 404, do not stop immediately. Adjust the URL or search again for an authoritative replacement.");
@@ -550,7 +552,7 @@ internal static class NativeAssistantPromptSectionRegistry
             },
             Order: 365,
             IsDynamic: true,
-            Applies: static context => context.CanUseTool("write_file") || context.CanUseTool("run_shell_command")),
+            Applies: static context => context.CanUseTool(WellKnownToolNames.WriteFile) || context.CanUseTool(WellKnownToolNames.RunShellCommand)),
         new(
             "editing_and_verification",
             static _ =>
@@ -596,7 +598,7 @@ internal static class NativeAssistantPromptSectionRegistry
                     "- Do not pretend planning is execution; clearly separate proposed steps from completed work."
                 };
 
-                if (context.CanUseTool("exit_plan_mode"))
+                if (context.CanUseTool(WellKnownToolNames.ExitPlanMode))
                 {
                     lines.Add("- When the investigation is complete and a concrete plan is ready, use `exit_plan_mode` to present it for confirmation.");
                 }
@@ -858,10 +860,10 @@ Honor these turn-scoped instructions unless they conflict with higher-priority s
             "list_directory" => "Inspect the contents of a directory.",
             "glob" => "Find files by glob pattern.",
             "grep_search" => "Search file contents by regex or text pattern.",
-            "run_shell_command" => "Run shell commands for build, test, git, or environment work.",
-            "write_file" => "Write a full file to disk.",
+            WellKnownToolNames.RunShellCommand => "Run shell commands for build, test, git, or environment work.",
+            WellKnownToolNames.WriteFile => "Write a full file to disk.",
             "edit" => "Apply targeted text edits inside an existing file.",
-            "todo_write" => "Create or update a structured task list for the current session.",
+            WellKnownToolNames.TodoWrite => "Create or update a structured task list for the current session.",
             "task_create" => "Create a richer session-scoped task record for orchestration, ownership, and dependency tracking.",
             "task_list" => "List session-scoped orchestration tasks.",
             "task_get" => "Read the details of a specific session-scoped task.",
@@ -872,13 +874,13 @@ Honor these turn-scoped instructions unless they conflict with higher-priority s
             "arena" => "Run the same task across multiple models in an arena comparison when you need a deliberate compare-and-choose workflow.",
             "skill" => "Load a predefined skill workflow or instructions bundle when an existing procedure clearly matches the task.",
             "tool_search" => "Search the native tool catalog by intent, kind, or approval state before guessing at the best tool.",
-            "exit_plan_mode" => "Exit plan mode after preparing a concrete plan.",
-            "web_fetch" => "Fetch and summarize a specific web page or URL once you already know the likely source.",
-            "web_search" => "Search the web for recent or external information, especially when facts may have changed.",
+            WellKnownToolNames.ExitPlanMode => "Exit plan mode after preparing a concrete plan.",
+            WellKnownToolNames.WebFetch => "Fetch and summarize a specific web page or URL once you already know the likely source.",
+            WellKnownToolNames.WebSearch => "Search the web for recent or external information, especially when facts may have changed.",
             "mcp-client" => "Inspect connected MCP servers, discover prompts or resources, and invoke MCP prompts.",
             "mcp-tool" => "Execute a concrete tool exposed by a connected MCP server once the server, tool, and arguments are known.",
             "lsp" => "Query semantic code intelligence such as symbols, definitions, references, implementations, diagnostics, or call hierarchy.",
-            "ask_user_question" => "Pause and ask the user one or more structured follow-up questions.",
+            WellKnownToolNames.AskUserQuestion => "Pause and ask the user one or more structured follow-up questions.",
             "cron_create" => "Schedule a session-scoped recurring or one-shot automation.",
             "cron_list" => "List active session-scoped automation jobs.",
             "cron_delete" => "Cancel an active session-scoped automation job.",

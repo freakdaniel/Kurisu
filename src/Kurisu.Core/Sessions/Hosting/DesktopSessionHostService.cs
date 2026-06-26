@@ -6,6 +6,8 @@ using Kurisu.Core.Hooks;
 using Kurisu.Core.Runtime;
 using Kurisu.Core.Tools;
 
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Core.Sessions;
 
 /// <summary>
@@ -23,7 +25,6 @@ namespace Kurisu.Core.Sessions;
 /// <param name="sessionCatalogService">The session catalog service</param>
 /// <param name="activeTurnRegistry">The active turn registry</param>
 /// <param name="interruptedTurnStore">The interrupted turn store</param>
-/// <param name="transcriptWriter">The transcript writer</param>
 /// <param name="sessionEventFactory">The session event factory</param>
 /// <param name="sessionMessageBus">The session message bus</param>
 /// <param name="followupSuggestionService">The followup suggestion service</param>
@@ -42,7 +43,7 @@ public sealed class DesktopSessionHostService(
     ITranscriptStore sessionCatalogService,
     IActiveTurnRegistry activeTurnRegistry,
     IInterruptedTurnStore interruptedTurnStore,
-    ISessionTranscriptWriter transcriptWriter,
+    
     ISessionEventFactory sessionEventFactory,
     ISessionMessageBus sessionMessageBus,
     IFollowupSuggestionService? followupSuggestionService = null,
@@ -232,7 +233,7 @@ public sealed class DesktopSessionHostService(
         var transcriptPath = Path.Combine(runtimeProfile.ChatsDirectory, $"{sessionId}.jsonl");
         var createdNewSession = !File.Exists(transcriptPath);
         var gitBranch = TryReadGitBranch(workingDirectory);
-        var parentUuid = transcriptWriter.TryReadLastEntryUuid(transcriptPath);
+        var parentUuid = SessionTranscriptWriter.TryReadLastEntryUuid(transcriptPath);
         var timestampUtc = DateTime.UtcNow;
         Directory.CreateDirectory(runtimeProfile.ChatsDirectory);
         cancellationToken.ThrowIfCancellationRequested();
@@ -335,7 +336,7 @@ public sealed class DesktopSessionHostService(
         var resolvedCommand = commandInvocation?.Command;
 
         var userUuid = Guid.NewGuid().ToString();
-        await transcriptWriter.AppendEntryAsync(
+        await SessionTranscriptWriter.AppendEntryAsync(
             transcriptPath,
             new
             {
@@ -367,7 +368,7 @@ public sealed class DesktopSessionHostService(
         if (commandInvocation is not null)
         {
             var commandUuid = Guid.NewGuid().ToString();
-            await transcriptWriter.AppendEntryAsync(
+            await SessionTranscriptWriter.AppendEntryAsync(
                 transcriptPath,
                 new
                 {
@@ -414,7 +415,7 @@ public sealed class DesktopSessionHostService(
                 cancellationToken: cancellationToken);
 
             var toolUuid = Guid.NewGuid().ToString();
-            await transcriptWriter.AppendEntryAsync(
+            await SessionTranscriptWriter.AppendEntryAsync(
                 transcriptPath,
                 new
                 {
@@ -477,7 +478,7 @@ public sealed class DesktopSessionHostService(
                     toolExecution.ToolName));
             },
             cancellationToken);
-        parentUuid = await transcriptWriter.AppendAssistantToolExecutionsAsync(
+        parentUuid = await SessionTranscriptWriter.AppendAssistantToolExecutionsAsync(
             transcriptPath,
             sessionId,
             parentUuid,
@@ -515,7 +516,7 @@ public sealed class DesktopSessionHostService(
         var assistantTimestamp = DateTime.UtcNow;
         if (persistAssistantMessage)
         {
-            await transcriptWriter.AppendEntryAsync(
+            await SessionTranscriptWriter.AppendEntryAsync(
                 transcriptPath,
                 new
                 {
@@ -735,7 +736,7 @@ public sealed class DesktopSessionHostService(
                 detail.TranscriptPath,
                 workingDirectory,
                 gitBranch,
-                "ask_user_question"),
+                WellKnownToolNames.AskUserQuestion),
             token => AnswerPendingQuestionCoreAsync(paths, request, answerContext, token),
             async () => await BuildCancelledTurnResultAsync(
                 paths,
@@ -793,14 +794,14 @@ public sealed class DesktopSessionHostService(
                 cancellationToken: cancellationToken);
 
         var resolutionTimestamp = DateTime.UtcNow;
-        await transcriptWriter.MarkToolEntryResolvedAsync(
+        await SessionTranscriptWriter.MarkToolEntryResolvedAsync(
             detail.TranscriptPath,
             pendingTool.Id,
             normalizedDecision == "deny" ? "denied" : "approved",
             resolutionTimestamp,
             cancellationToken);
 
-        var parentUuid = transcriptWriter.TryReadLastEntryUuid(detail.TranscriptPath);
+        var parentUuid = SessionTranscriptWriter.TryReadLastEntryUuid(detail.TranscriptPath);
         var gitBranch = approvalContext.GitBranch;
         var workingDirectory = approvalContext.WorkingDirectory;
 
@@ -822,7 +823,7 @@ public sealed class DesktopSessionHostService(
         });
 
         var toolUuid = Guid.NewGuid().ToString();
-        await transcriptWriter.AppendEntryAsync(
+        await SessionTranscriptWriter.AppendEntryAsync(
             detail.TranscriptPath,
             new
             {
@@ -902,7 +903,7 @@ public sealed class DesktopSessionHostService(
         var assistantSummary = assistantResponse.Summary;
         var persistAssistantMessage = ShouldPersistAssistantMessage(assistantResponse);
         var completionStatus = ResolveTurnCompletionStatus(assistantResponse);
-        parentUuid = await transcriptWriter.AppendAssistantToolExecutionsAsync(
+        parentUuid = await SessionTranscriptWriter.AppendAssistantToolExecutionsAsync(
             detail.TranscriptPath,
             request.SessionId,
             toolUuid,
@@ -912,7 +913,7 @@ public sealed class DesktopSessionHostService(
 
         if (persistAssistantMessage)
         {
-            await transcriptWriter.AppendEntryAsync(
+            await SessionTranscriptWriter.AppendEntryAsync(
                 detail.TranscriptPath,
                 new
                 {
@@ -1020,7 +1021,7 @@ public sealed class DesktopSessionHostService(
         var matchingPendingTools = detail.Entries
             .Where(entry =>
                 entry.Type == "tool" &&
-                string.Equals(entry.Status, "approval-required", StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(entry.Status, ToolExecutionStatus.ApprovalRequired, StringComparison.OrdinalIgnoreCase) &&
                 string.IsNullOrWhiteSpace(entry.ResolutionStatus) &&
                 !string.Equals(entry.Id, selectedEntryId, StringComparison.Ordinal) &&
                 string.Equals(
@@ -1042,7 +1043,7 @@ public sealed class DesktopSessionHostService(
                 },
                 cancellationToken: cancellationToken);
             var resolutionTimestamp = DateTime.UtcNow;
-            await transcriptWriter.MarkToolEntryResolvedAsync(
+            await SessionTranscriptWriter.MarkToolEntryResolvedAsync(
                 detail.TranscriptPath,
                 pendingTool.Id,
                 "auto-approved",
@@ -1050,7 +1051,7 @@ public sealed class DesktopSessionHostService(
                 cancellationToken);
 
             var toolUuid = Guid.NewGuid().ToString();
-            await transcriptWriter.AppendEntryAsync(
+            await SessionTranscriptWriter.AppendEntryAsync(
                 detail.TranscriptPath,
                 new
                 {
@@ -1118,14 +1119,14 @@ public sealed class DesktopSessionHostService(
             answers);
 
         var resolutionTimestamp = DateTime.UtcNow;
-        await transcriptWriter.MarkToolEntryResolvedAsync(
+        await SessionTranscriptWriter.MarkToolEntryResolvedAsync(
             detail.TranscriptPath,
             pendingQuestion.Id,
             "answered",
             resolutionTimestamp,
             cancellationToken);
 
-        var parentUuid = transcriptWriter.TryReadLastEntryUuid(detail.TranscriptPath);
+        var parentUuid = SessionTranscriptWriter.TryReadLastEntryUuid(detail.TranscriptPath);
         var gitBranch = answerContext.GitBranch;
 
         PublishSessionEvent(sessionEventFactory.CreateUserInputReceived(
@@ -1143,7 +1144,7 @@ public sealed class DesktopSessionHostService(
         });
 
         var toolUuid = Guid.NewGuid().ToString();
-        await transcriptWriter.AppendEntryAsync(
+        await SessionTranscriptWriter.AppendEntryAsync(
             detail.TranscriptPath,
             new
             {
@@ -1210,7 +1211,7 @@ public sealed class DesktopSessionHostService(
         var assistantSummary = assistantResponse.Summary;
         var persistAssistantMessage = ShouldPersistAssistantMessage(assistantResponse);
         var completionStatus = ResolveTurnCompletionStatus(assistantResponse);
-        parentUuid = await transcriptWriter.AppendAssistantToolExecutionsAsync(
+        parentUuid = await SessionTranscriptWriter.AppendAssistantToolExecutionsAsync(
             detail.TranscriptPath,
             request.SessionId,
             toolUuid,
@@ -1220,7 +1221,7 @@ public sealed class DesktopSessionHostService(
 
         if (persistAssistantMessage)
         {
-            await transcriptWriter.AppendEntryAsync(
+            await SessionTranscriptWriter.AppendEntryAsync(
                 detail.TranscriptPath,
                 new
                 {
@@ -1456,7 +1457,7 @@ public sealed class DesktopSessionHostService(
         CancellationToken cancellationToken)
     {
         var userUuid = Guid.NewGuid().ToString();
-        await transcriptWriter.AppendEntryAsync(
+        await SessionTranscriptWriter.AppendEntryAsync(
             transcriptPath,
             new
             {
@@ -1576,7 +1577,7 @@ public sealed class DesktopSessionHostService(
         CancellationToken cancellationToken)
     {
         var systemUuid = Guid.NewGuid().ToString();
-        await transcriptWriter.AppendEntryAsync(
+        await SessionTranscriptWriter.AppendEntryAsync(
             transcriptPath,
             new
             {
@@ -1612,12 +1613,12 @@ public sealed class DesktopSessionHostService(
 
         if (File.Exists(transcriptPath))
         {
-            await transcriptWriter.AppendEntryAsync(
+            await SessionTranscriptWriter.AppendEntryAsync(
                 transcriptPath,
                 new
                 {
                     uuid = Guid.NewGuid().ToString(),
-                    parentUuid = transcriptWriter.TryReadLastEntryUuid(transcriptPath),
+                    parentUuid = SessionTranscriptWriter.TryReadLastEntryUuid(transcriptPath),
                     sessionId,
                     timestamp = DateTime.UtcNow,
                     type = "assistant",
@@ -2178,7 +2179,7 @@ public sealed class DesktopSessionHostService(
     private static bool ShouldPersistAssistantMessage(AssistantTurnResponse response) =>
         response.StopReason switch
         {
-            "approval-required" => false,
+            ToolExecutionStatus.ApprovalRequired => false,
             "input-required" => false,
             "blocked" => false,
             "error" => false,

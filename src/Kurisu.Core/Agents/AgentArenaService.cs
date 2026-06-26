@@ -210,10 +210,7 @@ public sealed class AgentArenaService(
                         SessionId = sessionId
                     });
                 }
-                catch
-                {
-                    // Best effort cleanup for managed arena worktrees.
-                }
+                catch { }
             }
         }
     }

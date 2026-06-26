@@ -29,7 +29,7 @@ public sealed class GitWorktreeServiceTests
             RunGit(workspaceRoot, "worktree", "add", "-b", "main-session-123-code-review", managedWorktreePath, "HEAD");
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, null, workspaceRoot, workspaceRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var service = new GitWorktreeService(new GitCliService(), runtimeProfileService);
 
             var snapshot = service.Inspect(new WorkspacePaths
@@ -78,7 +78,7 @@ public sealed class GitWorktreeServiceTests
             RunGit(workspaceRoot, "commit", "-m", "init");
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, null, workspaceRoot, workspaceRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var service = new GitWorktreeService(new GitCliService(), runtimeProfileService);
             var paths = new WorkspacePaths
             {
@@ -141,7 +141,7 @@ public sealed class GitWorktreeServiceTests
             File.WriteAllText(Path.Combine(workspaceRoot, "untracked.txt"), "dirty untracked content");
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, null, workspaceRoot, workspaceRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var service = new GitWorktreeService(new GitCliService(), runtimeProfileService);
             var paths = new WorkspacePaths
             {

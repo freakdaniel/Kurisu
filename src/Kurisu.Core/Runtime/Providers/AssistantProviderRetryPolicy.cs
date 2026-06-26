@@ -25,7 +25,7 @@ internal static class AssistantProviderRetryPolicy
             return false;
         }
 
-        return numericStatus != 429 || !IsQwenQuotaExceeded(authType, responseBody);
+        return numericStatus != 429 || !IsDashScopeQuotaExceeded(authType, responseBody);
     }
 
     public static bool TryGetRetryAfterDelay(HttpResponseHeaders headers, out TimeSpan delay)
@@ -87,10 +87,12 @@ internal static class AssistantProviderRetryPolicy
         return nextDelay > MaximumDelay ? MaximumDelay : nextDelay;
     }
 
-    private static bool IsQwenQuotaExceeded(string authType, string responseBody)
+    // DashScope-specific quota check. The free-tier plan returns 429 with a
+    // distinct error code/message that we treat as non-retryable so the user
+    // sees a real error instead of an infinite retry loop.
+    private static bool IsDashScopeQuotaExceeded(string authType, string responseBody)
     {
-        if (!string.Equals(authType, "openai", StringComparison.OrdinalIgnoreCase) &&
-            !string.Equals(authType, "openai", StringComparison.OrdinalIgnoreCase))
+        if (!IsDashScope(authType))
         {
             return false;
         }
@@ -128,4 +130,8 @@ internal static class AssistantProviderRetryPolicy
             return false;
         }
     }
+
+    private static bool IsDashScope(string authType) =>
+        string.Equals(authType, "dashscope", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(authType, "qwen", StringComparison.OrdinalIgnoreCase);
 }

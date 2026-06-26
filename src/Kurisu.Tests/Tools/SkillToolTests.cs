@@ -34,7 +34,7 @@ public sealed class SkillToolTests
                 """);
 
             var sourcePaths = new WorkspacePaths { WorkspaceRoot = workspaceRoot };
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var host = new NativeToolHostService(
                 runtimeProfileService,
@@ -89,7 +89,7 @@ public sealed class SkillToolTests
                 """);
 
             var sourcePaths = new WorkspacePaths { WorkspaceRoot = workspaceRoot };
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var host = new NativeToolHostService(
                 runtimeProfileService,
@@ -153,7 +153,7 @@ public sealed class SkillToolTests
                 """);
 
             var sourcePaths = new WorkspacePaths { WorkspaceRoot = workspaceRoot };
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var host = new NativeToolHostService(
                 runtimeProfileService,

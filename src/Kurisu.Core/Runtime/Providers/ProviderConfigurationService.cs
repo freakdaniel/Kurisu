@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Kurisu.Core.Config;
 using Kurisu.Core.Infrastructure;
+using Kurisu.Core.Infrastructure.Constants;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -108,7 +109,7 @@ public sealed class ProviderConfigurationService
             ApiKey = apiKey,
             ApiKeyEnvironmentVariable = FirstNonEmpty(
                 manifest.ApiKeyEnvVars.FirstOrDefault(),
-                "OPENAI_API_KEY"),
+                ProviderEnvVars.OpenAI),
             Headers = headers,
             ExtraBody = extraBody,
             IsDashScope = IsDashScopeEndpoint(baseUrl),
@@ -125,7 +126,7 @@ public sealed class ProviderConfigurationService
             Model = FirstNonEmpty(request.ModelOverride, options.Model, "default"),
             Endpoint = string.Empty,
             ApiKey = FirstNonEmpty(request.ApiKeyOverride, options.ApiKey),
-            ApiKeyEnvironmentVariable = "OPENAI_API_KEY",
+            ApiKeyEnvironmentVariable = ProviderEnvVars.OpenAI,
             Headers = new Dictionary<string, string>(),
             ExtraBody = new JsonObject(),
             IsDashScope = false,

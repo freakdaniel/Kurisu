@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Kurisu.Core.Agents;
 using Kurisu.Core.Config;
 using Kurisu.Core.Models;
@@ -6,24 +7,26 @@ using Kurisu.Core.Sessions;
 namespace Kurisu.Core.Followup;
 
 /// <summary>
-/// Represents the Followup Suggestion Service
+/// Coordinates follow-up suggestion generation for a session:
+/// inspects the session transcript, augments with provider-backed
+/// suggestions, and caches the result so repeat requests are fast.
 /// </summary>
 /// <param name="transcriptStore">The transcript store</param>
 /// <param name="activeTurnRegistry">The active turn registry</param>
 /// <param name="interruptedTurnStore">The interrupted turn store</param>
 /// <param name="arenaSessionRegistry">The arena session registry</param>
 /// <param name="runtimeProfileService">The runtime profile service</param>
-/// <param name="providerBackedGenerator">The provider backed generator</param>
-/// <param name="suggestionCache">The suggestion cache</param>
+/// <param name="providerBackedGenerator">Optional provider-backed generator</param>
 public sealed class FollowupSuggestionService(
     ITranscriptStore transcriptStore,
     IActiveTurnRegistry activeTurnRegistry,
     IInterruptedTurnStore interruptedTurnStore,
     IArenaSessionRegistry arenaSessionRegistry,
     KurisuRuntimeProfileService runtimeProfileService,
-    IFollowupSuggestionGenerator? providerBackedGenerator = null,
-    IFollowupSuggestionCache? suggestionCache = null) : IFollowupSuggestionService
+    ProviderBackedFollowupSuggestionGenerator? providerBackedGenerator = null) : IFollowupSuggestionService
 {
+    private readonly ConcurrentDictionary<string, CacheEntry> cache = new(StringComparer.Ordinal);
+
     /// <summary>
     /// Gets suggestions async
     /// </summary>
@@ -70,10 +73,10 @@ public sealed class FollowupSuggestionService(
         var fingerprint = BuildFingerprint(detail, hasActiveTurn, hasRecoverableTurn, hasActiveArenaSession);
 
         if (!hasActiveTurn &&
-            suggestionCache is not null &&
-            suggestionCache.TryGet(sessionId, fingerprint, out var cachedSnapshot))
+            cache.TryGetValue(sessionId, out var entry) &&
+            string.Equals(entry.Fingerprint, fingerprint, StringComparison.Ordinal))
         {
-            return SliceSnapshot(cachedSnapshot, maxCount, "hit");
+            return SliceSnapshot(entry.Snapshot, maxCount, "hit");
         }
 
         var suggestions = new List<FollowupSuggestion>();
@@ -164,7 +167,7 @@ public sealed class FollowupSuggestionService(
 
         if (!hasActiveTurn)
         {
-            suggestionCache?.Set(sessionId, fingerprint, snapshot);
+            cache[sessionId] = new CacheEntry(fingerprint, snapshot);
         }
 
         return SliceSnapshot(snapshot, maxCount, "miss");
@@ -231,4 +234,6 @@ public sealed class FollowupSuggestionService(
             Confidence = confidence
         });
     }
+
+    private sealed record CacheEntry(string Fingerprint, FollowupSuggestionSnapshot Snapshot);
 }

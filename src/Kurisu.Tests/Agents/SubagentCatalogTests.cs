@@ -1,3 +1,5 @@
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Tests.Agents;
 
 public sealed class SubagentCatalogTests
@@ -31,8 +33,7 @@ public sealed class SubagentCatalogTests
                 You are a repository exploration specialist.
                 """);
 
-            var catalog = new SubagentCatalogService(
-                new FakeDesktopEnvironmentPaths(homeRoot, systemRoot),
+            var catalog = new SubagentCatalogService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance)),
                 new SubagentValidationService(new SubagentModelSelectionService()));
             var agents = catalog.ListAgents(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
 
@@ -84,10 +85,9 @@ public sealed class SubagentCatalogTests
                 Project agent
                 """);
 
-            var catalog = new SubagentCatalogService(
-                new FakeDesktopEnvironmentPaths(homeRoot, systemRoot),
+            var catalog = new SubagentCatalogService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance)),
                 new SubagentValidationService(new SubagentModelSelectionService()));
-            var agent = catalog.FindAgent(new WorkspacePaths { WorkspaceRoot = workspaceRoot }, "custom");
+            var agent = catalog.FindAgent(new WorkspacePaths { WorkspaceRoot = workspaceRoot }, ProviderIds.Custom);
 
             Assert.NotNull(agent);
             Assert.Equal("project", agent!.Scope);
@@ -149,8 +149,7 @@ public sealed class SubagentCatalogTests
                 Project agent
                 """);
 
-            var catalog = new SubagentCatalogService(
-                new FakeDesktopEnvironmentPaths(homeRoot, systemRoot),
+            var catalog = new SubagentCatalogService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance)),
                 new SubagentValidationService(new SubagentModelSelectionService()));
             var agents = catalog.ListAgents(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
 
@@ -202,8 +201,7 @@ public sealed class SubagentCatalogTests
                 You plan carefully.
                 """);
 
-            var catalog = new SubagentCatalogService(
-                new FakeDesktopEnvironmentPaths(homeRoot, systemRoot),
+            var catalog = new SubagentCatalogService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance)),
                 new SubagentValidationService(new SubagentModelSelectionService()));
             var planner = Assert.Single(catalog.ListAgents(new WorkspacePaths { WorkspaceRoot = workspaceRoot }), item => item.Name == "planner");
 

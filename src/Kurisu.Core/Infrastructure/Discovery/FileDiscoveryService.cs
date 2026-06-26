@@ -63,19 +63,19 @@ public sealed class FileDiscoveryService(
         return new FileDiscoverySnapshot
         {
             GitAware = gitAware,
-            HasQwenIgnore = kurisuIgnoreRules.Count > 0,
+            HasKurisuIgnore = kurisuIgnoreRules.Count > 0,
             CandidateFileCount = candidateFiles.Count,
             VisibleFileCount = visibleFiles.Length,
             GitIgnoredCount = gitIgnoredFiles.Count,
-            QwenIgnoredCount = kurisuIgnoredFiles.Length,
-            QwenIgnorePatternCount = kurisuIgnoreRules.Count,
+            KurisuIgnoredCount = kurisuIgnoredFiles.Length,
+            KurisuIgnorePatternCount = kurisuIgnoreRules.Count,
             ContextFiles = contextFiles,
             SampleVisibleFiles = visibleFiles.Take(10).ToArray(),
             SampleGitIgnoredFiles = gitIgnoredFiles
                 .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)
                 .Take(10)
                 .ToArray(),
-            SampleQwenIgnoredFiles = kurisuIgnoredFiles
+            SampleKurisuIgnoredFiles = kurisuIgnoredFiles
                 .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)
                 .Take(10)
                 .ToArray()

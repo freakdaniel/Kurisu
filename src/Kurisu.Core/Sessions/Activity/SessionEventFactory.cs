@@ -1,6 +1,8 @@
 using Kurisu.Core.Models;
 using Kurisu.Core.Runtime;
 
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Core.Sessions;
 
 /// <summary>
@@ -336,7 +338,7 @@ public sealed class SessionEventFactory : ISessionEventFactory
     private static DesktopSessionEventKind MapToolEventKind(string status) =>
         status switch
         {
-            "approval-required" => DesktopSessionEventKind.ToolApprovalRequired,
+            ToolExecutionStatus.ApprovalRequired => DesktopSessionEventKind.ToolApprovalRequired,
             "input-required" => DesktopSessionEventKind.UserInputRequired,
             "completed" => DesktopSessionEventKind.ToolCompleted,
             "blocked" => DesktopSessionEventKind.ToolBlocked,
@@ -347,7 +349,7 @@ public sealed class SessionEventFactory : ISessionEventFactory
     private static string BuildToolEventMessage(NativeToolExecutionResult toolExecution) =>
         toolExecution.Status switch
         {
-            "approval-required" => $"Tool '{toolExecution.ToolName}' is waiting for approval.",
+            ToolExecutionStatus.ApprovalRequired => $"Tool '{toolExecution.ToolName}' is waiting for approval.",
             "input-required" => $"Tool '{toolExecution.ToolName}' is waiting for user answers.",
             "completed" => $"Tool '{toolExecution.ToolName}' completed.",
             "blocked" => $"Tool '{toolExecution.ToolName}' was blocked by approval policy.",

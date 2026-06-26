@@ -34,26 +34,6 @@ public sealed class AppBootstrapPayload
     public required string WorkspaceRoot { get; init; }
 
     /// <summary>
-    /// Gets or sets the tracks
-    /// </summary>
-    public required IReadOnlyList<ResearchTrack> Tracks { get; init; }
-
-    /// <summary>
-    /// Gets or sets the compatibility goals
-    /// </summary>
-    public required IReadOnlyList<string> CompatibilityGoals { get; init; }
-
-    /// <summary>
-    /// Gets or sets the capability lanes
-    /// </summary>
-    public required IReadOnlyList<CapabilityLane> CapabilityLanes { get; init; }
-
-    /// <summary>
-    /// Gets or sets the adoption patterns
-    /// </summary>
-    public required IReadOnlyList<AdoptionPattern> AdoptionPatterns { get; init; }
-
-    /// <summary>
     /// Gets or sets the recent sessions
     /// </summary>
     public required IReadOnlyList<SessionPreview> RecentSessions { get; init; }

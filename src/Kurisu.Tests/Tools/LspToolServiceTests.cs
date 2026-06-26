@@ -390,7 +390,7 @@ public sealed class LspToolServiceTests
         await File.WriteAllTextAsync(fooFilePath, fooContent);
         await File.WriteAllTextAsync(barFilePath, barContent);
 
-        var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+        var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
         var host = new NativeToolHostService(
             runtimeProfileService,
             new ApprovalPolicyService(),

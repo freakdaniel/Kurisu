@@ -4,6 +4,8 @@ using Kurisu.Core.Extensions;
 using Kurisu.Core.Infrastructure;
 using Kurisu.Core.Models;
 
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Core.Channels;
 
 /// <summary>
@@ -64,7 +66,7 @@ public sealed class ChannelRegistryService(
                     Model = channel.Model,
                     Status = serviceInfo?.Channels.Contains(channel.Name, StringComparer.OrdinalIgnoreCase) == true
                         ? "running"
-                        : "configured",
+                        : ProviderStatusKind.Configured,
                     SupportsPairing = string.Equals(channel.SenderPolicy, "pairing", StringComparison.OrdinalIgnoreCase),
                     SessionCount = sessionCounts.TryGetValue(channel.Name, out var count) ? count : 0,
                     PendingPairingCount = pendingPairings.Count,

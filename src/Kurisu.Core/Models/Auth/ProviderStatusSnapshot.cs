@@ -1,3 +1,5 @@
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Core.Models;
 
 /// <summary>
@@ -10,7 +12,7 @@ namespace Kurisu.Core.Models;
 /// </summary>
 public sealed class ProviderStatusSnapshot
 {
-    /// <summary>Provider id (e.g. "openai", "anthropic", "deepseek").</summary>
+    /// <summary>Provider id (e.g. ProviderIds.OpenAI, ProviderIds.Anthropic, ProviderIds.DeepSeek).</summary>
     public required string ProviderId { get; init; }
 
     /// <summary>Display name for the UI.</summary>
@@ -25,7 +27,7 @@ public sealed class ProviderStatusSnapshot
     /// <summary>Whether a key is available (store + env + inline override).</summary>
     public required bool HasApiKey { get; init; }
 
-    /// <summary>One of "configured", "missing-credentials".</summary>
+    /// <summary>One of ProviderStatusKind.Configured, ProviderStatusKind.MissingCredentials.</summary>
     public required string Status { get; init; }
 
     /// <summary>Error message for the UI when <see cref="Status"/> indicates a problem.</summary>

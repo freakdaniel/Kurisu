@@ -3,6 +3,8 @@ using Kurisu.App.Desktop.Bridges;
 using Kurisu.App.Desktop.DirectConnect;
 using Kurisu.Core.Models;
 
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Tests.Desktop;
 
 public sealed class DirectConnectSessionServiceTests
@@ -190,7 +192,7 @@ public sealed class DirectConnectSessionServiceTests
                 },
                 ToolExecution = new NativeToolExecutionResult
                 {
-                    ToolName = "run_shell_command",
+                    ToolName = WellKnownToolNames.RunShellCommand,
                     Status = "completed",
                     ApprovalState = "approved",
                     WorkingDirectory = "D:\\Projects\\workspace",

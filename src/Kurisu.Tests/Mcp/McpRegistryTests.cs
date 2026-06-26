@@ -21,7 +21,7 @@ public sealed class McpRegistryTests
             var paths = new WorkspacePaths { WorkspaceRoot = workspaceRoot };
             var environment = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
             var registry = new McpRegistryService(
-                new KurisuRuntimeProfileService(environment),
+                new KurisuRuntimeProfileService(environment, new RuntimeConfigService(environment), new RuntimeSelectionStore(environment, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance)),
                 new FileMcpTokenStore(environment));
 
             var server = registry.AddServer(paths, new McpServerRegistrationRequest
@@ -104,7 +104,7 @@ public sealed class McpRegistryTests
             var paths = new WorkspacePaths { WorkspaceRoot = workspaceRoot };
             var environment = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
             var registry = new McpRegistryService(
-                new KurisuRuntimeProfileService(environment),
+                new KurisuRuntimeProfileService(environment, new RuntimeConfigService(environment), new RuntimeSelectionStore(environment, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance)),
                 new FileMcpTokenStore(environment));
 
             var server = Assert.Single(registry.ListServers(paths));
@@ -140,7 +140,7 @@ public sealed class McpRegistryTests
             var environment = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
             var tokenStore = new FileMcpTokenStore(environment);
             var registry = new McpRegistryService(
-                new KurisuRuntimeProfileService(environment),
+                new KurisuRuntimeProfileService(environment, new RuntimeConfigService(environment), new RuntimeSelectionStore(environment, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance)),
                 tokenStore);
 
             registry.AddServer(paths, new McpServerRegistrationRequest
@@ -202,7 +202,7 @@ public sealed class McpRegistryTests
             var environment = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
             var tokenStore = new FileMcpTokenStore(environment);
             var registry = new McpRegistryService(
-                new KurisuRuntimeProfileService(environment),
+                new KurisuRuntimeProfileService(environment, new RuntimeConfigService(environment), new RuntimeSelectionStore(environment, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance)),
                 tokenStore);
 
             await tokenStore.SaveTokenAsync("stored-token", """{"access_token":"abc"}""");

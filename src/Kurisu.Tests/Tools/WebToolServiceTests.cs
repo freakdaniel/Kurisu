@@ -21,7 +21,7 @@ public sealed class WebToolServiceTests
             Directory.CreateDirectory(workspaceRoot);
             Directory.CreateDirectory(homeRoot);
 
-            var runtimeProfile = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, null))
+            var runtimeProfile = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, null), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, null)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, null), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance))
                 .Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
 
             var handler = new StubHttpMessageHandler(request =>
@@ -84,7 +84,7 @@ public sealed class WebToolServiceTests
                 }
                 """);
 
-            var runtimeProfile = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, null))
+            var runtimeProfile = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, null), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, null)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, null), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance))
                 .Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
 
             var handler = new StubHttpMessageHandler(async request =>
@@ -165,7 +165,7 @@ public sealed class WebToolServiceTests
                 }
                 """);
 
-            var runtimeProfile = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, null))
+            var runtimeProfile = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, null), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, null)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, null), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance))
                 .Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
 
             var handler = new StubHttpMessageHandler(async request =>
@@ -226,7 +226,7 @@ public sealed class WebToolServiceTests
             Directory.CreateDirectory(Path.Combine(workspaceRoot, ".kurisu"));
             Directory.CreateDirectory(homeRoot);
 
-            var runtimeProfile = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, null))
+            var runtimeProfile = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, null), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, null)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, null), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance))
                 .Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
 
             var handler = new StubHttpMessageHandler(async request =>
@@ -306,7 +306,7 @@ public sealed class WebToolServiceTests
                 }
                 """);
 
-            var runtimeProfile = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, null))
+            var runtimeProfile = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, null), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, null)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, null), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance))
                 .Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
 
             var requestCount = 0;
@@ -371,7 +371,7 @@ public sealed class WebToolServiceTests
             Directory.CreateDirectory(workspaceRoot);
             Directory.CreateDirectory(homeRoot);
 
-            var runtimeProfile = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, null))
+            var runtimeProfile = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, null), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, null)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, null), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance))
                 .Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
 
             var requestCount = 0;
@@ -427,7 +427,7 @@ public sealed class WebToolServiceTests
             Directory.CreateDirectory(workspaceRoot);
             Directory.CreateDirectory(homeRoot);
 
-            var runtimeProfile = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, null))
+            var runtimeProfile = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, null), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, null)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, null), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance))
                 .Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
 
             var handler = new StubHttpMessageHandler(request =>
@@ -491,7 +491,7 @@ public sealed class WebToolServiceTests
                 """);
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, null);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var handler = new StubHttpMessageHandler(request =>
             {
                 if (request.RequestUri!.Host.Equals("example.com", StringComparison.OrdinalIgnoreCase))

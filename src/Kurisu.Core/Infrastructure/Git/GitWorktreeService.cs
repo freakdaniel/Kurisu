@@ -427,10 +427,7 @@ public sealed class GitWorktreeService(
                 Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
                 File.Copy(sourcePath, destinationPath, overwrite: true);
             }
-            catch
-            {
-                // Best effort copy to match source dirty state without failing the worktree outright.
-            }
+            catch { }
         }
     }
 

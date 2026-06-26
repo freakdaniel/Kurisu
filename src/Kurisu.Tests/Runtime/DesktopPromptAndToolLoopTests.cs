@@ -1,5 +1,7 @@
 using System.Text.Json.Nodes;
 
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Tests.Runtime;
 
 public sealed class DesktopPromptAndToolLoopTests
@@ -87,11 +89,11 @@ public sealed class DesktopPromptAndToolLoopTests
         Assert.Contains("include the current year", systemContent, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("compact working memory", systemContent, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("high-signal store", systemContent, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("todo_write", systemContent, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(WellKnownToolNames.TodoWrite, systemContent, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("task_create", systemContent, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("task_update", systemContent, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("run_shell_command", systemContent, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("web_search", systemContent, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(WellKnownToolNames.RunShellCommand, systemContent, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(WellKnownToolNames.WebSearch, systemContent, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("tool_search", systemContent, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Use `lsp` for semantic code intelligence", systemContent, StringComparison.Ordinal);
         Assert.Contains("Use `mcp-client` to inspect connected MCP servers", systemContent, StringComparison.Ordinal);
@@ -157,7 +159,7 @@ public sealed class DesktopPromptAndToolLoopTests
             RuntimeProfile = baseRequest.RuntimeProfile,
             GitBranch = baseRequest.GitBranch,
             ToolExecution = baseRequest.ToolExecution,
-            AllowedToolNames = ["web_search", "web_fetch"]
+            AllowedToolNames = [WellKnownToolNames.WebSearch, WellKnownToolNames.WebFetch]
         };
 
         var payload = OpenAiCompatibleProtocol.BuildPayload(
@@ -180,7 +182,7 @@ public sealed class DesktopPromptAndToolLoopTests
         Assert.Contains("## `web_search`", systemContent, StringComparison.Ordinal);
         Assert.Contains("## `web_fetch`", systemContent, StringComparison.Ordinal);
         Assert.DoesNotContain("## `agent`", systemContent, StringComparison.Ordinal);
-        Assert.DoesNotContain("todo_write", systemContent, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(WellKnownToolNames.TodoWrite, systemContent, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("save_memory", systemContent, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -205,16 +207,16 @@ public sealed class DesktopPromptAndToolLoopTests
                 static item => item["function"]?["name"]?.GetValue<string>() ?? string.Empty,
                 StringComparer.OrdinalIgnoreCase);
 
-        var webSearch = toolsByName["web_search"];
+        var webSearch = toolsByName[WellKnownToolNames.WebSearch];
         Assert.Contains("facts may have changed", webSearch["function"]?["description"]?.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
         Assert.Equal("query", Assert.IsType<JsonArray>(webSearch["function"]?["parameters"]?["required"])[0]?.GetValue<string>());
         Assert.Contains("Include a concrete year", webSearch["function"]?["parameters"]?["properties"]?["query"]?["description"]?.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
 
-        var todoWrite = toolsByName["todo_write"];
+        var todoWrite = toolsByName[WellKnownToolNames.TodoWrite];
         Assert.Contains("update it as you work", todoWrite["function"]?["description"]?.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
         Assert.Equal("array", todoWrite["function"]?["parameters"]?["properties"]?["todos"]?["type"]?.GetValue<string>());
 
-        var askUser = toolsByName["ask_user_question"];
+        var askUser = toolsByName[WellKnownToolNames.AskUserQuestion];
         Assert.Equal("questions", Assert.IsType<JsonArray>(askUser["function"]?["parameters"]?["required"])[0]?.GetValue<string>());
         Assert.Equal("array", askUser["function"]?["parameters"]?["properties"]?["questions"]?["type"]?.GetValue<string>());
 
@@ -259,7 +261,7 @@ public sealed class DesktopPromptAndToolLoopTests
         Assert.Equal("string", toolSearch["function"]?["parameters"]?["properties"]?["query"]?["type"]?.GetValue<string>());
         Assert.Equal("string", toolSearch["function"]?["parameters"]?["properties"]?["kind"]?["type"]?.GetValue<string>());
 
-        var webFetch = toolsByName["web_fetch"];
+        var webFetch = toolsByName[WellKnownToolNames.WebFetch];
         Assert.Contains("likely source", webFetch["function"]?["description"]?.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
         Assert.Contains("specific facts", webFetch["function"]?["parameters"]?["properties"]?["prompt"]?["description"]?.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
@@ -322,7 +324,7 @@ public sealed class DesktopPromptAndToolLoopTests
             [],
             null,
             null,
-            "dashscope");
+            ProviderIds.DashScope);
 
         var messages = Assert.IsType<JsonArray>(payload["messages"]);
         var systemMessage = Assert.IsType<JsonObject>(messages[0]);
@@ -342,7 +344,7 @@ public sealed class DesktopPromptAndToolLoopTests
             "Base runtime instructions.",
             "Request-specific instructions.",
             "qwen3-coder-plus",
-            "dashscope");
+            ProviderIds.DashScope);
 
         var staticPrefix = NativeAssistantRuntimePromptBuilder.BuildStaticSystemPromptPrefix(compositionContext);
         var dynamicTail = NativeAssistantRuntimePromptBuilder.BuildDynamicSystemPromptTail(compositionContext);
@@ -352,7 +354,7 @@ public sealed class DesktopPromptAndToolLoopTests
             "Base runtime instructions.",
             "Request-specific instructions.",
             "qwen3-coder-plus",
-            "dashscope");
+            ProviderIds.DashScope);
 
         Assert.Contains("# Identity", staticPrefix, StringComparison.Ordinal);
         Assert.DoesNotContain("# Environment", staticPrefix, StringComparison.Ordinal);
@@ -376,17 +378,16 @@ public sealed class DesktopPromptAndToolLoopTests
         {
             var request = CreateTurnRequest(workspaceRoot);
             var scheduler = new ToolCallScheduler(
-                new NonInteractiveToolExecutor(
-                    new StubToolExecutor(
-                        new NativeToolExecutionResult
-                        {
-                            ToolName = "web_search",
+                new StubToolExecutor(
+                    new NativeToolExecutionResult
+                    {
+                        ToolName = WellKnownToolNames.WebSearch,
                             Status = "completed",
                             ApprovalState = "allow",
                             WorkingDirectory = workspaceRoot,
                             Output = "forecast data",
                             ChangedFiles = []
-                        })),
+                        }),
                 new LoopDetectionService());
 
             var toolHistory = new List<AssistantToolCallResult>();
@@ -396,14 +397,14 @@ public sealed class DesktopPromptAndToolLoopTests
                 new AssistantToolCall
                 {
                     Id = "call-web-search-1",
-                    ToolName = "web_search",
+                    ToolName = WellKnownToolNames.WebSearch,
                     ArgumentsJson = """{"query":"weather minsk"}"""
                 }
             ];
 
             var result = await scheduler.ScheduleAsync(
                 request,
-                "kurisu-compatible",
+                ProviderFlavors.OpenAiCompatible,
                 "qwen3-coder-plus",
                 toolCalls,
                 toolHistory,
@@ -437,17 +438,16 @@ public sealed class DesktopPromptAndToolLoopTests
         {
             var request = CreateTurnRequest(workspaceRoot);
             var scheduler = new ToolCallScheduler(
-                new NonInteractiveToolExecutor(
-                    new StubToolExecutor(
-                        new NativeToolExecutionResult
-                        {
-                            ToolName = "web_fetch",
+                new StubToolExecutor(
+                    new NativeToolExecutionResult
+                    {
+                        ToolName = WellKnownToolNames.WebFetch,
                             Status = "error",
                             ApprovalState = "allow",
                             WorkingDirectory = workspaceRoot,
                             ErrorMessage = "404 Not Found",
                             ChangedFiles = []
-                        })),
+                        }),
                 new LoopDetectionService());
 
             var toolHistory = new List<AssistantToolCallResult>();
@@ -457,14 +457,14 @@ public sealed class DesktopPromptAndToolLoopTests
                 new AssistantToolCall
                 {
                     Id = "call-web-fetch-1",
-                    ToolName = "web_fetch",
+                    ToolName = WellKnownToolNames.WebFetch,
                     ArgumentsJson = """{"url":"https://example.com/missing","prompt":"Summarize it"}"""
                 }
             ];
 
             var result = await scheduler.ScheduleAsync(
                 request,
-                "kurisu-compatible",
+                ProviderFlavors.OpenAiCompatible,
                 "qwen3-coder-plus",
                 toolCalls,
                 toolHistory,

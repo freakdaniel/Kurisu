@@ -223,7 +223,7 @@ public sealed class HookCommandRunner
             ? $"'{workingDirectory.Replace("'", "''", StringComparison.Ordinal)}'"
             : $"'{workingDirectory.Replace("'", "'\\''", StringComparison.Ordinal)}'";
         return command
-            .Replace("$QWEN_PROJECT_DIR", escapedWorkingDirectory, StringComparison.Ordinal)
+            .Replace("$KURISU_PROJECT_DIR", escapedWorkingDirectory, StringComparison.Ordinal)
             .Replace("$GEMINI_PROJECT_DIR", escapedWorkingDirectory, StringComparison.Ordinal)
             .Replace("$CLAUDE_PROJECT_DIR", escapedWorkingDirectory, StringComparison.Ordinal);
     }

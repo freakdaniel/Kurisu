@@ -13,7 +13,6 @@ import type {
 
 export type {
   ActiveTurnState,
-  AdoptionPattern,
   AnswerDesktopSessionQuestionRequest,
   ApprovalProfile,
   ApproveChannelPairingRequest,
@@ -28,7 +27,6 @@ export type {
   CreateGitCheckpointRequest,
   CancelDesktopSessionTurnRequest,
   CancelDesktopSessionTurnResult,
-  CapabilityLane,
   ChannelDefinition,
   ChannelPairingRequest,
   ChannelPairingSnapshot,
@@ -86,7 +84,6 @@ export type {
   GitCheckpointSnapshot,
   GitHistorySnapshot,
   KurisuSurfaceDirectory,
-  ResearchTrack,
   InstallExtensionRequest,
   RemoveExtensionRequest,
   SetExtensionEnabledRequest,

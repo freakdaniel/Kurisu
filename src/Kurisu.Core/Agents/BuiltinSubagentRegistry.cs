@@ -1,5 +1,7 @@
 using Kurisu.Core.Models;
 
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Core.Agents;
 
 internal static class BuiltinSubagentRegistry
@@ -17,7 +19,7 @@ internal static class BuiltinSubagentRegistry
             FilePath = "<builtin:general-purpose>",
             IsBuiltin = true,
             SystemPrompt = "General-purpose agent that researches complex questions and reports concise findings.",
-            Tools = ["read_file", "glob", "grep_search", "run_shell_command", "web_fetch", "web_search", "lsp", "ask_user_question"]
+            Tools = ["read_file", "glob", "grep_search", WellKnownToolNames.RunShellCommand, WellKnownToolNames.WebFetch, WellKnownToolNames.WebSearch, "lsp", WellKnownToolNames.AskUserQuestion]
         },
         new()
         {
@@ -27,7 +29,7 @@ internal static class BuiltinSubagentRegistry
             FilePath = "<builtin:Explore>",
             IsBuiltin = true,
             SystemPrompt = "Read-only exploration agent that searches broadly, narrows findings, and reports only the load-bearing evidence.",
-            Tools = ["read_file", "glob", "grep_search", "list_directory", "run_shell_command", "web_fetch", "web_search", "todo_write", "save_memory", "lsp", "ask_user_question"]
+            Tools = ["read_file", "glob", "grep_search", "list_directory", WellKnownToolNames.RunShellCommand, WellKnownToolNames.WebFetch, WellKnownToolNames.WebSearch, WellKnownToolNames.TodoWrite, "save_memory", "lsp", WellKnownToolNames.AskUserQuestion]
         }
     ];
 }

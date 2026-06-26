@@ -25,7 +25,7 @@ public sealed partial class KurisuCompatibilityService(IDesktopEnvironmentPaths 
         var projectKurisuRoot = KurisuPaths.ProjectKurisuDirectory(projectRoot);
         var homeKurisuRoot = KurisuPaths.GlobalKurisuDirectory(environmentPaths.HomeDirectory);
         var programDataRoot = ResolveProgramDataRoot();
-        var runtimeProfile = new KurisuRuntimeProfileService(environmentPaths).Inspect(new WorkspacePaths
+        var runtimeProfile = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance)).Inspect(new WorkspacePaths
         {
             WorkspaceRoot = projectRoot
         });

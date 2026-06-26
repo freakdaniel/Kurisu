@@ -1,5 +1,7 @@
 using System.Globalization;
 
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Core.Runtime;
 
 internal static class RuntimeLocaleCatalog
@@ -22,7 +24,7 @@ internal static class RuntimeLocaleCatalog
 
     public static string DetectLocale(string? configuredLocale = null)
     {
-        var envLang = Environment.GetEnvironmentVariable("KURISU_LANG");
+        var envLang = Environment.GetEnvironmentVariable("KurisuEnvVars.Lang");
         if (!string.IsNullOrWhiteSpace(envLang))
         {
             return NormalizeLocale(envLang.Trim());

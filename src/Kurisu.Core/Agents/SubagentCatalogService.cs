@@ -8,10 +8,12 @@ namespace Kurisu.Core.Agents;
 /// Represents the Subagent Catalog Service
 /// </summary>
 /// <param name="environmentPaths">The environment paths</param>
+/// <param name="runtimeProfileService">The runtime profile service</param>
 /// <param name="validationService">The validation service</param>
 public sealed partial class SubagentCatalogService(
     IDesktopEnvironmentPaths environmentPaths,
-    ISubagentValidationService validationService) : ISubagentCatalog
+    KurisuRuntimeProfileService runtimeProfileService,
+    ISubagentValidationService validationService)
 {
     private readonly ISubagentValidationService _validationService = validationService;
 
@@ -25,7 +27,7 @@ public sealed partial class SubagentCatalogService(
         var workspaceRoot = string.IsNullOrWhiteSpace(paths.WorkspaceRoot)
             ? Environment.CurrentDirectory
             : paths.WorkspaceRoot;
-        var runtimeProfile = new KurisuRuntimeProfileService(environmentPaths).Inspect(new WorkspacePaths
+        var runtimeProfile = runtimeProfileService.Inspect(new WorkspacePaths
         {
             WorkspaceRoot = workspaceRoot
         });

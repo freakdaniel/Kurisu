@@ -141,7 +141,7 @@ public sealed class GitHistoryServiceTests
     private static GitHistoryService CreateService(string workspaceRoot, string homeRoot)
     {
         var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, null, workspaceRoot, workspaceRoot);
-        var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+        var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
         return new GitHistoryService(new GitCliService(), runtimeProfileService);
     }
 

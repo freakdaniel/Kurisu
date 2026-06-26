@@ -1,4 +1,5 @@
 using Kurisu.Core.Models;
+using Kurisu.Core.Infrastructure.Constants;
 
 namespace Kurisu.Core.Permissions;
 
@@ -125,13 +126,13 @@ public sealed class ApprovalPolicyService : IApprovalPolicyEngine
 
         var decision = approvalProfile.DefaultMode.ToLowerInvariant() switch
         {
-            "yolo" => ("allow", "Allowed by YOLO default mode."),
-            "auto-edit" when primaryContext.Kind is "modify" or "read" or "control" => ("allow", "Allowed by auto-edit default mode."),
-            "auto-edit" => ("ask", "Still requires confirmation outside file-edit flow."),
-            "plan" when primaryContext.Kind is "modify" or "execute" or "automation" or "coordination" => ("deny", "Blocked by plan mode semantics."),
-            "plan" => ("allow", "Read-style tool remains available in plan mode."),
-            "default" when primaryContext.Kind is "read" or "control" => ("allow", "Read/control tool stays available in default mode."),
-            "default" => ("ask", "Requires confirmation in default mode."),
+            ApprovalModes.Yolo => ("allow", "Allowed by YOLO default mode."),
+            ApprovalModes.AutoEdit when primaryContext.Kind is ToolKind.Modify or ToolKind.Read or ToolKind.Control => ("allow", "Allowed by auto-edit default mode."),
+            ApprovalModes.AutoEdit => ("ask", "Still requires confirmation outside file-edit flow."),
+            ApprovalModes.Plan when primaryContext.Kind is ToolKind.Modify or ToolKind.Execute or ToolKind.Automation or ToolKind.Coordination => ("deny", "Blocked by plan mode semantics."),
+            ApprovalModes.Plan => ("allow", "Read-style tool remains available in plan mode."),
+            ApprovalModes.Default when primaryContext.Kind is ToolKind.Read or ToolKind.Control => ("allow", "Read/control tool stays available in default mode."),
+            ApprovalModes.Default => ("ask", "Requires confirmation in default mode."),
             _ => ("ask", "Falls back to cautious confirmation semantics.")
         };
 

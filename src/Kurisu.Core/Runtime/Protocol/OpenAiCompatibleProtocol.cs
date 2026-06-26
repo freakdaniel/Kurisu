@@ -4,7 +4,7 @@ namespace Kurisu.Core.Runtime;
 
 internal static class OpenAiCompatibleProtocol
 {
-    private static readonly HashSet<string> StrictQwenCompatibleToolNames =
+    private static readonly HashSet<string> StrictDashScopeCompatibleToolNames =
     [
         "agent",
         "skill",
@@ -23,7 +23,7 @@ internal static class OpenAiCompatibleProtocol
         "web_search"
     ];
 
-    private static readonly string[] PreferredQwenCompatibleToolOrder =
+    private static readonly string[] PreferredDashScopeCompatibleToolOrder =
     [
         "agent",
         "skill",
@@ -412,7 +412,7 @@ internal static class OpenAiCompatibleProtocol
     /// <param name="payload">The payload</param>
     /// <param name="streaming">The streaming</param>
     /// <param name="disableTools">Whether tools are disabled for the current request</param>
-    public static void NormalizePayloadForQwenCompatible(
+    public static void NormalizePayloadForDashScopeCompatible(
         JsonObject payload,
         bool streaming,
         bool disableTools)
@@ -426,7 +426,7 @@ internal static class OpenAiCompatibleProtocol
 
         if (payload["tools"] is JsonArray tools)
         {
-            NormalizeQwenCompatibleTools(tools);
+            NormalizeDashScopeCompatibleTools(tools);
         }
 
         if (!disableTools)
@@ -435,7 +435,7 @@ internal static class OpenAiCompatibleProtocol
         }
     }
 
-    private static void NormalizeQwenCompatibleTools(JsonArray tools)
+    private static void NormalizeDashScopeCompatibleTools(JsonArray tools)
     {
         var byName = tools
             .OfType<JsonObject>()
@@ -448,7 +448,7 @@ internal static class OpenAiCompatibleProtocol
             .ToDictionary(item => item.Name!, item => item.Tool, StringComparer.OrdinalIgnoreCase);
 
         tools.Clear();
-        foreach (var toolName in ResolveQwenCompatibleToolOrder(byName.Keys))
+        foreach (var toolName in ResolveDashScopeCompatibleToolOrder(byName.Keys))
         {
             if (byName.TryGetValue(toolName, out var tool))
             {
@@ -624,17 +624,17 @@ Pending questions:
 
     private static JsonArray BuildTools(
         IReadOnlyList<string> allowedToolNames,
-        bool strictQwenCompatibleTools = false)
+        bool strictDashScopeCompatibleTools = false)
     {
         var allowed = allowedToolNames.Count == 0
             ? ToolContractCatalog.Implemented
             : ToolContractCatalog.Implemented
                 .Where(tool => allowedToolNames.Contains(tool.Name, StringComparer.OrdinalIgnoreCase))
                 .ToArray();
-        if (strictQwenCompatibleTools)
+        if (strictDashScopeCompatibleTools)
         {
             allowed = allowed
-                .Where(tool => StrictQwenCompatibleToolNames.Contains(tool.Name))
+                .Where(tool => StrictDashScopeCompatibleToolNames.Contains(tool.Name))
                 .ToArray();
         }
 
@@ -860,12 +860,12 @@ Pending questions:
             _ => "Native tool available in this desktop runtime."
         };
 
-    private static IReadOnlyList<string> ResolveQwenCompatibleToolOrder(IEnumerable<string> availableToolNames)
+    private static IReadOnlyList<string> ResolveDashScopeCompatibleToolOrder(IEnumerable<string> availableToolNames)
     {
         var available = new HashSet<string>(availableToolNames, StringComparer.OrdinalIgnoreCase);
         var ordered = new List<string>();
 
-        foreach (var toolName in PreferredQwenCompatibleToolOrder)
+        foreach (var toolName in PreferredDashScopeCompatibleToolOrder)
         {
             if (available.Remove(toolName))
             {

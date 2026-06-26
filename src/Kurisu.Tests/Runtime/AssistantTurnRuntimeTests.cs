@@ -23,7 +23,7 @@ public sealed class AssistantTurnRuntimeTests
             var targetFile = Path.Combine(workspaceRoot, "sample.txt");
             File.WriteAllText(targetFile, "native tool content");
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var approvalPolicyService = new ApprovalPolicyService();
             var runtime = CreateAssistantTurnRuntime(
                 new ToolCallingAssistantResponseProvider(targetFile),
@@ -86,15 +86,14 @@ public sealed class AssistantTurnRuntimeTests
             Directory.CreateDirectory(homeRoot);
             Directory.CreateDirectory(systemRoot);
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var runtime = new AssistantTurnRuntime(
                 new AssistantPromptAssembler(new ProjectSummaryService()),
                 [new RepeatingToolCallingAssistantResponseProvider(), new FallbackAssistantResponseProvider()],
                 new ToolCallScheduler(
-                    new NonInteractiveToolExecutor(
-                        new SequencedToolExecutor(
-                            new NativeToolExecutionResult
-                            {
+                    new SequencedToolExecutor(
+                        new NativeToolExecutionResult
+                        {
                                 ToolName = "read_file",
                                 Status = "completed",
                                 ApprovalState = "allow",
@@ -128,7 +127,7 @@ public sealed class AssistantTurnRuntimeTests
                                 WorkingDirectory = workspaceRoot,
                                 Output = "loop-4",
                                 ChangedFiles = []
-                            })),
+                            }),
                     new LoopDetectionService()),
                 new LoopDetectionService(),
                 new TokenLimitService(),
@@ -192,7 +191,7 @@ public sealed class AssistantTurnRuntimeTests
             Directory.CreateDirectory(homeRoot);
             Directory.CreateDirectory(systemRoot);
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var provider = new ApprovalGateAssistantResponseProvider();
             var runtime = TestServiceFactory.CreateAssistantTurnRuntime(
                 provider,
@@ -257,7 +256,7 @@ public sealed class AssistantTurnRuntimeTests
             Directory.CreateDirectory(homeRoot);
             Directory.CreateDirectory(systemRoot);
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var provider = new ApprovalResolutionAssistantResponseProvider();
             var runtime = TestServiceFactory.CreateAssistantTurnRuntime(provider);
 
@@ -316,7 +315,7 @@ public sealed class AssistantTurnRuntimeTests
             Directory.CreateDirectory(homeRoot);
             Directory.CreateDirectory(systemRoot);
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var provider = new MultiToolAssistantResponseProvider();
             var runtime = TestServiceFactory.CreateAssistantTurnRuntime(
                 provider,
@@ -390,7 +389,7 @@ public sealed class AssistantTurnRuntimeTests
             Directory.CreateDirectory(homeRoot);
             Directory.CreateDirectory(systemRoot);
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var provider = new ToolErrorRecoveryAssistantResponseProvider();
             var runtime = TestServiceFactory.CreateAssistantTurnRuntime(
                 provider,
@@ -458,12 +457,12 @@ public sealed class AssistantTurnRuntimeTests
             Directory.CreateDirectory(homeRoot);
             Directory.CreateDirectory(systemRoot);
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var runtime = new AssistantTurnRuntime(
                 new AssistantPromptAssembler(new ProjectSummaryService()),
                 [new ThrowingAssistantResponseProvider(), new FallbackAssistantResponseProvider()],
                 new ToolCallScheduler(
-                    new NonInteractiveToolExecutor(new SequencedToolExecutor()),
+                    new SequencedToolExecutor(),
                     new LoopDetectionService()),
                 new LoopDetectionService(),
                 new TokenLimitService(),

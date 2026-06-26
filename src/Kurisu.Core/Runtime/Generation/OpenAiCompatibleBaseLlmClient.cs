@@ -14,13 +14,13 @@ namespace Kurisu.Core.Runtime;
 /// </summary>
 /// <param name="httpClient">The http client</param>
 /// <param name="configurationResolver">The configuration resolver</param>
-/// <param name="modelConfigResolver">The model config resolver</param>
-/// <param name="tokenLimitService">The token limit service</param>
+/// <param name="modelRegistry">The model registry</param>
+    /// <param name="tokenLimitService">The token limit service</param>
 /// <param name="options">The options</param>
 public sealed class OpenAiCompatibleBaseLlmClient(
     HttpClient httpClient,
     ProviderConfigurationService configurationResolver,
-    IModelConfigResolver modelConfigResolver,
+    IModelRegistry modelRegistry,
     ITokenLimitService tokenLimitService,
     IOptions<NativeAssistantRuntimeOptions> options) : IBaseLlmClient
 {
@@ -145,11 +145,10 @@ public sealed class OpenAiCompatibleBaseLlmClient(
         }
 
         var embeddingEndpoint = BuildEmbeddingsEndpoint(configuration.Endpoint, configuration.IsDashScope);
-        var embeddingModel = modelConfigResolver.Resolve(
+        var embeddingModel = ResolveEmbeddingModelId(
             new WorkspacePaths { WorkspaceRoot = request.RuntimeProfile.ProjectRoot },
             request.ModelOverride,
-            request.ProviderIdOverride,
-            embedding: true).Id;
+            request.ProviderIdOverride);
         var payload = new JsonObject
         {
             ["model"] = embeddingModel,
@@ -259,4 +258,29 @@ public sealed class OpenAiCompatibleBaseLlmClient(
             WorkingDirectory = workingDirectory,
             ChangedFiles = []
         };
+
+    private string ResolveEmbeddingModelId(
+        WorkspacePaths paths,
+        string? modelId,
+        string? providerId)
+    {
+        var snapshot = modelRegistry.Inspect(paths);
+        var preferred = snapshot.EmbeddingModelId;
+        var resolvedModelId = string.IsNullOrWhiteSpace(modelId) ? preferred : modelId;
+        var resolvedAuthType = string.IsNullOrWhiteSpace(providerId) ? snapshot.SelectedAuthType : providerId;
+
+        var exact = snapshot.AvailableModels.FirstOrDefault(item =>
+            string.Equals(item.Id, resolvedModelId, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(item.AuthType, resolvedAuthType, StringComparison.OrdinalIgnoreCase));
+        if (exact is not null) return exact.Id;
+
+        var byModel = snapshot.AvailableModels.FirstOrDefault(item =>
+            string.Equals(item.Id, resolvedModelId, StringComparison.OrdinalIgnoreCase) &&
+            item.IsEmbeddingModel);
+        if (byModel is not null) return byModel.Id;
+
+        return snapshot.AvailableModels.First(item =>
+            item.IsEmbeddingModel ||
+            string.Equals(item.Id, preferred, StringComparison.OrdinalIgnoreCase)).Id;
+    }
 }

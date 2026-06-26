@@ -238,7 +238,7 @@ public sealed class ChannelRegistryServiceTests
     private static ChannelRegistryService CreateService(string homeRoot)
     {
         var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, null, homeRoot, homeRoot);
-        var runtimeProfile = new KurisuRuntimeProfileService(environmentPaths);
+        var runtimeProfile = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
         var compatibility = new KurisuCompatibilityService(environmentPaths);
         return new ChannelRegistryService(
             environmentPaths,

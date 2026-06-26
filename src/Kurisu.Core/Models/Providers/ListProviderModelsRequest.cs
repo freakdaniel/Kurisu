@@ -1,3 +1,5 @@
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Core.Models;
 
 /// <summary>
@@ -6,7 +8,7 @@ namespace Kurisu.Core.Models;
 public sealed class ListProviderModelsRequest
 {
     /// <summary>
-    /// Preset id (e.g. "openai", "deepseek").
+    /// Preset id (e.g. ProviderIds.OpenAI, ProviderIds.DeepSeek).
     /// </summary>
     public string PresetId { get; init; } = string.Empty;
 

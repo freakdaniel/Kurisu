@@ -17,7 +17,7 @@ public sealed class SessionHostCancellationTests
             Directory.CreateDirectory(homeRoot);
             Directory.CreateDirectory(systemRoot);
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var approvalPolicyService = new ApprovalPolicyService();
             var chatRecordingService = new ChatRecordingService();
@@ -38,7 +38,6 @@ public sealed class SessionHostCancellationTests
             var sessionHost = new DesktopSessionHostService(
                 runtimeProfileService,
                 new CommandActionRuntime(
-                    new SlashCommandRuntime(compatibilityService),
                     runtimeProfileService,
                     compatibilityService,
                     new ToolCatalogService(runtimeProfileService, approvalPolicyService)),
@@ -52,7 +51,6 @@ public sealed class SessionHostCancellationTests
                 sessionCatalog,
                 new ActiveTurnRegistry(interruptedTurnStore),
                 interruptedTurnStore,
-                new SessionTranscriptWriter(),
                 new SessionEventFactory(),
                 sessionMessageBus);
 

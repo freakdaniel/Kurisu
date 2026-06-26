@@ -7,7 +7,6 @@ using Kurisu.App.Desktop.DirectConnect;
 using Kurisu.App.Desktop.State;
 using Kurisu.App.Ipc.Binding;
 using Kurisu.Core.Agents;
-using Kurisu.Core.Auth;
 using Kurisu.Core.Channels;
 using Kurisu.Core.Compatibility;
 using Kurisu.Core.Config;
@@ -122,10 +121,6 @@ public static class AppComposition
         services.AddHostedService<SessionsMigrationHostedService>();
         #endregion
 
-        #region Auth
-        services.AddSingleton<IAuthUrlLauncher, ShellAuthUrlLauncher>();
-        #endregion
-
         #region Channels
         services.TryAddSingleton<HttpClient>();
         services.AddSingleton<IChannelRegistryService, ChannelRegistryService>();
@@ -158,8 +153,7 @@ public static class AppComposition
         #endregion
 
         #region Followup
-        services.AddSingleton<IFollowupSuggestionCache, InMemoryFollowupSuggestionCache>();
-        services.AddSingleton<IFollowupSuggestionGenerator, ProviderBackedFollowupSuggestionGenerator>();
+        services.AddSingleton<ProviderBackedFollowupSuggestionGenerator>();
         services.AddSingleton<IFollowupSuggestionService, FollowupSuggestionService>();
         #endregion
 
@@ -213,15 +207,13 @@ public static class AppComposition
         services.AddSingleton<ProviderConfigurationService>();
         services.AddSingleton<ProviderModelLister>();
         services.AddSingleton<IModelRegistry, ModelRegistryService>();
-        services.AddSingleton<IModelConfigResolver, ModelConfigResolver>();
+
         services.AddSingleton<IBaseLlmClient, OpenAiCompatibleBaseLlmClient>();
         services.AddSingleton<IContentGenerator, ContentGenerator>();
         services.AddSingleton<ILoopDetectionService, LoopDetectionService>();
         services.AddSingleton<ITokenLimitService, TokenLimitService>();
-        services.AddSingleton<INonInteractiveToolExecutor, NonInteractiveToolExecutor>();
         services.AddSingleton<IToolCallScheduler, ToolCallScheduler>();
         services.AddSingleton<IAssistantPromptAssembler, AssistantPromptAssembler>();
-        services.AddSingleton<ISlashCommandRuntime, SlashCommandRuntime>();
         services.AddSingleton<ICommandActionRuntime, CommandActionRuntime>();
         services.AddSingleton<IAssistantResponseProvider, DashScopeAssistantResponseProvider>();
         services.AddSingleton<IAssistantResponseProvider, OpenAiCompatibleAssistantResponseProvider>();
@@ -245,7 +237,7 @@ public static class AppComposition
         services.AddSingleton<IArenaSessionRegistry, ArenaSessionRegistry>();
         services.AddSingleton<ISubagentModelSelectionService, SubagentModelSelectionService>();
         services.AddSingleton<ISubagentValidationService, SubagentValidationService>();
-        services.AddSingleton<ISubagentCatalog, SubagentCatalogService>();
+        services.AddSingleton<SubagentCatalogService>();
         services.AddSingleton<ISubagentCoordinator, SubagentCoordinatorService>();
         services.AddSingleton<IAgentArenaService, AgentArenaService>();
         #endregion
@@ -259,7 +251,7 @@ public static class AppComposition
             (DesktopSessionCatalogService)provider.GetRequiredService<ITranscriptStore>());
         services.AddSingleton<IInterruptedTurnStore, InterruptedTurnStore>();
         services.AddSingleton<IActiveTurnRegistry, ActiveTurnRegistry>();
-        services.AddSingleton<ISessionTranscriptWriter, SessionTranscriptWriter>();
+
         services.AddSingleton<ISessionEventFactory, SessionEventFactory>();
         services.AddSingleton<IPendingApprovalResolver, PendingApprovalResolver>();
         services.AddSingleton<PendingToolApprovalMessageHandler>();

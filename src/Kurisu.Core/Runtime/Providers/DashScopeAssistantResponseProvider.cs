@@ -72,7 +72,7 @@ public sealed class DashScopeAssistantResponseProvider(
         while (true)
         {
             payload["stream"] = preferStreaming;
-            OpenAiCompatibleProtocol.NormalizePayloadForQwenCompatible(
+            OpenAiCompatibleProtocol.NormalizePayloadForDashScopeCompatible(
                 payload,
                 preferStreaming,
                 request.DisableTools);

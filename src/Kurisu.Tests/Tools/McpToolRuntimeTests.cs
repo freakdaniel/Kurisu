@@ -2,6 +2,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Tests.Tools;
 
 public sealed class McpToolRuntimeTests
@@ -156,7 +158,7 @@ public sealed class McpToolRuntimeTests
                 ArgumentsJson = """{"server_name":"docs","tool_name":"write-doc","arguments":{"path":"README.md"}}"""
             });
 
-            Assert.Equal("approval-required", gated.Status);
+            Assert.Equal(ToolExecutionStatus.ApprovalRequired, gated.Status);
             Assert.Equal("ask", gated.ApprovalState);
             Assert.Contains("Requires confirmation", gated.ErrorMessage);
             Assert.Equal("completed", approved.Status);
@@ -433,7 +435,7 @@ public sealed class McpToolRuntimeTests
 
         var paths = new WorkspacePaths { WorkspaceRoot = workspaceRoot };
         var environment = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
-        var runtimeProfileService = new KurisuRuntimeProfileService(environment);
+        var runtimeProfileService = new KurisuRuntimeProfileService(environment, new RuntimeConfigService(environment), new RuntimeSelectionStore(environment, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
         var tokenStore = new FileMcpTokenStore(environment);
         var registry = new McpRegistryService(runtimeProfileService, tokenStore);
         var runtime = new McpToolRuntimeService(registry, tokenStore, new HttpClient(), runtimeProfileService);

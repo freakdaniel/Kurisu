@@ -1,3 +1,5 @@
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Tests.Permissions;
 
 public sealed class ApprovalPolicyTests
@@ -28,7 +30,7 @@ public sealed class ApprovalPolicyTests
             var shellDecision = service.Evaluate(
                 new ApprovalCheckContext
                 {
-                    ToolName = "run_shell_command",
+                    ToolName = WellKnownToolNames.RunShellCommand,
                     Kind = "execute",
                     ProjectRoot = projectRoot,
                     WorkingDirectory = projectRoot,
@@ -50,7 +52,7 @@ public sealed class ApprovalPolicyTests
             var editDecision = service.Evaluate(
                 new ApprovalCheckContext
                 {
-                    ToolName = "write_file",
+                    ToolName = WellKnownToolNames.WriteFile,
                     Kind = "modify",
                     ProjectRoot = projectRoot,
                     WorkingDirectory = projectRoot,
@@ -61,7 +63,7 @@ public sealed class ApprovalPolicyTests
             var webDecision = service.Evaluate(
                 new ApprovalCheckContext
                 {
-                    ToolName = "web_fetch",
+                    ToolName = WellKnownToolNames.WebFetch,
                     Kind = "execute",
                     ProjectRoot = projectRoot,
                     WorkingDirectory = projectRoot,
@@ -110,7 +112,7 @@ public sealed class ApprovalPolicyTests
             var readDecision = service.Evaluate(
                 new ApprovalCheckContext
                 {
-                    ToolName = "run_shell_command",
+                    ToolName = WellKnownToolNames.RunShellCommand,
                     Kind = "execute",
                     ProjectRoot = projectRoot,
                     WorkingDirectory = projectRoot,
@@ -122,7 +124,7 @@ public sealed class ApprovalPolicyTests
             var editDecision = service.Evaluate(
                 new ApprovalCheckContext
                 {
-                    ToolName = "run_shell_command",
+                    ToolName = WellKnownToolNames.RunShellCommand,
                     Kind = "execute",
                     ProjectRoot = projectRoot,
                     WorkingDirectory = projectRoot,
@@ -135,7 +137,7 @@ public sealed class ApprovalPolicyTests
             var denyDecision = service.Evaluate(
                 new ApprovalCheckContext
                 {
-                    ToolName = "run_shell_command",
+                    ToolName = WellKnownToolNames.RunShellCommand,
                     Kind = "execute",
                     ProjectRoot = projectRoot,
                     WorkingDirectory = projectRoot,
@@ -180,7 +182,7 @@ public sealed class ApprovalPolicyTests
         var denyDecision = service.Evaluate(
             new ApprovalCheckContext
             {
-                ToolName = "run_shell_command",
+                ToolName = WellKnownToolNames.RunShellCommand,
                 Kind = "execute"
             },
             profile);
@@ -216,7 +218,7 @@ public sealed class ApprovalPolicyTests
             var readOnlyDecision = service.Evaluate(
                 new ApprovalCheckContext
                 {
-                    ToolName = "run_shell_command",
+                    ToolName = WellKnownToolNames.RunShellCommand,
                     Kind = "execute",
                     ProjectRoot = projectRoot,
                     WorkingDirectory = projectRoot,
@@ -227,7 +229,7 @@ public sealed class ApprovalPolicyTests
             var mutatingDecision = service.Evaluate(
                 new ApprovalCheckContext
                 {
-                    ToolName = "run_shell_command",
+                    ToolName = WellKnownToolNames.RunShellCommand,
                     Kind = "execute",
                     ProjectRoot = projectRoot,
                     WorkingDirectory = projectRoot,
@@ -269,7 +271,7 @@ public sealed class ApprovalPolicyTests
             var substitutionDecision = service.Evaluate(
                 new ApprovalCheckContext
                 {
-                    ToolName = "run_shell_command",
+                    ToolName = WellKnownToolNames.RunShellCommand,
                     Kind = "execute",
                     ProjectRoot = projectRoot,
                     WorkingDirectory = projectRoot,
@@ -280,7 +282,7 @@ public sealed class ApprovalPolicyTests
             var downloadDecision = service.Evaluate(
                 new ApprovalCheckContext
                 {
-                    ToolName = "run_shell_command",
+                    ToolName = WellKnownToolNames.RunShellCommand,
                     Kind = "execute",
                     ProjectRoot = projectRoot,
                     WorkingDirectory = projectRoot,

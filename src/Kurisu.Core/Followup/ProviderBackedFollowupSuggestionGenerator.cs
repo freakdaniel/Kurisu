@@ -15,7 +15,7 @@ public sealed class ProviderBackedFollowupSuggestionGenerator(
     KurisuRuntimeProfileService runtimeProfileService,
     IAssistantPromptAssembler promptAssembler,
     IContentGenerator contentGenerator,
-    IOptions<NativeAssistantRuntimeOptions> options) : IFollowupSuggestionGenerator
+    IOptions<NativeAssistantRuntimeOptions> options)
 {
     private const string SuggestionPrompt = "Predict the most likely short next message the user would type in this conversation.";
 

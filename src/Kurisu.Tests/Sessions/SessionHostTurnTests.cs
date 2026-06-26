@@ -1,3 +1,5 @@
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Tests.Sessions;
 
 public sealed class SessionHostTurnTests
@@ -32,7 +34,7 @@ public sealed class SessionHostTurnTests
                 }
                 """);
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var sessionHost = CreateSessionHost(runtimeProfileService, compatibilityService);
 
@@ -43,7 +45,7 @@ public sealed class SessionHostTurnTests
                 {
                     Prompt = "Create a native desktop transcript entry and write notes.",
                     WorkingDirectory = workspaceRoot,
-                    ToolName = "write_file",
+                    ToolName = WellKnownToolNames.WriteFile,
                     ToolArgumentsJson = $$"""{"file_path":"{{targetFile.Replace("\\", "\\\\")}}","content":"hello from native session host"}""",
                     ApproveToolExecution = true
                 });
@@ -84,7 +86,7 @@ public sealed class SessionHostTurnTests
             Directory.CreateDirectory(homeRoot);
             Directory.CreateDirectory(systemRoot);
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var sessionHost = CreateSessionHost(runtimeProfileService, compatibilityService);
             var runtimeProfile = runtimeProfileService.Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
@@ -135,7 +137,7 @@ public sealed class SessionHostTurnTests
                 """);
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(environmentPaths);
             var approvalPolicyService = new ApprovalPolicyService();
             var chatRecordingService = new ChatRecordingService();
@@ -157,7 +159,6 @@ public sealed class SessionHostTurnTests
             var sessionHost = new DesktopSessionHostService(
                 runtimeProfileService,
                 new CommandActionRuntime(
-                    new SlashCommandRuntime(compatibilityService),
                     runtimeProfileService,
                     compatibilityService,
                     new ToolCatalogService(runtimeProfileService, approvalPolicyService)),
@@ -171,7 +172,6 @@ public sealed class SessionHostTurnTests
                 transcriptStore,
                 activeTurnRegistry,
                 interruptedTurnStore,
-                new SessionTranscriptWriter(),
                 new SessionEventFactory(),
                 sessionMessageBus);
 
@@ -211,7 +211,7 @@ public sealed class SessionHostTurnTests
             Directory.CreateDirectory(homeRoot);
             Directory.CreateDirectory(systemRoot);
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var sessionHost = CreateSessionHost(runtimeProfileService, compatibilityService);
 
@@ -260,7 +260,7 @@ public sealed class SessionHostTurnTests
                 """
             );
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var sessionHost = CreateSessionHost(runtimeProfileService, compatibilityService);
 
@@ -306,7 +306,7 @@ public sealed class SessionHostTurnTests
             Directory.CreateDirectory(Path.Combine(homeRoot, ".kurisu"));
             Directory.CreateDirectory(systemRoot);
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var sessionHost = CreateSessionHost(runtimeProfileService, compatibilityService);
 
@@ -352,7 +352,7 @@ public sealed class SessionHostTurnTests
             Directory.CreateDirectory(systemRoot);
             File.WriteAllText(Path.Combine(workspaceRoot, "KURISU.md"), "# Project memory");
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var sessionHost = CreateSessionHost(runtimeProfileService, compatibilityService);
 
@@ -398,7 +398,7 @@ public sealed class SessionHostTurnTests
 
             File.WriteAllText(Path.Combine(workspaceRoot, ".git", "HEAD"), "ref: refs/heads/main");
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var sessionCatalog = new DesktopSessionCatalogService(runtimeProfileService, new ChatRecordingService());
             var sessionHost = CreateSessionHost(runtimeProfileService, compatibilityService, sessionCatalog);
@@ -471,7 +471,7 @@ public sealed class SessionHostTurnTests
                 }
                 """);
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var sessionCatalog = new DesktopSessionCatalogService(runtimeProfileService, new ChatRecordingService());
             var sessionHost = CreateSessionHost(runtimeProfileService, compatibilityService, sessionCatalog);
@@ -483,7 +483,7 @@ public sealed class SessionHostTurnTests
                 {
                     Prompt = "Try an edit without pre-approval.",
                     WorkingDirectory = workspaceRoot,
-                    ToolName = "write_file",
+                    ToolName = WellKnownToolNames.WriteFile,
                     ToolArgumentsJson = $$"""{"file_path":"{{targetFile.Replace("\\", "\\\\")}}","content":"blocked write"}""",
                     ApproveToolExecution = false
                 });
@@ -499,8 +499,8 @@ public sealed class SessionHostTurnTests
             Assert.Equal(1, detail!.Summary.PendingApprovalCount);
             var toolEntries = detail.Entries.Where(entry => entry.Type == "tool").ToArray();
             var toolEntry = Assert.Single(toolEntries);
-            Assert.Equal("write_file", toolEntry.ToolName);
-            Assert.Equal("approval-required", toolEntry.Status);
+            Assert.Equal(WellKnownToolNames.WriteFile, toolEntry.ToolName);
+            Assert.Equal(ToolExecutionStatus.ApprovalRequired, toolEntry.Status);
             Assert.Equal("ask", toolEntry.ApprovalState);
             Assert.Contains("blocked write", toolEntry.Arguments);
             Assert.Contains("Requires confirmation", toolEntry.Body);
@@ -538,7 +538,7 @@ public sealed class SessionHostTurnTests
                 }
                 """);
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var sessionCatalog = new DesktopSessionCatalogService(runtimeProfileService, new ChatRecordingService());
             var sessionHost = CreateSessionHost(runtimeProfileService, compatibilityService, sessionCatalog);
@@ -553,7 +553,7 @@ public sealed class SessionHostTurnTests
                 {
                     Prompt = "/context detail",
                     WorkingDirectory = workspaceRoot,
-                    ToolName = "write_file",
+                    ToolName = WellKnownToolNames.WriteFile,
                     ToolArgumentsJson = $$"""{"file_path":"{{targetFile.Replace("\\", "\\\\")}}","content":"needs approval"}""",
                     ApproveToolExecution = false
                 });
@@ -570,7 +570,7 @@ public sealed class SessionHostTurnTests
 
             Assert.All(emittedEvents, item => Assert.Equal(result.Session.SessionId, item.SessionId));
             Assert.Contains(emittedEvents, item => item.CommandName == "context");
-            Assert.Contains(emittedEvents, item => item.ToolName == "write_file");
+            Assert.Contains(emittedEvents, item => item.ToolName == WellKnownToolNames.WriteFile);
         }
         finally
         {
@@ -594,7 +594,7 @@ public sealed class SessionHostTurnTests
             Directory.CreateDirectory(homeRoot);
             Directory.CreateDirectory(systemRoot);
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var sessionCatalog = new DesktopSessionCatalogService(runtimeProfileService, new ChatRecordingService());
             var sessionHost = CreateSessionHost(runtimeProfileService, compatibilityService, sessionCatalog);
@@ -643,7 +643,7 @@ public sealed class SessionHostTurnTests
             Directory.CreateDirectory(homeRoot);
             Directory.CreateDirectory(systemRoot);
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var approvalPolicyService = new ApprovalPolicyService();
             var chatRecordingService = new ChatRecordingService();
@@ -665,7 +665,6 @@ public sealed class SessionHostTurnTests
             var sessionHost = new DesktopSessionHostService(
                 runtimeProfileService,
                 new CommandActionRuntime(
-                    new SlashCommandRuntime(compatibilityService),
                     runtimeProfileService,
                     compatibilityService,
                     new ToolCatalogService(runtimeProfileService, approvalPolicyService)),
@@ -679,7 +678,6 @@ public sealed class SessionHostTurnTests
                 transcriptStore,
                 activeTurnRegistry,
                 interruptedTurnStore,
-                new SessionTranscriptWriter(),
                 new SessionEventFactory(),
                 sessionMessageBus);
 
@@ -735,7 +733,7 @@ public sealed class SessionHostTurnTests
                 }
                 """);
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
             var sessionHost = CreateSessionHost(runtimeProfileService, compatibilityService);
             var runtimeProfile = runtimeProfileService.Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
@@ -823,7 +821,7 @@ file sealed class ToolFailureAssistantTurnRuntime : IAssistantTurnRuntime
         eventSink?.Invoke(new AssistantRuntimeEvent
         {
             Stage = "tool-failed",
-            ToolName = "web_fetch",
+            ToolName = WellKnownToolNames.WebFetch,
             ToolCallId = "tool-call-web-fetch",
             ToolCallGroupId = "tool-group-web-fetch",
             ToolArgumentsJson = """{"url":"https://example.com"}""",

@@ -42,7 +42,7 @@ public sealed class HookLifecycleServiceTests
                 """);
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
-            var runtimeProfile = new KurisuRuntimeProfileService(environmentPaths)
+            var runtimeProfile = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance))
                 .Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
             var registry = new HookRegistryService(environmentPaths);
 
@@ -110,7 +110,7 @@ public sealed class HookLifecycleServiceTests
                 """);
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
-            var runtimeProfile = new KurisuRuntimeProfileService(environmentPaths)
+            var runtimeProfile = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance))
                 .Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
             var registry = new HookRegistryService(environmentPaths);
 
@@ -178,7 +178,7 @@ public sealed class HookLifecycleServiceTests
                 """);
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var extensionCatalog = new ExtensionCatalogService(runtimeProfileService, environmentPaths);
             var workspace = new WorkspacePaths { WorkspaceRoot = workspaceRoot };
             _ = extensionCatalog.Install(

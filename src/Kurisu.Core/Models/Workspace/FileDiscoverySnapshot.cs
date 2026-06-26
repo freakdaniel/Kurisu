@@ -13,7 +13,7 @@ public sealed class FileDiscoverySnapshot
     /// <summary>
     /// Gets or sets a value indicating whether has kurisu ignore
     /// </summary>
-    public required bool HasQwenIgnore { get; init; }
+    public required bool HasKurisuIgnore { get; init; }
 
     /// <summary>
     /// Gets or sets a value indicating whether candidate file count
@@ -33,12 +33,12 @@ public sealed class FileDiscoverySnapshot
     /// <summary>
     /// Gets or sets the kurisu ignored count
     /// </summary>
-    public required int QwenIgnoredCount { get; init; }
+    public required int KurisuIgnoredCount { get; init; }
 
     /// <summary>
     /// Gets or sets the kurisu ignore pattern count
     /// </summary>
-    public required int QwenIgnorePatternCount { get; init; }
+    public required int KurisuIgnorePatternCount { get; init; }
 
     /// <summary>
     /// Gets or sets the context files
@@ -58,5 +58,5 @@ public sealed class FileDiscoverySnapshot
     /// <summary>
     /// Gets or sets the sample kurisu ignored files
     /// </summary>
-    public required IReadOnlyList<string> SampleQwenIgnoredFiles { get; init; }
+    public required IReadOnlyList<string> SampleKurisuIgnoredFiles { get; init; }
 }

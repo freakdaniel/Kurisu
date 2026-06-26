@@ -33,7 +33,7 @@ public sealed class FileDiscoveryServiceTests
             RunGit(workspaceRoot, "commit", "-m", "init");
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, null, workspaceRoot, workspaceRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var service = new FileDiscoveryService(new GitCliService(), runtimeProfileService);
 
             var snapshot = service.Inspect(new WorkspacePaths
@@ -42,13 +42,13 @@ public sealed class FileDiscoveryServiceTests
             });
 
             Assert.True(snapshot.GitAware);
-            Assert.True(snapshot.HasQwenIgnore);
-            Assert.Equal(1, snapshot.QwenIgnorePatternCount);
+            Assert.True(snapshot.HasKurisuIgnore);
+            Assert.Equal(1, snapshot.KurisuIgnorePatternCount);
             Assert.True(snapshot.GitIgnoredCount >= 1);
-            Assert.True(snapshot.QwenIgnoredCount >= 1);
+            Assert.True(snapshot.KurisuIgnoredCount >= 1);
             Assert.Contains("KURISU.md", snapshot.ContextFiles);
             Assert.Contains("notes.txt", snapshot.SampleVisibleFiles);
-            Assert.Contains("docs/private-notes.md", snapshot.SampleQwenIgnoredFiles);
+            Assert.Contains("docs/private-notes.md", snapshot.SampleKurisuIgnoredFiles);
         }
         finally
         {

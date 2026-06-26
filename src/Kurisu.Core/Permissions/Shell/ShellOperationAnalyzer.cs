@@ -1,3 +1,5 @@
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Core.Permissions;
 
 internal static class ShellOperationAnalyzer
@@ -275,7 +277,7 @@ internal static class ShellOperationAnalyzer
     }
 
     private static bool IsMutatingOperation(ShellOperation operation) =>
-        operation.VirtualTool is "edit" or "write_file";
+        operation.VirtualTool is "edit" or WellKnownToolNames.WriteFile;
 
     private static IReadOnlyList<string> SplitCompoundCommands(string command)
     {
@@ -480,7 +482,7 @@ internal static class ShellOperationAnalyzer
                     var redirectTarget = ResolvePath(tokens[index + 1], workingDirectory);
                     operations.Add(new ShellOperation
                     {
-                        VirtualTool = token == "<" ? "read_file" : "write_file",
+                        VirtualTool = token == "<" ? "read_file" : WellKnownToolNames.WriteFile,
                         FilePath = redirectTarget
                     });
 
@@ -494,7 +496,7 @@ internal static class ShellOperationAnalyzer
             {
                 operations.Add(new ShellOperation
                 {
-                    VirtualTool = combined.Value.Operator == "<" ? "read_file" : "write_file",
+                    VirtualTool = combined.Value.Operator == "<" ? "read_file" : WellKnownToolNames.WriteFile,
                     FilePath = ResolvePath(combined.Value.Target, workingDirectory)
                 });
                 continue;
@@ -566,7 +568,7 @@ internal static class ShellOperationAnalyzer
     private static IEnumerable<ShellOperation> WriteOps(string[] args, string workingDirectory) =>
         GetPositionalArgs(args).Where(LooksLikePath).Select(path => new ShellOperation
         {
-            VirtualTool = "write_file",
+            VirtualTool = WellKnownToolNames.WriteFile,
             FilePath = ResolvePath(path, workingDirectory)
         });
 
@@ -604,7 +606,7 @@ internal static class ShellOperationAnalyzer
         });
         var destinationOperation = new ShellOperation
         {
-            VirtualTool = "write_file",
+            VirtualTool = WellKnownToolNames.WriteFile,
             FilePath = ResolvePath(positional[^1], workingDirectory)
         };
 
@@ -626,7 +628,7 @@ internal static class ShellOperationAnalyzer
         });
         var destinationOperation = new ShellOperation
         {
-            VirtualTool = "write_file",
+            VirtualTool = WellKnownToolNames.WriteFile,
             FilePath = ResolvePath(positional[^1], workingDirectory)
         };
 
@@ -663,7 +665,7 @@ internal static class ShellOperationAnalyzer
             {
                 yield return new ShellOperation
                 {
-                    VirtualTool = "web_fetch",
+                    VirtualTool = WellKnownToolNames.WebFetch,
                     Domain = uri.Host
                 };
             }
@@ -693,7 +695,7 @@ internal static class ShellOperationAnalyzer
 
             yield return new ShellOperation
             {
-                VirtualTool = "write_file",
+                VirtualTool = WellKnownToolNames.WriteFile,
                 FilePath = ResolvePath(target, workingDirectory)
             };
         }

@@ -1,3 +1,5 @@
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Core.Runtime.Providers;
 
 /// <summary>
@@ -35,5 +37,5 @@ public sealed record ProviderManifest(
 {
     /// <summary>True when this manifest can be reached via the OpenAI-compatible transport.</summary>
     public bool IsOpenAiCompatible =>
-        Family.StartsWith("openai", StringComparison.OrdinalIgnoreCase);
+        Family.StartsWith(ProviderIds.OpenAI, StringComparison.OrdinalIgnoreCase);
 }

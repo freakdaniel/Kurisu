@@ -341,7 +341,7 @@ public sealed class AssistantPromptAssemblerTests
             Directory.CreateDirectory(systemRoot);
             Directory.CreateDirectory(Path.Combine(workspaceRoot, ".kurisu"));
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot));
+            var runtimeProfileService = new KurisuRuntimeProfileService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), new RuntimeConfigService(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot)), new RuntimeSelectionStore(new FakeDesktopEnvironmentPaths(homeRoot, systemRoot), Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var runtimeProfile = runtimeProfileService.Inspect(new WorkspacePaths { WorkspaceRoot = workspaceRoot });
             var chatsRoot = runtimeProfile.ChatsDirectory;
             Directory.CreateDirectory(chatsRoot);

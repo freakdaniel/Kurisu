@@ -10,7 +10,7 @@ public interface IWorkspacePathResolver
     /// <summary>
     /// Resolves value
     /// </summary>
-    /// <param name="configured">The configured</param>
+    /// <param name="configured">The configured workspace paths</param>
     /// <returns>The resulting workspace paths</returns>
     WorkspacePaths Resolve(WorkspacePaths configured);
 }

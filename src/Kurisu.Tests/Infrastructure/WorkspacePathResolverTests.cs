@@ -1,5 +1,7 @@
 using Kurisu.Core.Infrastructure;
 
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Tests.Infrastructure;
 
 public sealed class WorkspacePathResolverTests
@@ -35,7 +37,7 @@ public sealed class WorkspacePathResolverTests
     public void Resolve_UsesExplicitWorkspaceBeforeMarkerDiscovery()
     {
         var root = Path.Combine(Path.GetTempPath(), $"kurisu-workspace-explicit-{Guid.NewGuid():N}");
-        var configuredWorkspace = Path.Combine(root, "configured");
+        var configuredWorkspace = Path.Combine(root, ProviderStatusKind.Configured);
         var current = Path.Combine(root, "current", "nested");
         Directory.CreateDirectory(configuredWorkspace);
         Directory.CreateDirectory(Path.Combine(root, "current", ".git"));

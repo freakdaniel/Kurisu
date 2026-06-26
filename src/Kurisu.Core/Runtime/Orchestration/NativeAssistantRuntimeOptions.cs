@@ -1,3 +1,5 @@
+using Kurisu.Core.Infrastructure.Constants;
+
 namespace Kurisu.Core.Runtime;
 
 /// <summary>
@@ -13,7 +15,7 @@ public sealed class NativeAssistantRuntimeOptions
     /// <summary>
     /// Gets or sets the provider
     /// </summary>
-    public string Provider { get; set; } = "kurisu-compatible";
+    public string Provider { get; set; } = ProviderFlavors.OpenAiCompatible;
 
     /// <summary>
     /// Gets or sets the model

@@ -134,9 +134,9 @@ public sealed class ChannelRuntimeServiceTests
                 environmentPaths,
                 new DesktopSettingsResolver(
                     new KurisuCompatibilityService(environmentPaths),
-                    new KurisuRuntimeProfileService(environmentPaths)),
+                    new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance))),
                 new ExtensionCatalogService(
-                    new KurisuRuntimeProfileService(environmentPaths),
+                    new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance)),
                     environmentPaths));
             var runtime = CreateRuntime(workspaceRoot, homeRoot, systemRoot);
 
@@ -221,7 +221,7 @@ public sealed class ChannelRuntimeServiceTests
                 Path.Combine(outboxRoot, "ops.jsonl"),
                 JsonSerializer.Serialize(replayRecord) + Environment.NewLine);
 
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(environmentPaths);
             var settingsResolver = new DesktopSettingsResolver(compatibilityService, runtimeProfileService);
             var extensionCatalog = new ExtensionCatalogService(runtimeProfileService, environmentPaths);
@@ -292,7 +292,7 @@ public sealed class ChannelRuntimeServiceTests
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
             var router = new ChannelSessionRouterService(environmentPaths);
             var route = await router.ResolveAsync("ops", "user", "user-1", "chat-1", string.Empty, string.Empty, workspaceRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(environmentPaths);
             var settingsResolver = new DesktopSettingsResolver(compatibilityService, runtimeProfileService);
             var extensionCatalog = new ExtensionCatalogService(runtimeProfileService, environmentPaths);
@@ -391,7 +391,7 @@ public sealed class ChannelRuntimeServiceTests
                 """);
 
             var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
-            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+            var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
             var compatibilityService = new KurisuCompatibilityService(environmentPaths);
             var settingsResolver = new DesktopSettingsResolver(compatibilityService, runtimeProfileService);
             var extensionCatalog = new ExtensionCatalogService(runtimeProfileService, environmentPaths);
@@ -427,7 +427,7 @@ public sealed class ChannelRuntimeServiceTests
     private static ChannelRuntimeService CreateRuntime(string workspaceRoot, string homeRoot, string systemRoot)
     {
         var environmentPaths = new FakeDesktopEnvironmentPaths(homeRoot, systemRoot);
-        var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths);
+        var runtimeProfileService = new KurisuRuntimeProfileService(environmentPaths, new RuntimeConfigService(environmentPaths), new RuntimeSelectionStore(environmentPaths, Microsoft.Extensions.Logging.Abstractions.NullLogger<RuntimeSelectionStore>.Instance));
         var compatibilityService = new KurisuCompatibilityService(environmentPaths);
         var settingsResolver = new DesktopSettingsResolver(compatibilityService, runtimeProfileService);
         var extensionCatalog = new ExtensionCatalogService(runtimeProfileService, environmentPaths);
