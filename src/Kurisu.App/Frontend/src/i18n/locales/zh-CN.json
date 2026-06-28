@@ -95,15 +95,34 @@
       "timeUnavailable": "时间不可用",
       "exportTable": "导出表格",
       "attachFile": "附加文件"
-    }
+    },
+    "suggestion0": "Explain quantum computing in simple terms",
+    "suggestion1": "Write unit tests for this function",
+    "suggestion2": "Help me brainstorm a name for my startup",
+    "suggestion3": "Refactor this snippet to be more idiomatic",
+    "suggestion4": "Suggest 5 gift ideas for a coworker",
+    "suggestion5": "Translate this text to Japanese",
+    "suggestion6": "What does this stack trace mean?",
+    "suggestion7": "Plan a one-month Rust learning roadmap",
+    "suggestion8": "Help me draft an apology email",
+    "suggestion9": "Compare PostgreSQL and SQLite tradeoffs",
+    "suggestion10": "Sketch a README outline for a new project",
+    "suggestion11": "Pitch a weekend pet project idea"
   },
   "titlebar": {
     "appName": "Kurisu",
     "minimize": "最小化",
     "maximize": "最大化",
+    "restore": "还原",
     "close": "关闭",
+    "windowControls": "窗口控制",
     "toggleSidebar": "切换侧栏",
     "menu": "菜单"
+  },
+  "menu": {
+    "about": "关于",
+    "version": "版本",
+    "close": "关闭"
   },
   "search": {
     "placeholder": "按名称筛选会话...",
@@ -228,5 +247,80 @@
     "codePlaceholder": "请求运行时集成、IPC工作、渲染器实现或kurisu兼容性强化。",
     "chatAction": "开始代码会话",
     "codeAction": "打开代码工作流"
+  },
+  "settings": {
+    "title": "设置",
+    "close": "关闭",
+    "comingSoon": "即将推出",
+    "back": "返回",
+    "exitSearch": "退出搜索",
+    "searchPlaceholder": "搜索设置…",
+    "categories": {
+      "general": "通用",
+      "providers": "提供商",
+      "voice": "语音",
+      "models": "模型",
+      "privacy": "隐私",
+      "storage": "存储",
+      "about": "关于"
+    },
+    "general": {
+      "appearance": "外观",
+      "colorScheme": "配色方案",
+      "themeOptions": {
+        "auto": "跟随系统",
+        "light": "浅色",
+        "dark": "深色"
+      },
+      "accent": "强调色",
+      "accentOptions": {
+        "blue": "蓝色",
+        "green": "绿色",
+        "teal": "青色",
+        "purple": "紫色"
+      },
+      "language": "语言",
+      "appLanguage": "应用语言"
+    },
+    "providers": {
+      "section": "提供商连接",
+      "empty": "尚未配置提供商。",
+      "statusConnected": "已连接",
+      "statusNotConfigured": "未配置",
+      "configure": "配置…"
+    },
+    "voice": {
+      "section": "语音输入",
+      "enableInput": "启用语音输入",
+      "enableInputCaption": "在聊天输入框中使用语音输入。"
+    },
+    "models": {
+      "section": "模型选择",
+      "usePowerful": "对复杂问题自动使用更强大的模型",
+      "usePowerfulCaption": "当请求看起来复杂时,Kurisu 会选择更强的模型。"
+    },
+    "privacy": {
+      "section": "报告与数据",
+      "errorReports": "发送匿名错误报告",
+      "errorReportsCaption": "有助于改进 Kurisu。绝不会发送提示或个人数据。",
+      "clearSessions": "清除本地会话"
+    },
+    "storage": {
+      "section": "路径",
+      "workspaceRoot": "工作区根目录",
+      "runtimeBase": "运行时基目录",
+      "usedContext": "已用上下文",
+      "openDataFolder": "打开数据文件夹"
+    },
+    "about": {
+      "section": "信息",
+      "version": "版本",
+      "description": "一个使用完全本地 .NET 运行时和基于 React 的工作区的 AI 原生桌面外壳。"
+    },
+    "search": "搜索设置",
+    "minimize": "最小化",
+    "maximize": "最大化",
+    "restore": "还原",
+    "clearSearch": "清除搜索"
   }
 }

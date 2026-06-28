@@ -6,10 +6,8 @@ import type { DesktopSessionEntry } from '@/types/desktop';
 import type { DisplayBlock } from '@/features/chat/types';
 import { isApprovalPlaceholderText } from '@/lib/approvalRules';
 import { UserMessage } from '@/features/chat/messages/UserMessage';
-import {
-  AssistantMessage,
-  getReasoningArtifactsForEntry,
-} from '@/features/chat/messages/AssistantMessage';
+import { AssistantMessage } from '@/features/chat/messages/AssistantMessage';
+import { getReasoningArtifactsForEntry } from '@/features/chat/messages/reasoningArtifacts';
 import {
   ThinkingOrbit,
 } from '@/features/chat/messages/AnimatedThinkingLabel';
@@ -104,7 +102,10 @@ export interface MessageListProps {
 export function MessageList(props: MessageListProps) {
   const { t } = useTranslation();
 
-  const entries = props.displaySessionDetail?.entries ?? [];
+  const entries = useMemo(
+    () => props.displaySessionDetail?.entries ?? [],
+    [props.displaySessionDetail?.entries],
+  );
   const groupedEntries = useMemo(() => groupEntries(entries), [entries]);
   const finalAssistantBlockIndices = useMemo(
     () => getFinalAssistantBlockIndices(groupedEntries),

@@ -1,5 +1,5 @@
 import { useEffect, type RefObject } from 'react';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 import { Box, Button, Center, HStack, Input, Text, VStack, Portal } from '@chakra-ui/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';

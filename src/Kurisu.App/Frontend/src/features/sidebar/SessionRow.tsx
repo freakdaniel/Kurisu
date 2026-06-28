@@ -19,15 +19,6 @@ interface SessionRowProps {
 }
 
 const SESSION_HOVER_BACKGROUND = 'rgba(255,255,255,0.06)';
-const sessionItemVariants = {
-  hidden: { opacity: 0, x: -8 },
-  visible: (i: number) => ({
-    opacity: 1,
-    x: 0,
-    transition: { opacity: { duration: 0.15 }, x: { duration: 0.2 }, delay: i * 0.03 },
-  }),
-  exit: { opacity: 0, x: -4, transition: { duration: 0.1 } },
-};
 
 export function SessionRow({
   session,
@@ -198,5 +189,3 @@ export function SessionRow({
     </Button>
   );
 }
-
-export { sessionItemVariants };

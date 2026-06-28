@@ -5,24 +5,26 @@ export {
 
 export {
   AssistantMessage,
-  getReasoningArtifactsForEntry,
   type AssistantMessageProps,
 } from '@/features/chat/messages/AssistantMessage';
+
+export { getReasoningArtifactsForEntry } from '@/features/chat/messages/reasoningArtifacts';
 
 export {
   ThinkingPanel,
   type ThinkingPanelProps,
 } from '@/features/chat/messages/ThinkingPanel';
 
+export { PendingApprovalCard } from '@/features/chat/messages/PendingApprovalCard';
+
 export {
-  PendingApprovalCard,
   getApprovalCardTitle,
   getApprovalAllowOnceLabel,
   getApprovalAlwaysAllowLabel,
   getApprovalFeedbackLabel,
   getApprovalFeedbackPlaceholder,
   formatMessageDetails,
-} from '@/features/chat/messages/PendingApprovalCard';
+} from '@/features/chat/messages/approvalCardHelpers';
 
 export {
   AnimatedThinkingLabel,

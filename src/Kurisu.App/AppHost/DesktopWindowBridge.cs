@@ -31,6 +31,22 @@ public interface IDesktopWindowBridge
     /// Opens the specified URL using the host operating system.
     /// </summary>
     bool OpenExternalUrl(string url);
+
+    /// <summary>
+    /// Minimises the attached window. No-op when no window is attached.
+    /// </summary>
+    void MinimizeWindow();
+
+    /// <summary>
+    /// Toggles the attached window between maximised and restored states. No-op
+    /// when no window is attached.
+    /// </summary>
+    void ToggleMaximizeWindow();
+
+    /// <summary>
+    /// Closes the attached window. No-op when no window is attached.
+    /// </summary>
+    void CloseWindow();
 }
 
 /// <summary>
@@ -108,6 +124,53 @@ public sealed class DesktopWindowBridge(ILogger<DesktopWindowBridge> logger) : I
         {
             logger.LogWarning(exception, "Failed to open external URL {Url}", url);
             return false;
+        }
+    }
+
+    /// <inheritdoc />
+    public void MinimizeWindow()
+    {
+        try
+        {
+            GetWindow().Minimize();
+        }
+        catch (Exception exception)
+        {
+            logger.LogWarning(exception, "Failed to minimise the active window");
+        }
+    }
+
+    /// <inheritdoc />
+    public void ToggleMaximizeWindow()
+    {
+        try
+        {
+            var window = GetWindow();
+            if (window.IsMaximizedAsync().GetAwaiter().GetResult())
+            {
+                window.Unmaximize();
+            }
+            else
+            {
+                window.Maximize();
+            }
+        }
+        catch (Exception exception)
+        {
+            logger.LogWarning(exception, "Failed to toggle maximise on the active window");
+        }
+    }
+
+    /// <inheritdoc />
+    public void CloseWindow()
+    {
+        try
+        {
+            GetWindow().Close();
+        }
+        catch (Exception exception)
+        {
+            logger.LogWarning(exception, "Failed to close the active window");
         }
     }
 

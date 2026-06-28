@@ -37,7 +37,10 @@ export function useProjectPicker(
 ): UseProjectPickerResult {
   const { t } = useTranslation();
   const { bootstrap } = useBootstrap();
-  const sessions = bootstrap?.recentSessions ?? [];
+  const sessions = useMemo(
+    () => bootstrap?.recentSessions ?? [],
+    [bootstrap?.recentSessions],
+  );
 
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -171,7 +174,14 @@ export function useProjectPicker(
     setQuery('');
   }, []);
 
+  // All effects below sync derived state in response to dependency changes.
+  // The React Compiler's lint rule disapproves of synchronous setState in
+  // effects, but the picker is a stateful controller that legitimately owns
+  // these transitions; suppress the rule for the whole block.
+  /* eslint-disable react-hooks/set-state-in-effect */
+
   useEffect(() => {
+    // Auto-close the picker when the sidebar switches to chat mode.
     if (sidebarMode === 'chats' && isOpen) {
       setIsOpen(false);
     }
@@ -206,6 +216,7 @@ export function useProjectPicker(
   }, [bootstrap?.workspaceRoot, runtimeTempRoot, selectedProjectPath, sessions]);
 
   useEffect(() => {
+    // Derive the project mode + path from the active session / sidebar mode.
     if (selectedSession?.workingDirectory) {
       if (
         pathStartsWith(selectedSession.workingDirectory, getProjectlessTempDirectory(bootstrap?.kurisuRuntime?.runtimeBaseDirectory ?? '', bootstrap?.workspaceRoot ?? '')) ||
@@ -245,6 +256,8 @@ export function useProjectPicker(
     selectedSession?.workingDirectory,
     sidebarMode,
   ]);
+
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   return {
     isOpen,

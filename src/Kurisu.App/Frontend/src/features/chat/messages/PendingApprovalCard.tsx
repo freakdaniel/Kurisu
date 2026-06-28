@@ -1,4 +1,3 @@
-import type { TFunction } from 'i18next';
 import { Box, Button, HStack, IconButton, Input, Text } from '@chakra-ui/react';
 import { ArrowUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -7,47 +6,16 @@ import {
   getPendingApprovalDetailLines,
   getPendingApprovalReason,
 } from '@/lib/approvalRules';
+import {
+  getApprovalAllowOnceLabel,
+  getApprovalAlwaysAllowLabel,
+  getApprovalCardTitle,
+  getApprovalFeedbackLabel,
+  getApprovalFeedbackPlaceholder,
+} from '@/features/chat/messages/approvalCardHelpers';
 
 const ACCENT = '#615CED';
 const ACCENT_HOVER = '#4e49d9';
-
-export function getApprovalCardTitle(t: TFunction): string {
-  return t('chat.approval.title');
-}
-
-export function getApprovalAllowOnceLabel(t: TFunction): string {
-  return t('chat.approval.allowOnce');
-}
-
-export function getApprovalAlwaysAllowLabel(t: TFunction): string {
-  return t('chat.approval.alwaysAllow');
-}
-
-export function getApprovalFeedbackLabel(t: TFunction): string {
-  return t('chat.approval.feedbackLabel');
-}
-
-export function getApprovalFeedbackPlaceholder(t: TFunction): string {
-  return t('chat.approval.feedbackPlaceholder');
-}
-
-export function formatMessageDetails(locale: string, t: TFunction, timestamp?: string): string {
-  if (!timestamp) {
-    return t('chat.message.timeUnavailable');
-  }
-
-  try {
-    return new Date(timestamp).toLocaleString(locale || undefined, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  } catch {
-    return timestamp;
-  }
-}
 
 export function PendingApprovalCard({
   entry,

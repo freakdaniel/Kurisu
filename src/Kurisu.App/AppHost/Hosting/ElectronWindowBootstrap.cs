@@ -73,6 +73,12 @@ internal static class ElectronWindowBootstrap
             Center = true,
             BackgroundColor = "#0D0D10",
             Icon = ResolveWindowIconPath(),
+            // Hide the OS native titlebar so the in-app <TitleBar /> is the
+            // single source of truth for window chrome. The renderer-side
+            // titlebar uses WebkitAppRegion: 'drag' to keep the OS window
+            // draggable, and the application menu (triggered from the titlebar)
+            // provides the About / Settings entry points.
+            Frame = false,
             WebPreferences = new WebPreferences
             {
                 WebviewTag = false,

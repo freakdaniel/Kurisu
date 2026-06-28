@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, Children, isValidElement, type ReactNode } from 'react';
 import { Box, Button, HStack, IconButton, Text } from '@chakra-ui/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Highlight, themes, type Language } from 'prism-react-renderer';
+import { Highlight } from 'prism-react-renderer';
 import Prism from 'prismjs/components/prism-core';
 import 'prismjs/components/prism-clike';
 import 'prismjs/components/prism-markup';
@@ -43,68 +43,17 @@ import {
   downloadTextContent,
   extractMarkdownTableRows,
 } from '@/features/chat/markdown/tableExport';
+import {
+  ASSISTANT_MARKDOWN_SX,
+  CODE_THEME,
+  flattenReactText,
+  INLINE_CODE_BACKGROUND,
+  INLINE_CODE_COLOR,
+  normalizeCodeLanguage,
+  SUPPORTED_HIGHLIGHT_LANGUAGES,
+} from '@/features/chat/markdown/markdownHelpers';
 
-export const INLINE_CODE_COLOR = '#cfcfe6';
-export const INLINE_CODE_BACKGROUND = 'rgba(133,131,246,0.10)';
-export const CODE_THEME = themes.vsDark;
-export const SUPPORTED_HIGHLIGHT_LANGUAGES: ReadonlySet<string> = new Set<string>([
-  'tsx', 'typescript', 'ts', 'jsx', 'javascript', 'js',
-  'bash', 'sh', 'shell', 'c', 'cpp', 'cxx', 'csharp', 'cs',
-  'diff', 'go', 'java', 'json', 'markdown', 'md', 'powershell', 'pwsh',
-  'python', 'py', 'rust', 'rs', 'sql', 'yaml', 'yml',
-]);
-
-export const ASSISTANT_MARKDOWN_SX = {
-  '& a': { color: '#cfcfe6', textDecoration: 'underline' },
-  '& table': { borderCollapse: 'collapse', width: '100%' },
-  '& th, & td': {
-    border: '1px solid',
-    borderColor: 'rgba(255,255,255,0.08)',
-    padding: '6px 10px',
-    textAlign: 'left',
-  },
-  '& blockquote': {
-    borderLeft: '3px solid',
-    borderColor: 'rgba(255,255,255,0.18)',
-    paddingLeft: '12px',
-    color: 'gray.300',
-    marginY: '8px',
-  },
-  '& hr': {
-    border: 'none',
-    borderTop: '1px solid',
-    borderColor: 'rgba(255,255,255,0.08)',
-    marginY: '16px',
-  },
-};
-
-export function flattenReactText(node: ReactNode): string {
-  if (node === null || node === undefined || typeof node === 'boolean') {
-    return '';
-  }
-  if (typeof node === 'string' || typeof node === 'number') {
-    return String(node);
-  }
-  if (Array.isArray(node)) {
-    return node.map(flattenReactText).join('');
-  }
-  if (isValidElement(node)) {
-    const props = node.props as { children?: ReactNode };
-    return flattenReactText(props.children);
-  }
-  return '';
-}
-
-export function normalizeCodeLanguage(language: string): Language | null {
-  const normalized = language.trim().toLowerCase();
-  if (!normalized) {
-    return null;
-  }
-  if (!SUPPORTED_HIGHLIGHT_LANGUAGES.has(normalized)) {
-    return null;
-  }
-  return normalized as Language;
-}
+void SUPPORTED_HIGHLIGHT_LANGUAGES;
 
 export function MarkdownInlineCode({ children }: { children?: ReactNode }) {
   return (
@@ -141,6 +90,10 @@ export function MarkdownCodeBlock({
   const highlightLanguage = normalizeCodeLanguage(language);
   const lines = code.split('\n');
 
+  // `code` is derived from `children` and React's compiler can't see that
+  // it's effectively a prop snapshot, so the manual memoization is
+  // unverifiable. Suppress the rule – the behaviour is correct.
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const handleCopy = useCallback(async () => {
     if (!code.trim()) {
       return;
@@ -153,6 +106,7 @@ export function MarkdownCodeBlock({
     } catch (error) {
       console.error('Failed to copy code block:', error);
     }
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
   }, [code]);
 
   return (

@@ -19,6 +19,10 @@ const { ipcRenderer } = window.require('electron')
 
 const REPLY_SUFFIX = ':reply'
 const OPEN_EXTERNAL_CHANNEL = '__kurisu:open-external'
+const WINDOW_MINIMIZE_CHANNEL = '__kurisu:window-minimize'
+const WINDOW_TOGGLE_MAXIMIZE_CHANNEL = '__kurisu:window-toggle-maximize'
+const WINDOW_CLOSE_CHANNEL = '__kurisu:window-close'
+const WINDOW_STATE_CHANGED_CHANNEL = '__kurisu:window-state-changed'
 
 const subscriptionChannels = new Set<string>([
   kurisuDesktopChannels.subscribeStateChanged,
@@ -90,6 +94,29 @@ bridge.openExternalUrl = (url: string) =>
   invoke<{ opened: boolean }>(OPEN_EXTERNAL_CHANNEL, { url })
     .then((result) => result?.opened ?? false)
     .catch(() => false)
+
+bridge.minimizeWindow = () =>
+  invoke<{ ok: boolean }>(WINDOW_MINIMIZE_CHANNEL).then(() => undefined)
+
+bridge.toggleMaximizeWindow = () =>
+  invoke<{ ok: boolean }>(WINDOW_TOGGLE_MAXIMIZE_CHANNEL).then(() => undefined)
+
+bridge.closeWindow = () => {
+  ipcRenderer.send(WINDOW_CLOSE_CHANNEL, null)
+}
+
+bridge.subscribeWindowState = (callback: (payload: { isMaximised: boolean }) => void) => {
+  const handler = (_event: unknown, raw: unknown) => {
+    const text = typeof raw === 'string' ? raw : JSON.stringify(raw ?? null)
+    try {
+      callback(JSON.parse(text) as { isMaximised: boolean })
+    } catch (error) {
+      console.error('Failed to parse window-state payload', error)
+    }
+  }
+  ipcRenderer.on(WINDOW_STATE_CHANGED_CHANNEL, handler)
+  return () => ipcRenderer.removeListener(WINDOW_STATE_CHANGED_CHANNEL, handler)
+}
 
 ensureExternalLinkInterception(bridge)
 

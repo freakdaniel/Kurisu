@@ -220,7 +220,6 @@ export default function WelcomeScreen() {
     state.apiKey,
     state.baseUrl,
     state.isSubmitting,
-    state.presetId,
     t,
     toast,
   ]);

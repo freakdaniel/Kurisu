@@ -95,15 +95,34 @@
       "timeUnavailable": "시간 정보를 사용할 수 없음",
       "exportTable": "표 내보내기",
       "attachFile": "파일 첨부"
-    }
+    },
+    "suggestion0": "Explain quantum computing in simple terms",
+    "suggestion1": "Write unit tests for this function",
+    "suggestion2": "Help me brainstorm a name for my startup",
+    "suggestion3": "Refactor this snippet to be more idiomatic",
+    "suggestion4": "Suggest 5 gift ideas for a coworker",
+    "suggestion5": "Translate this text to Japanese",
+    "suggestion6": "What does this stack trace mean?",
+    "suggestion7": "Plan a one-month Rust learning roadmap",
+    "suggestion8": "Help me draft an apology email",
+    "suggestion9": "Compare PostgreSQL and SQLite tradeoffs",
+    "suggestion10": "Sketch a README outline for a new project",
+    "suggestion11": "Pitch a weekend pet project idea"
   },
   "titlebar": {
     "appName": "Kurisu",
     "minimize": "최소화",
     "maximize": "최대화",
+    "restore": "복원",
     "close": "닫기",
+    "windowControls": "창 컨트롤",
     "toggleSidebar": "사이드바 전환",
     "menu": "메뉴"
+  },
+  "menu": {
+    "about": "정보",
+    "version": "버전",
+    "close": "닫기"
   },
   "search": {
     "placeholder": "이름으로 세션 필터링...",
@@ -228,5 +247,80 @@
     "codePlaceholder": "런타임 통합, IPC 작업, 렌더러 구현 또는 kurisu 호환성 강화를 요청하세요.",
     "chatAction": "코드 세션 시작",
     "codeAction": "코드 워크플로우 열기"
+  },
+  "settings": {
+    "title": "설정",
+    "close": "닫기",
+    "comingSoon": "곧 제공 예정",
+    "back": "뒤로",
+    "exitSearch": "검색 종료",
+    "searchPlaceholder": "설정 검색…",
+    "categories": {
+      "general": "일반",
+      "providers": "공급자",
+      "voice": "음성",
+      "models": "모델",
+      "privacy": "개인정보",
+      "storage": "저장소",
+      "about": "정보"
+    },
+    "general": {
+      "appearance": "외관",
+      "colorScheme": "색상 테마",
+      "themeOptions": {
+        "auto": "시스템 따라가기",
+        "light": "라이트",
+        "dark": "다크"
+      },
+      "accent": "강조 색상",
+      "accentOptions": {
+        "blue": "파랑",
+        "green": "초록",
+        "teal": "청록",
+        "purple": "보라"
+      },
+      "language": "언어",
+      "appLanguage": "앱 언어"
+    },
+    "providers": {
+      "section": "공급자 연결",
+      "empty": "설정된 공급자가 아직 없습니다.",
+      "statusConnected": "연결됨",
+      "statusNotConfigured": "설정되지 않음",
+      "configure": "설정…"
+    },
+    "voice": {
+      "section": "음성 입력",
+      "enableInput": "음성 입력 활성화",
+      "enableInputCaption": "채팅 입력란에서 음성 입력을 사용합니다."
+    },
+    "models": {
+      "section": "모델 선택",
+      "usePowerful": "복잡한 질문에는 자동으로 더 강력한 모델 사용",
+      "usePowerfulCaption": "질문이 복잡해 보이면 Kurisu가 더 강력한 모델을 선택합니다."
+    },
+    "privacy": {
+      "section": "보고 및 데이터",
+      "errorReports": "익명 오류 보고 전송",
+      "errorReportsCaption": "Kurisu 개선에 도움이 됩니다. 프롬프트나 개인 데이터는 절대 전송되지 않습니다.",
+      "clearSessions": "로컬 세션 지우기"
+    },
+    "storage": {
+      "section": "경로",
+      "workspaceRoot": "작업 영역 루트",
+      "runtimeBase": "런타임 기본 위치",
+      "usedContext": "사용된 컨텍스트",
+      "openDataFolder": "데이터 폴더 열기"
+    },
+    "about": {
+      "section": "정보",
+      "version": "버전",
+      "description": "완전히 로컬한 .NET 런타임과 React 기반 작업 공간을 갖춘 AI용 네이티브 데스크톱 셸."
+    },
+    "search": "설정 검색",
+    "minimize": "최소화",
+    "maximize": "최대화",
+    "restore": "복원",
+    "clearSearch": "검색 지우기"
   }
 }

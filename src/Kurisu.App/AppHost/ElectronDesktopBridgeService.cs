@@ -26,6 +26,10 @@ public sealed class ElectronDesktopBridgeService(
     private int _eventsRegistered;
 
     private const string OpenExternalChannel = "__kurisu:open-external";
+    private const string WindowMinimizeChannel = "__kurisu:window-minimize";
+    private const string WindowToggleMaximizeChannel = "__kurisu:window-toggle-maximize";
+    private const string WindowCloseChannel = "__kurisu:window-close";
+    private const string WindowStateChangedChannel = "__kurisu:window-state-changed";
     private const string ReplySuffix = ":reply";
 
     /// <summary>
@@ -43,6 +47,8 @@ public sealed class ElectronDesktopBridgeService(
 
         RegisterInvokeHandlers();
         RegisterOpenExternalHandler();
+        RegisterWindowControlHandlers();
+        RegisterWindowStateSubscriptions();
         RegisterEventPush();
 
         logger.LogInformation(
@@ -72,6 +78,52 @@ public sealed class ElectronDesktopBridgeService(
             var opened = !string.IsNullOrWhiteSpace(url) && windowBridge.OpenExternalUrl(url);
             SendReply(OpenExternalChannel + ReplySuffix, JsonSerializer.Serialize(new { opened }, JsonOptions));
         });
+    }
+
+    private void RegisterWindowControlHandlers()
+    {
+        Electron.IpcMain.On(WindowMinimizeChannel, _ =>
+        {
+            windowBridge.MinimizeWindow();
+            SendReply(WindowMinimizeChannel + ReplySuffix, JsonSerializer.Serialize(new { ok = true }, JsonOptions));
+        });
+        Electron.IpcMain.On(WindowToggleMaximizeChannel, _ =>
+        {
+            windowBridge.ToggleMaximizeWindow();
+            SendReply(WindowToggleMaximizeChannel + ReplySuffix, JsonSerializer.Serialize(new { ok = true }, JsonOptions));
+        });
+        Electron.IpcMain.On(WindowCloseChannel, _ =>
+        {
+            windowBridge.CloseWindow();
+            // The window may tear down the renderer before a reply lands, so we
+            // intentionally do not send an ack for the close channel.
+        });
+    }
+
+    private void RegisterWindowStateSubscriptions()
+    {
+        if (windowBridge.TryGetWindow() is not { } window)
+        {
+            return;
+        }
+
+        void BroadcastMaximised(bool isMaximised)
+        {
+            try
+            {
+                Electron.IpcMain.Send(
+                    window,
+                    WindowStateChangedChannel,
+                    JsonSerializer.Serialize(new { isMaximised }, JsonOptions));
+            }
+            catch (Exception exception)
+            {
+                logger.LogDebug(exception, "Failed to broadcast window state change");
+            }
+        }
+
+        window.OnMaximize += () => BroadcastMaximised(true);
+        window.OnUnmaximize += () => BroadcastMaximised(false);
     }
 
     private void RegisterEventPush()

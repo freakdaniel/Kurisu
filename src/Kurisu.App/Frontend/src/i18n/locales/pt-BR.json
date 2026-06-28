@@ -95,15 +95,34 @@
       "timeUnavailable": "Horário indisponível",
       "exportTable": "Exportar tabela",
       "attachFile": "Anexar arquivo"
-    }
+    },
+    "suggestion0": "Explain quantum computing in simple terms",
+    "suggestion1": "Write unit tests for this function",
+    "suggestion2": "Help me brainstorm a name for my startup",
+    "suggestion3": "Refactor this snippet to be more idiomatic",
+    "suggestion4": "Suggest 5 gift ideas for a coworker",
+    "suggestion5": "Translate this text to Japanese",
+    "suggestion6": "What does this stack trace mean?",
+    "suggestion7": "Plan a one-month Rust learning roadmap",
+    "suggestion8": "Help me draft an apology email",
+    "suggestion9": "Compare PostgreSQL and SQLite tradeoffs",
+    "suggestion10": "Sketch a README outline for a new project",
+    "suggestion11": "Pitch a weekend pet project idea"
   },
   "titlebar": {
     "appName": "Kurisu",
     "minimize": "Minimizar",
     "maximize": "Maximizar",
+    "restore": "Restaurar",
     "close": "Fechar",
+    "windowControls": "Controles da janela",
     "toggleSidebar": "Alternar barra lateral",
     "menu": "Menu"
+  },
+  "menu": {
+    "about": "Sobre",
+    "version": "Versão",
+    "close": "Fechar"
   },
   "search": {
     "placeholder": "Filtrar sessões por nome...",
@@ -228,5 +247,80 @@
     "codePlaceholder": "Peça integração de runtime, trabalho IPC, implementação de renderizador ou endurecimento de compatibilidade com kurisu.",
     "chatAction": "Iniciar sessão de código",
     "codeAction": "Abrir fluxo de trabalho de código"
+  },
+  "settings": {
+    "title": "Configurações",
+    "close": "Fechar",
+    "comingSoon": "Em breve",
+    "back": "Voltar",
+    "exitSearch": "Sair da pesquisa",
+    "searchPlaceholder": "Pesquisar configurações…",
+    "categories": {
+      "general": "Geral",
+      "providers": "Provedores",
+      "voice": "Voz",
+      "models": "Modelos",
+      "privacy": "Privacidade",
+      "storage": "Armazenamento",
+      "about": "Sobre"
+    },
+    "general": {
+      "appearance": "Aparência",
+      "colorScheme": "Esquema de cores",
+      "themeOptions": {
+        "auto": "Seguir o sistema",
+        "light": "Claro",
+        "dark": "Escuro"
+      },
+      "accent": "Cor de destaque",
+      "accentOptions": {
+        "blue": "Azul",
+        "green": "Verde",
+        "teal": "Turquesa",
+        "purple": "Roxo"
+      },
+      "language": "Idioma",
+      "appLanguage": "Idioma do aplicativo"
+    },
+    "providers": {
+      "section": "Conexões de provedores",
+      "empty": "Nenhum provedor configurado ainda.",
+      "statusConnected": "Conectado",
+      "statusNotConfigured": "Não configurado",
+      "configure": "Configurar…"
+    },
+    "voice": {
+      "section": "Entrada de voz",
+      "enableInput": "Ativar entrada de voz",
+      "enableInputCaption": "Use a entrada de voz no campo de chat."
+    },
+    "models": {
+      "section": "Seleção de modelos",
+      "usePowerful": "Usar automaticamente um modelo mais poderoso para perguntas complexas",
+      "usePowerfulCaption": "Kurisu escolhe um modelo mais forte quando a pergunta parece complexa."
+    },
+    "privacy": {
+      "section": "Relatórios e dados",
+      "errorReports": "Enviar relatórios anônimos de erros",
+      "errorReportsCaption": "Ajuda a melhorar o Kurisu. Nenhum prompt ou dado pessoal é enviado.",
+      "clearSessions": "Limpar sessões locais"
+    },
+    "storage": {
+      "section": "Caminhos",
+      "workspaceRoot": "Raiz do workspace",
+      "runtimeBase": "Base do runtime",
+      "usedContext": "Contexto usado",
+      "openDataFolder": "Abrir pasta de dados"
+    },
+    "about": {
+      "section": "Informações",
+      "version": "Versão",
+      "description": "Um shell de desktop nativo para IA com runtime .NET totalmente local e workspace baseado em React."
+    },
+    "search": "Pesquisar configurações",
+    "minimize": "Minimizar",
+    "maximize": "Maximizar",
+    "restore": "Restaurar",
+    "clearSearch": "Limpar pesquisa"
   }
 }

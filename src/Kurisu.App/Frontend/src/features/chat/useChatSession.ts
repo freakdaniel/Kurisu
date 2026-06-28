@@ -68,7 +68,10 @@ export function useChatSession(selectedSessionId: string | undefined): UseChatSe
 
     loadSession();
     return () => { cancelled = true; };
-  }, [loadSessionDetail, selectedSessionId]);
+    // sessionCache is intentionally included so the effect re-runs when a
+    // concurrent loadSessionDetail call populates the cache and we should
+    // skip the network fetch.
+  }, [loadSessionDetail, selectedSessionId, sessionCache]);
 
   return useMemo(() => ({ sessionDetail, isLoadingSession, usedTokens }), [sessionDetail, isLoadingSession, usedTokens]);
 }

@@ -1,16 +1,32 @@
-import { Box, HStack } from '@chakra-ui/react';
-import { useEffect, useMemo, useState } from 'react';
+import { Box } from '@chakra-ui/react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useBootstrap } from '@/hooks/useBootstrap';
 import { Sidebar } from '@/features/sidebar';
 import ChatArea from '@/features/chat/ChatArea';
 import { adwaitaColors } from '@/lib/themeTokens';
+import { adwaitaIconSources } from '@/components/ui/adwaitaIconSources';
 import {
   isProjectlessSession,
   type SessionNavigationMode,
 } from './sessionNavigation';
 import { SearchModal } from './SearchModal';
 import { TitleBar } from './TitleBar';
+import { AboutDialog } from './AboutDialog';
+import { SettingsDialog } from '@/components/settings/SettingsDialog';
+import {
+  SETTINGS_CATEGORIES,
+  type SettingsCategoryKey,
+} from '@/components/settings/settingsCategories';
+import {
+  ApplicationMenu,
+  type ApplicationMenuAction,
+} from './ApplicationMenu';
+
+const APP_VERSION = '0.1.0';
+const APP_DESCRIPTION =
+  'A native desktop shell for AI with a fully local .NET runtime and React-based workspace.';
 
 export default function MainLayout() {
   const { t } = useTranslation();
@@ -20,8 +36,18 @@ export default function MainLayout() {
   const [lastSelectedProjectSessionId, setLastSelectedProjectSessionId] = useState('');
   const [lastSelectedChatSessionId, setLastSelectedChatSessionId] = useState('');
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [appMenuOpen, setAppMenuOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsActiveCategory, setSettingsActiveCategory] = useState<SettingsCategoryKey>('general');
+  const [settingsSearchActive, setSettingsSearchActive] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const { bootstrap, activeTurnSessions, setBootstrap, setSessionCache } = useBootstrap();
-  const sessions = bootstrap?.recentSessions ?? [];
+  const sessions = useMemo(
+    () => bootstrap?.recentSessions ?? [],
+    [bootstrap?.recentSessions],
+  );
   const sessionScopeOptions = useMemo(
     () => ({
       runtimeBaseDirectory: bootstrap?.kurisuRuntime?.runtimeBaseDirectory ?? '',
@@ -30,8 +56,79 @@ export default function MainLayout() {
     [bootstrap?.kurisuRuntime?.runtimeBaseDirectory, bootstrap?.workspaceRoot],
   );
 
-  const openSearch = () => setSearchModalOpen(true);
-  const closeSearch = () => setSearchModalOpen(false);
+  const activeCategoryDescriptor = useMemo(
+    () => SETTINGS_CATEGORIES.find((cat) => cat.key === settingsActiveCategory) ?? SETTINGS_CATEGORIES[0],
+    [settingsActiveCategory],
+  );
+  void activeCategoryDescriptor;
+
+  const openSearch = useCallback(() => setSearchModalOpen(true), []);
+  const closeSearch = useCallback(() => setSearchModalOpen(false), []);
+  const closeAppMenu = useCallback(() => setAppMenuOpen(false), []);
+  const toggleAppMenu = useCallback(() => setAppMenuOpen((current) => !current), []);
+  const openAbout = useCallback(() => setAboutOpen(true), []);
+  const closeAbout = useCallback(() => setAboutOpen(false), []);
+
+  const openSettings = useCallback(() => setSettingsOpen(true), []);
+  const closeSettings = useCallback(() => {
+    setSettingsOpen(false);
+    setSettingsActiveCategory('general');
+    setSettingsSearchActive(false);
+  }, []);
+
+  const toggleSettingsSearch = useCallback(() => {
+    setSettingsSearchActive((current) => !current);
+  }, []);
+
+  const exitSettingsSearch = useCallback(() => {
+    setSettingsSearchActive(false);
+  }, []);
+  const openSkills = useCallback(() => {
+    console.log('Skills & Integrations opened');
+  }, []);
+
+  const handleMinimize = useCallback(() => {
+    void window.kurisuDesktop?.minimizeWindow?.();
+  }, []);
+  const handleToggleMaximize = useCallback(() => {
+    void window.kurisuDesktop?.toggleMaximizeWindow?.();
+  }, []);
+  const handleClose = useCallback(() => {
+    window.kurisuDesktop?.closeWindow?.();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = window.kurisuDesktop?.subscribeWindowState?.(({ isMaximised }) => {
+      setIsMaximized(isMaximised);
+    });
+    return unsubscribe;
+  }, []);
+
+  const menuSections = useMemo<(ApplicationMenuAction[] | null)[]>(() => [
+    [
+      {
+        key: 'settings',
+        labelKey: 'top.settings',
+        iconSource: adwaitaIconSources.settings,
+        onSelect: openSettings,
+      },
+      {
+        key: 'skills',
+        labelKey: 'top.skills',
+        iconSource: adwaitaIconSources.extensions,
+        onSelect: openSkills,
+      },
+    ],
+    null,
+    [
+      {
+        key: 'about',
+        labelKey: 'menu.about',
+        iconSource: adwaitaIconSources.help,
+        onSelect: openAbout,
+      },
+    ],
+  ], [openSettings, openSkills, openAbout]);
 
   const resolveRememberedSessionId = (
     nextMode: SessionNavigationMode,
@@ -125,7 +222,7 @@ export default function MainLayout() {
   useEffect(() => {
     if (!selectedSessionId) return;
     const selectedSession = sessions.find((session) => session.sessionId === selectedSessionId);
-    if (!selectedSession) setSelectedSessionId('');
+    if (!selectedSession) setSelectedSessionId(''); // eslint-disable-line react-hooks/set-state-in-effect
   }, [selectedSessionId, sessions]);
 
   useEffect(() => {
@@ -133,7 +230,7 @@ export default function MainLayout() {
       lastSelectedProjectSessionId &&
       !sessions.some((session) => session.sessionId === lastSelectedProjectSessionId)
     ) {
-      setLastSelectedProjectSessionId('');
+      setLastSelectedProjectSessionId(''); // eslint-disable-line react-hooks/set-state-in-effect
     }
     if (
       lastSelectedChatSessionId &&
@@ -148,37 +245,46 @@ export default function MainLayout() {
       <TitleBar
         isSidebarOpen={isSidebarOpen}
         onToggleSidebar={() => setIsSidebarOpen((current) => !current)}
-        onOpenSearch={openSearch}
-        onOpenMenu={() => console.log('Open menu')}
+        onOpenMenu={toggleAppMenu}
+        onMinimize={handleMinimize}
+        onToggleMaximize={handleToggleMaximize}
+        onClose={handleClose}
+        isMaximized={isMaximized}
         productName={t('titlebar.appName')}
+        menuButtonRef={menuButtonRef}
+        isMenuOpen={appMenuOpen}
+        mode={settingsOpen ? 'settings' : 'workspace'}
+        onExitSettings={settingsSearchActive ? exitSettingsSearch : closeSettings}
+        onSearchClick={toggleSettingsSearch}
+        searchActive={settingsSearchActive}
       />
-      <HStack h="calc(100% - 40px)" w="100%" spacing={0} align="stretch">
-        <Sidebar
-          isOpen={isSidebarOpen}
-          onClose={() => setIsSidebarOpen((current) => !current)}
-          sessions={sessions}
-          activeTurnSessions={activeTurnSessions}
-          selectedSessionId={selectedSessionId}
-          mode={sidebarMode}
-          runtimeBaseDirectory={sessionScopeOptions.runtimeBaseDirectory}
-          workspaceRoot={sessionScopeOptions.workspaceRoot}
-          onSelectSession={handleSelectSession}
-          onNewChat={handleNewChat}
-          onToggleMode={handleToggleMode}
-          onOpenSearch={openSearch}
-          onOpenSkills={() => console.log('Skills & Integrations')}
-          onRenameSession={(session) => void handleRenameSession(session.sessionId)}
-          onDeleteSession={(session) => void handleDeleteSession(session.sessionId)}
-        />
-
-        <Box flex={1} minW={0} h="100%" overflow="hidden">
-          <ChatArea
+      <Box h="calc(100% - 40px)" w="100%" position="relative" overflow="hidden">
+        {/* Chat workspace */}
+        <Box position="absolute" inset={0} display="flex" zIndex={0}>
+          <Sidebar
+            isOpen={isSidebarOpen}
+            sessions={sessions}
+            activeTurnSessions={activeTurnSessions}
             selectedSessionId={selectedSessionId}
-            sidebarMode={sidebarMode}
+            mode={sidebarMode}
+            runtimeBaseDirectory={sessionScopeOptions.runtimeBaseDirectory}
+            workspaceRoot={sessionScopeOptions.workspaceRoot}
             onSelectSession={handleSelectSession}
-          />
+            onNewChat={handleNewChat}
+              onToggleMode={handleToggleMode}
+              onOpenSearch={openSearch}
+              onRenameSession={(session) => void handleRenameSession(session.sessionId)}
+              onDeleteSession={(session) => void handleDeleteSession(session.sessionId)}
+            />
+            <Box flex={1} minW={0} h="100%" overflow="hidden">
+              <ChatArea
+                selectedSessionId={selectedSessionId}
+                sidebarMode={sidebarMode}
+                onSelectSession={handleSelectSession}
+              />
+          </Box>
         </Box>
-      </HStack>
+      </Box>
 
       <SearchModal
         open={searchModalOpen}
@@ -188,6 +294,49 @@ export default function MainLayout() {
         mode={sidebarMode}
         scopeOptions={sessionScopeOptions}
       />
+
+      <ApplicationMenu
+        isOpen={appMenuOpen}
+        triggerRef={menuButtonRef}
+        onClose={closeAppMenu}
+        sections={menuSections}
+      />
+
+      <AboutDialog
+        open={aboutOpen}
+        onClose={closeAbout}
+        productName={t('titlebar.appName')}
+        version={APP_VERSION}
+        description={APP_DESCRIPTION}
+      />
+
+      <AnimatePresence>
+        {settingsOpen && (
+          <motion.div
+            key="settings-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18, ease: [0.32, 0, 0.16, 1] }}
+            style={{
+              position: 'fixed',
+              top: `${40}px`,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 1500,
+            }}
+          >
+            <SettingsDialog
+              active={settingsActiveCategory}
+              onActiveChange={setSettingsActiveCategory}
+              onClose={closeSettings}
+              searchActive={settingsSearchActive}
+              onExitSearch={exitSettingsSearch}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Box>
   );
 }

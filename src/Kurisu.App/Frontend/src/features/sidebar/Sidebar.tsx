@@ -17,14 +17,14 @@ import {
   groupProjectSessions,
   type SessionNavigationMode,
 } from '@/components/layout/sessionNavigation';
-import { SessionRow, sessionItemVariants } from './SessionRow';
-import { SessionContextMenu, useSessionMenu } from './SessionContextMenu';
-import { SidebarRail } from './SidebarRail';
+import { SessionRow } from './SessionRow';
+import { sessionItemVariants } from './sessionItemVariants';
+import { SessionContextMenu } from './SessionContextMenu';
+import { useSessionMenu } from './useSessionMenu';
 import { useSidebarSections } from './useSidebarSections';
 
 interface SidebarProps {
   isOpen: boolean;
-  onClose: () => void;
   sessions: SessionPreview[];
   activeTurnSessions: Record<string, true>;
   selectedSessionId?: string;
@@ -32,18 +32,14 @@ interface SidebarProps {
   runtimeBaseDirectory?: string;
   workspaceRoot?: string;
   onNewChat?: () => void;
+  onOpenSearch?: () => void;
   onSelectSession?: (sessionId: string) => void;
   onToggleMode?: () => void;
-  onOpenSettings?: () => void;
-  onOpenSearch?: () => void;
-  onOpenSkills?: () => void;
   onRenameSession?: (session: SessionPreview) => void;
   onDeleteSession?: (session: SessionPreview) => void;
 }
 
 const SIDEBAR_EXPANDED_WIDTH = 292;
-const SIDEBAR_COLLAPSED_WIDTH = 54;
-const APP_BACKGROUND = adwaitaColors.windowBg;
 const SIDEBAR_BACKGROUND = adwaitaColors.sidebarBg;
 const SIDEBAR_ITEM_HOVER = { bg: 'rgba(255,255,255,0.06)', color: adwaitaColors.fg };
 const SIDEBAR_ITEM_ACTIVE = { bg: 'rgba(255,255,255,0.08)', color: adwaitaColors.fg };
@@ -69,7 +65,6 @@ const sessionsListVariants = {
 
 export default function Sidebar({
   isOpen,
-  onClose,
   sessions,
   activeTurnSessions,
   selectedSessionId = '',
@@ -77,11 +72,9 @@ export default function Sidebar({
   runtimeBaseDirectory = '',
   workspaceRoot = '',
   onNewChat = () => console.log('New chat'),
+  onOpenSearch = () => console.log('Search opened'),
   onSelectSession = (id: string) => console.log(`Selected conversation ${id}`),
   onToggleMode = () => console.log('Sidebar mode toggled'),
-  onOpenSettings = () => console.log('Settings clicked'),
-  onOpenSearch = () => console.log('Search opened'),
-  onOpenSkills = () => console.log('Skills clicked'),
   onRenameSession = (session) => console.log(`Rename conversation ${session.sessionId}`),
   onDeleteSession = (session) => console.log(`Delete conversation ${session.sessionId}`),
 }: SidebarProps) {
@@ -120,11 +113,12 @@ export default function Sidebar({
     <motion.div
       initial={false}
       animate={{
-        width: isOpen ? SIDEBAR_EXPANDED_WIDTH : SIDEBAR_COLLAPSED_WIDTH,
-        backgroundColor: isOpen ? SIDEBAR_BACKGROUND : APP_BACKGROUND,
+        width: isOpen ? SIDEBAR_EXPANDED_WIDTH : 0,
+        backgroundColor: isOpen ? SIDEBAR_BACKGROUND : 'transparent',
       }}
       transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
       style={{ height: '100%', overflow: 'hidden', flexShrink: 0, position: 'relative' }}
+      aria-hidden={!isOpen}
     >
       <VStack
         h="100%"
@@ -132,10 +126,11 @@ export default function Sidebar({
         align="stretch"
         bg="transparent"
         borderRight="1px solid"
-        borderColor={adwaitaColors.border}
+        borderColor={isOpen ? adwaitaColors.border : 'transparent'}
+        sx={{ flex: '1 1 auto', minH: 0 }}
       >
-        <AnimatePresence initial={false} mode="wait">
-          {isOpen ? (
+        <AnimatePresence initial={false}>
+          {isOpen && (
             <motion.div
               key="expanded-sidebar"
               initial={{ opacity: 0, x: -8 }}
@@ -144,7 +139,7 @@ export default function Sidebar({
               transition={{ duration: 0.18, ease: 'easeOut' }}
               style={{ width: SIDEBAR_EXPANDED_WIDTH, height: '100%', overflow: 'hidden' }}
             >
-              <VStack h="100%" spacing={0} align="stretch">
+              <VStack h="100%" minH="0" spacing={0} align="stretch">
                 <Box px={3} pt={4} pb={3}>
                   <ModeSwitch<SessionNavigationMode>
                     fullWidth
@@ -172,23 +167,40 @@ export default function Sidebar({
 
                 <Box px={2} pb={3}>
                   <VStack spacing={1} align="stretch">
-                    <Button
-                      leftIcon={<AdwaitaIcon source={adwaitaIconSources.plus} size={15} />}
-                      variant="ghost"
-                      size="sm"
-                      width="100%"
-                      h="34px"
-                      borderRadius="8px"
-                      justifyContent="flex-start"
-                      fontWeight={500}
-                      fontSize="13px"
-                      color={adwaitaColors.fg}
+                    <button
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
                       onClick={onNewChat}
-                      _hover={SIDEBAR_ITEM_HOVER}
-                      _active={SIDEBAR_ITEM_HOVER}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        width: '100%',
+                        height: '34px',
+                        padding: '0 10px',
+                        border: 'none',
+                        borderRadius: '8px',
+                        background: 'transparent',
+                        color: adwaitaColors.fgSecondary,
+                        fontWeight: 'normal',
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        outline: 'none',
+                        transition: 'background 0.15s ease, color 0.15s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                        e.currentTarget.style.color = adwaitaColors.fg;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.color = adwaitaColors.fgSecondary;
+                      }}
                     >
-                      {t('sidebar.newChat')}
-                    </Button>
+                      <AdwaitaIcon source={adwaitaIconSources.plus} size={15} />
+                      <span>{t('sidebar.newChat')}</span>
+                    </button>
                     <Button
                       leftIcon={<AdwaitaIcon source={adwaitaIconSources.search} size={14} />}
                       variant="ghost"
@@ -205,40 +217,6 @@ export default function Sidebar({
                       _active={SIDEBAR_ITEM_ACTIVE}
                     >
                       {t('sidebar.search')}
-                    </Button>
-                    <Button
-                      leftIcon={<AdwaitaIcon source={adwaitaIconSources.extensions} size={14} />}
-                      variant="ghost"
-                      size="sm"
-                      width="100%"
-                      h="30px"
-                      borderRadius="8px"
-                      justifyContent="flex-start"
-                      fontWeight="normal"
-                      fontSize="13px"
-                      color={adwaitaColors.fgSecondary}
-                      onClick={onOpenSkills}
-                      _hover={SIDEBAR_ITEM_HOVER}
-                      _active={SIDEBAR_ITEM_ACTIVE}
-                    >
-                      {t('top.skills')}
-                    </Button>
-                    <Button
-                      leftIcon={<AdwaitaIcon source={adwaitaIconSources.settings} size={14} />}
-                      variant="ghost"
-                      size="sm"
-                      width="100%"
-                      h="30px"
-                      borderRadius="8px"
-                      justifyContent="flex-start"
-                      fontWeight="normal"
-                      fontSize="13px"
-                      color={adwaitaColors.fgSecondary}
-                      onClick={onOpenSettings}
-                      _hover={SIDEBAR_ITEM_HOVER}
-                      _active={SIDEBAR_ITEM_ACTIVE}
-                    >
-                      {t('top.settings')}
                     </Button>
                   </VStack>
                 </Box>
@@ -368,21 +346,11 @@ export default function Sidebar({
                         </VStack>
                       </Box>
                     ))}
-                    {visibleSessions.length === 0 && ("")}
+                    {visibleSessions.length === 0 && ('')}
                   </VStack>
                 </Box>
               </VStack>
             </motion.div>
-          ) : (
-            <SidebarRail
-              onExpand={onClose}
-              onNewChat={onNewChat}
-              onOpenSearch={onOpenSearch}
-              onToggleMode={onToggleMode}
-              onOpenSkills={onOpenSkills}
-              onOpenSettings={onOpenSettings}
-              mode={mode}
-            />
           )}
         </AnimatePresence>
       </VStack>

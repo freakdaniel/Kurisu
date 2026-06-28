@@ -123,6 +123,10 @@ export type AppBootstrapPayload =
 export interface DesktopBridge extends Omit<KurisuDesktopBridge, 'setLocale'> {
   setLocale: (locale: string) => Promise<DesktopStateChangedEvent>
   openExternalUrl?: (url: string) => Promise<boolean>
+  minimizeWindow?: () => Promise<void>
+  toggleMaximizeWindow?: () => Promise<void>
+  closeWindow?: () => void
+  subscribeWindowState?: (callback: (payload: { isMaximised: boolean }) => void) => () => void
 }
 
 declare global {

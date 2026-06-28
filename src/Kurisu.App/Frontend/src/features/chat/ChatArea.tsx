@@ -7,6 +7,10 @@ import { useBootstrap } from '@/hooks/useBootstrap';
 import newSessionLogo from '@/assets/stickers/mayuri_thinking.png'
 import { MessageList, ThinkingPanel } from '@/features/chat';
 import { Composer, ProjectPicker } from '@/features/chat/composer';
+import {
+  getSuggestions,
+  SUGGESTION_ROTATION_MS,
+} from '@/features/chat/composer/chatSuggestions';
 import { useChatSession } from '@/features/chat/useChatSession';
 import { useProjectPicker } from '@/features/chat/useProjectPicker';
 import { useMessageRouting } from '@/features/chat/useMessageRouting';
@@ -30,7 +34,7 @@ export default function ChatArea({
   sidebarMode = 'projects',
   onSelectSession,
 }: ChatAreaProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const {
     bootstrap,
     activeTurnSessions,
@@ -47,7 +51,6 @@ export default function ChatArea({
   const [showContextTooltip, setShowContextTooltip] = useState(false);
   const [retainedStreamingSnapshot, setRetainedStreamingSnapshot] = useState({ sessionId: '', text: '' });
 
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const shouldStickToBottomRef = useRef(true);
   const scrollFrameRef = useRef<number | null>(null);
@@ -228,6 +231,32 @@ export default function ChatArea({
   const canSubmit = !isComposerBusy && prompt.trim().length > 0 && !!picker.selectedProjectWorkingDirectory;
   const isStopHighlighted = canStopActiveTurn;
 
+  // Rotating placeholder prompts for the empty welcome state. Cycles through
+  // the curated list every SUGGESTION_ROTATION_MS; the list itself is split
+  // by composer mode so chats-mode and coding-mode get relevant prompts.
+  // Pauses when a session is selected, the textarea is focused, or the user
+  // has typed anything.
+  const suggestions = useMemo(
+    () => getSuggestions(bootstrap?.currentLocale ?? i18n.language, sidebarMode),
+    [bootstrap?.currentLocale, i18n.language, sidebarMode],
+  );
+  const [suggestionIndex, setSuggestionIndex] = useState(0);
+  const [textareaFocused, setTextareaFocused] = useState(false);
+  // The carousel should keep ticking while the welcome screen is visible
+  // and the prompt is empty. Focus pauses the *rotation* but keeps the
+  // currently displayed suggestion so the placeholder can fade in/out
+  // smoothly without the inner AnimatePresence swapping text.
+  const carouselShouldRun = !hasSession && !textareaFocused && prompt.length === 0;
+  const inRotatingContext = !hasSession && prompt.length === 0;
+  useEffect(() => {
+    if (!carouselShouldRun) return;
+    const id = window.setInterval(() => {
+      setSuggestionIndex((i) => (i + 1) % suggestions.length);
+    }, SUGGESTION_ROTATION_MS);
+    return () => window.clearInterval(id);
+  }, [carouselShouldRun, suggestions.length]);
+  const rotatingPlaceholder = inRotatingContext ? suggestions[suggestionIndex] : null;
+
   // Compact composer (header + textarea + actions) used both in the centered
   // welcome state and pinned at the bottom of an active conversation. Pulled
   // out so the two layouts stay perfectly in sync.
@@ -250,8 +279,9 @@ export default function ChatArea({
         compressionLabel={compressionLabel}
         isStopHighlighted={isStopHighlighted}
         contextColor={contextPercent >= 70 ? adwaitaColors.warning : adwaitaColors.fgMuted}
-        textareaRef={textareaRef}
+        onFocusChange={setTextareaFocused}
         placeholder={sidebarMode === 'chats' ? t('chat.chatModePromptPlaceholder') : t('chat.promptPlaceholder')}
+        rotatingPlaceholder={rotatingPlaceholder}
       />
     </Box>
   );
@@ -271,7 +301,14 @@ export default function ChatArea({
   );
 
   return (
-    <HStack h="100%" spacing={0} bg={APP_BACKGROUND} align="stretch" overflow="hidden">
+    <Box
+      h="100%"
+      display="flex"
+      flexDirection="column"
+      background={APP_BACKGROUND}
+      overflow="hidden"
+    >
+      <HStack flex={1} minW={0} spacing={0} bg={APP_BACKGROUND} align="stretch" overflow="hidden">
       <VStack flex={1} minW={0} h="100%" spacing={0} align="stretch" overflow="hidden">
         {selectedSessionId && (
           <HStack
@@ -343,28 +380,32 @@ export default function ChatArea({
                     }}
                   />
                   {composerElement}
+                  {disclaimerElement}
                 </Box>
               </>
             ) : (
-              // Centered welcome state (Claude-style): headline + composer
-              // float in the middle of the viewport, the message list area is
-              // intentionally empty until the first user turn arrives.
+              // Welcome state. Logo + headline + project picker are pinned
+              // to the top half of the viewport; the composer is anchored to
+              // the bottom and grows *downward* into the bottom inset as the
+              // user types, so the content above never shifts.
               <Flex
                 flex={1}
                 direction="column"
-                align="center"
-                justify="center"
+                align="stretch"
                 userSelect="none"
                 px={4}
-                py={10}
                 position="relative"
+                minH={0}
               >
                 <Flex
                   direction="column"
                   align="center"
                   w="full"
                   maxW={CHAT_MAX_WIDTH}
+                  mx="auto"
                   gap={5}
+                  pt="22vh"
+                  flexShrink={0}
                 >
                   <img
                     src={newSessionLogo}
@@ -377,6 +418,11 @@ export default function ChatArea({
                   </Text>
                   {sidebarMode === 'projects' && (
                     <Box position="relative">
+                      {/* The `picker` hook returns ref objects that are
+                          forwarded to DOM elements – React reads their
+                          `.current` lazily so it's safe to render them
+                          inline. Disable the lint rule for this block. */}
+                      {/* eslint-disable react-hooks/refs */}
                       <ProjectPickerTriggerButton
                         ref={picker.buttonRef}
                         label={picker.selectedProjectLabel}
@@ -397,11 +443,18 @@ export default function ChatArea({
                         onAddProject={picker.addProject}
                         onClose={picker.close}
                       />
+                      {/* eslint-enable react-hooks/refs */}
                     </Box>
                   )}
-                  {composerElement}
-                  {disclaimerElement}
                 </Flex>
+
+                {/* Spacer absorbs the remaining height so the composer
+                    anchors to the bottom and can grow downward. */}
+                <Box flex={1} minH={0} />
+
+                <Box mx="auto" w="full" maxW={CHAT_MAX_WIDTH} pb={6} pt={4}>
+                  {composerElement}
+                </Box>
               </Flex>
             )}
           </VStack>
@@ -415,7 +468,8 @@ export default function ChatArea({
           />
         </HStack>
       </VStack>
-    </HStack>
+      </HStack>
+    </Box>
   );
 }
 
@@ -453,3 +507,5 @@ const ProjectPickerTriggerButton = forwardRef<
     </button>
   );
 });
+
+

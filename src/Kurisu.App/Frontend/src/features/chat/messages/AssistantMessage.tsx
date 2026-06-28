@@ -2,29 +2,10 @@ import { Box, Button, HStack, IconButton, Tooltip } from '@chakra-ui/react';
 import { Brain, ChevronRight, Copy, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import type { TFunction } from 'i18next';
 import type { DesktopSessionEntry } from '@/types/desktop';
-import type { DisplayBlock } from '@/features/chat/types';
 import { copyTextToClipboard, StreamingAssistantBody } from '@/features/chat/markdown';
 import { getReasoningToggleLabel } from '@/features/chat/live';
-
-function formatMessageDetails(locale: string, t: TFunction, timestamp?: string): string {
-  if (!timestamp) {
-    return t('chat.message.timeUnavailable');
-  }
-
-  try {
-    return new Date(timestamp).toLocaleString(locale || undefined, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  } catch {
-    return timestamp;
-  }
-}
+import { formatMessageDetails } from '@/features/chat/messages/approvalCardHelpers';
 
 export interface AssistantMessageProps {
   entry: DesktopSessionEntry;
@@ -106,34 +87,4 @@ export function AssistantMessage({
       </Box>
     </motion.div>
   );
-}
-
-export function getReasoningArtifactsForEntry(
-  groupedEntries: DisplayBlock[],
-  finalAssistantBlockIndices: Set<number>,
-): Record<string, DisplayBlock[]> {
-  const mapping: Record<string, DisplayBlock[]> = {};
-  let pendingArtifacts: DisplayBlock[] = [];
-
-  groupedEntries.forEach((block, blockIdx) => {
-    if (block.type === 'user') {
-      pendingArtifacts = [];
-      return;
-    }
-
-    if (block.type === 'tool-group' || block.type === 'thought') {
-      pendingArtifacts = [...pendingArtifacts, block];
-      return;
-    }
-
-    if (block.type === 'assistant' && finalAssistantBlockIndices.has(blockIdx) && pendingArtifacts.length > 0) {
-      const finalEntry = block.entries[block.entries.length - 1];
-      if (finalEntry) {
-        mapping[finalEntry.id] = pendingArtifacts;
-      }
-      pendingArtifacts = [];
-    }
-  });
-
-  return mapping;
 }

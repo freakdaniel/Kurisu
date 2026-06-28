@@ -5,9 +5,9 @@ import {
   createStreamingAssistantEntry,
   getLatestLiveThinkingSnapshot,
   resolveLiveReasoningStatus,
-  getReasoningArtifactsForEntry,
   type DisplayBlock,
 } from '@/features/chat';
+import { getReasoningArtifactsForEntry } from '@/features/chat/messages/reasoningArtifacts';
 
 export interface UseMessageRoutingInput {
   selectedSessionId?: string;
@@ -129,6 +129,10 @@ export function useMessageRouting(input: UseMessageRoutingInput): UseMessageRout
     [displaySessionDetail?.entries, input.isPendingSelectedSession],
   );
 
+  // The optional-chained dependency `displaySessionDetail?.entries` cannot
+  // be inferred by the React Compiler; suppress the rule so the existing
+  // useMemo stands.
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const groupedEntries = useMemo<DisplayBlock[]>(() => {
     if (!displaySessionDetail?.entries) return [];
 
@@ -272,15 +276,20 @@ export function useMessageRouting(input: UseMessageRoutingInput): UseMessageRout
     !!liveReasoningAssistantId &&
     openReasoningAssistantId === liveReasoningAssistantId &&
     (input.isComposerBusy || !!assistantEntryById[liveReasoningAssistantId] || liveReasoningArtifacts.length > 0);
-  const activeReasoningArtifacts = openReasoningAssistantId
-    ? (() => {
-      const mappedArtifacts = reasoningArtifactsByAssistantId[openReasoningAssistantId] ?? [];
-      const canUseLiveArtifacts =
-        liveReasoningArtifacts.length > 0 &&
-        (isLiveReasoningPanel || openReasoningAssistantId === latestFinalAssistantEntryId);
-      return canUseLiveArtifacts ? liveReasoningArtifacts : mappedArtifacts;
-    })()
-    : [];
+  const activeReasoningArtifacts = useMemo(() => {
+    if (!openReasoningAssistantId) return [];
+    const mappedArtifacts = reasoningArtifactsByAssistantId[openReasoningAssistantId] ?? [];
+    const canUseLiveArtifacts =
+      liveReasoningArtifacts.length > 0 &&
+      (isLiveReasoningPanel || openReasoningAssistantId === latestFinalAssistantEntryId);
+    return canUseLiveArtifacts ? liveReasoningArtifacts : mappedArtifacts;
+  }, [
+    openReasoningAssistantId,
+    reasoningArtifactsByAssistantId,
+    liveReasoningArtifacts,
+    isLiveReasoningPanel,
+    latestFinalAssistantEntryId,
+  ]);
   const activeReasoningAssistantEntry = openReasoningAssistantId
     ? assistantEntryById[openReasoningAssistantId] ?? (isLiveReasoningPanel ? liveReasoningAssistantEntry : null)
     : null;
@@ -303,8 +312,11 @@ export function useMessageRouting(input: UseMessageRoutingInput): UseMessageRout
   }, [liveReasoningAssistantId]);
 
   useEffect(() => {
+    // Reset the active reasoning panel when the chat is closed. Sync
+    // setState is intentional here; the effect only runs when
+    // `input.selectedSessionId` flips.
     if (!input.selectedSessionId) {
-      setOpenReasoningAssistantId(null);
+      setOpenReasoningAssistantId(null); // eslint-disable-line react-hooks/set-state-in-effect
       return;
     }
 

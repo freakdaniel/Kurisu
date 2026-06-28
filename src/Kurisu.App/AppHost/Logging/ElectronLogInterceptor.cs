@@ -46,6 +46,7 @@ internal sealed class ElectronLogInterceptor : TextWriter
         "ElectronProcessActive.StartCore",
         "ElectronProcessBase.",
         "ElectronProcessPassive.",
+        "latency is negative",
         "InitializeSandbox",
         "Failed to create",
         "GLES2",

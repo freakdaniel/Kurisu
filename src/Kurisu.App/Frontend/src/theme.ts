@@ -12,8 +12,7 @@ const monoStack = `'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SF
 
 /**
  * Chakra color tokens are kept in sync with the Adwaita dark palette via
- * `adwaitaColors`. Components that still use Chakra primitives (e.g. the
- * popover menus, mode menu) pick up the new colours automatically.
+ * `adwaitaColors`
  */
 export const theme = extendTheme({
   config,

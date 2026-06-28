@@ -21,6 +21,7 @@
     "@fontsource/noto-sans-kr": "^5.2.9",
     "@fontsource/noto-sans-sc": "^5.2.9",
     "@gjsify/adwaita-icons": "^0.11.0",
+    "@gjsify/adwaita-web": "^0.13.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^11.0.8",

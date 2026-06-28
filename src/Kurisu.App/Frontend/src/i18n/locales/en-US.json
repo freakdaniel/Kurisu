@@ -116,15 +116,34 @@
       "timeUnavailable": "Time unavailable",
       "exportTable": "Export table",
       "attachFile": "Attach file"
-    }
+    },
+    "suggestion0": "Explain quantum computing in simple terms",
+    "suggestion1": "Write unit tests for this function",
+    "suggestion2": "Help me brainstorm a name for my startup",
+    "suggestion3": "Refactor this snippet to be more idiomatic",
+    "suggestion4": "Suggest 5 gift ideas for a coworker",
+    "suggestion5": "Translate this text to Japanese",
+    "suggestion6": "What does this stack trace mean?",
+    "suggestion7": "Plan a one-month Rust learning roadmap",
+    "suggestion8": "Help me draft an apology email",
+    "suggestion9": "Compare PostgreSQL and SQLite tradeoffs",
+    "suggestion10": "Sketch a README outline for a new project",
+    "suggestion11": "Pitch a weekend pet project idea"
   },
   "titlebar": {
     "appName": "Kurisu",
     "minimize": "Minimize",
     "maximize": "Maximize",
+    "restore": "Restore",
     "close": "Close",
+    "windowControls": "Window controls",
     "toggleSidebar": "Toggle sidebar",
     "menu": "Menu"
+  },
+  "menu": {
+    "about": "About Kurisu",
+    "version": "Version",
+    "close": "Close"
   },
   "search": {
     "placeholder": "Filter sessions by name...",
@@ -249,5 +268,80 @@
     "codePlaceholder": "Ask for runtime integration, IPC work, renderer implementation, or kurisu compatibility hardening.",
     "chatAction": "Start code session",
     "codeAction": "Open code workflow"
+  },
+  "settings": {
+    "title": "Settings",
+    "close": "Close",
+    "comingSoon": "Coming soon",
+    "back": "Back",
+    "exitSearch": "Exit search",
+    "searchPlaceholder": "Search settings…",
+    "categories": {
+      "general": "General",
+      "providers": "Providers",
+      "voice": "Voice",
+      "models": "Models",
+      "privacy": "Privacy",
+      "storage": "Storage",
+      "about": "About"
+    },
+    "general": {
+      "appearance": "Appearance",
+      "colorScheme": "Color scheme",
+      "themeOptions": {
+        "auto": "Follow system",
+        "light": "Light",
+        "dark": "Dark"
+      },
+      "accent": "Accent color",
+      "accentOptions": {
+        "blue": "Blue",
+        "green": "Green",
+        "teal": "Teal",
+        "purple": "Purple"
+      },
+      "language": "Language",
+      "appLanguage": "Application language"
+    },
+    "providers": {
+      "section": "Provider connections",
+      "empty": "No providers configured yet.",
+      "statusConnected": "Connected",
+      "statusNotConfigured": "Not configured",
+      "configure": "Configure…"
+    },
+    "voice": {
+      "section": "Voice input",
+      "enableInput": "Enable voice input",
+      "enableInputCaption": "Use voice input in the chat composer."
+    },
+    "models": {
+      "section": "Model selection",
+      "usePowerful": "Automatically use a more powerful model for complex queries",
+      "usePowerfulCaption": "Kurisu will pick a stronger model when the request looks complex."
+    },
+    "privacy": {
+      "section": "Reports & data",
+      "errorReports": "Send anonymous error reports",
+      "errorReportsCaption": "Helps improve Kurisu. No prompts or personal data are ever sent.",
+      "clearSessions": "Clear local sessions"
+    },
+    "storage": {
+      "section": "Paths",
+      "workspaceRoot": "Workspace root",
+      "runtimeBase": "Runtime base",
+      "usedContext": "Used context",
+      "openDataFolder": "Open data folder"
+    },
+    "about": {
+      "section": "Information",
+      "version": "Version",
+      "description": "A native desktop shell for AI with a fully local .NET runtime and React-based workspace."
+    },
+    "search": "Search settings",
+    "minimize": "Minimize",
+    "maximize": "Maximize",
+    "restore": "Restore",
+    "clearSearch": "Clear search"
   }
 }

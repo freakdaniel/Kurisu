@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Box, Button, Portal } from '@chakra-ui/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -6,12 +6,9 @@ import type { SessionPreview } from '@/types/desktop';
 import { AdwaitaIcon } from '@/components/ui/AdwaitaIcon';
 import { adwaitaIconSources } from '@/components/ui/adwaitaIconSources';
 import { adwaitaColors } from '@/lib/themeTokens';
+import type { SessionMenuState } from './SessionContextMenuTypes';
 
-export interface SessionMenuState {
-  session: SessionPreview;
-  x: number;
-  y: number;
-}
+export type { SessionMenuState } from './SessionContextMenuTypes';
 
 interface SessionContextMenuProps {
   state: SessionMenuState | null;
@@ -127,14 +124,4 @@ export function SessionContextMenu({
       </AnimatePresence>
     </Portal>
   );
-}
-
-export function useSessionMenu() {
-  const [state, setState] = useState<SessionMenuState | null>(null);
-  const toggle = (session: SessionPreview, x: number, y: number) => {
-    setState((current) =>
-      current?.session.sessionId === session.sessionId ? null : { session, x, y },
-    );
-  };
-  return { state, toggle, setState, clear: () => setState(null) };
 }

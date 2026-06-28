@@ -4,6 +4,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useReducer,
   useRef,
   type ReactNode,
@@ -266,20 +267,27 @@ export function BootstrapProvider({ children }: { children: ReactNode }) {
     document.documentElement.dir = state.bootstrap?.currentLocale === 'ar' ? 'rtl' : 'ltr';
   }, [state.bootstrap?.currentLocale]);
 
-  const api: BootstrapStateApi = {
-    ...state,
-    setBootstrap,
-    setSessionCache,
-    setProviders,
-    setMcpSnapshot,
-    setLatestSessionEvent,
-    updateProviders,
-    loadSessionDetail,
-  };
+  const api: BootstrapStateApi = useMemo(
+    () => ({
+      ...state,
+      setBootstrap,
+      setSessionCache,
+      setProviders,
+      setMcpSnapshot,
+      setLatestSessionEvent,
+      updateProviders,
+      loadSessionDetail,
+    }),
+    // Spread state deliberately so any reducer update invalidates the cache.
+    // The setter callbacks are stable React identities.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [state],
+  );
 
   return createElement(BootstrapContext.Provider, { value: api }, children);
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useBootstrap(): BootstrapStateApi {
   const context = useContext(BootstrapContext);
   if (!context) {

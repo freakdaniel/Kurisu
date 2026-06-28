@@ -1,4 +1,12 @@
-import { forwardRef, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from 'react';
 import {
   Box,
   Button,
@@ -17,6 +25,11 @@ import { adwaitaColors } from '@/lib/themeTokens';
 
 const ACCENT = adwaitaColors.accent;
 const ACCENT_HOVER = adwaitaColors.accentHover;
+const COMPOSER_LINE_HEIGHT_PX = 22;
+const COMPOSER_MIN_LINES = 3;
+const COMPOSER_MAX_LINES = 5;
+const COMPOSER_MIN_HEIGHT = COMPOSER_LINE_HEIGHT_PX * COMPOSER_MIN_LINES;
+const COMPOSER_MAX_HEIGHT = COMPOSER_LINE_HEIGHT_PX * COMPOSER_MAX_LINES;
 
 const ButtonUnstyled = forwardRef<HTMLButtonElement, { onClick: () => void; children: React.ReactNode }>(
   function ButtonUnstyled({ onClick, children }, ref) {
@@ -80,13 +93,22 @@ export interface ComposerProps {
   compressionLabel: string;
   isStopHighlighted: boolean;
   contextColor: string;
-  textareaRef: RefObject<HTMLTextAreaElement | null>;
+  /** Notified when the textarea gains or loses focus (used to pause the
+   *  rotating placeholder when the user is actively typing). */
+  onFocusChange?: (focused: boolean) => void;
   placeholder: string;
+  /** Optional animated placeholder that fades in/out (e.g. rotating prompts). */
+  rotatingPlaceholder?: string | null;
 }
 
 export function Composer(props: ComposerProps) {
   const { t } = useTranslation();
   const [modeDropdownOpen, setModeDropdownOpen] = useState(false);
+  const [isAtMax, setIsAtMax] = useState(false);
+  // Tracks focus locally so the placeholder can fade independently of the
+  // rotating-prompt lifecycle owned by the parent.
+  const [isFocused, setIsFocused] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const modeBtnRef = useRef<HTMLButtonElement | null>(null);
   const modeMenuRef = useRef<HTMLDivElement | null>(null);
 
@@ -101,6 +123,45 @@ export function Composer(props: ComposerProps) {
     }
   };
 
+  const recomputeHeight = useCallback(() => {
+    const node = textareaRef.current;
+    if (!node) return;
+    const element = node;
+    // Auto-grow pattern:
+    //   1) set height = auto so scrollHeight reflects the full content
+    //   2) read scrollHeight, clamp between min/max
+    //   3) set height = clamped
+    // Both DOM mutations happen inside one synchronous task, so the browser
+    // never paints the intermediate `auto` value. The CSS `transition: height`
+    // rule then smoothly animates from the previous height to the new one.
+    element.style.height = 'auto';
+    const desired = element.scrollHeight;
+    const clamped = Math.max(COMPOSER_MIN_HEIGHT, Math.min(desired, COMPOSER_MAX_HEIGHT));
+    element.style.height = `${clamped}px`;
+    element.style.overflowY = desired > COMPOSER_MAX_HEIGHT ? 'auto' : 'hidden';
+    setIsAtMax(desired > COMPOSER_MAX_HEIGHT);
+  }, []);
+
+  useLayoutEffect(() => {
+    recomputeHeight();
+  }, [props.prompt, recomputeHeight]);
+
+  useEffect(() => {
+    const handler = () => recomputeHeight();
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, [recomputeHeight]);
+
+  // Always render our own placeholder overlay so we can fade it in and out
+  // smoothly. The rotating variant takes precedence over the static one
+  // when both are supplied. We never set the native textarea placeholder
+  // – the overlay is the only thing the user sees.
+  const overlayText = props.rotatingPlaceholder ?? props.placeholder ?? '';
+  const shouldRenderOverlay = !!overlayText && !props.prompt;
+  // Fade out as soon as the textarea gains focus or contains text, and
+  // fade back in once both are cleared.
+  const overlayOpacity = shouldRenderOverlay && !isFocused ? 1 : 0;
+
   return (
     <Box>
       <Box
@@ -111,27 +172,78 @@ export function Composer(props: ComposerProps) {
         bg={adwaitaColors.composerBg}
         boxShadow="0 22px 70px -48px rgba(0,0,0,0.95)"
       >
-        <Box px={5} pt={4}>
+        <Box px={5} pt={4} position="relative">
           <ChakraTextarea
-            ref={props.textareaRef}
+            ref={textareaRef}
             value={props.prompt}
             onChange={(e) => props.onPromptChange(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={props.placeholder}
+            onFocus={() => {
+              setIsFocused(true);
+              props.onFocusChange?.(true);
+            }}
+            onBlur={() => {
+              setIsFocused(false);
+              props.onFocusChange?.(false);
+            }}
+            placeholder=""
             rows={1}
-            minH="74px"
+            minH={`${COMPOSER_MIN_HEIGHT}px`}
+            maxH={`${COMPOSER_MAX_HEIGHT}px`}
             resize="none"
             overflow="hidden"
             border="none"
             bg="transparent"
             p={0}
             fontSize="sm"
-            lineHeight="relaxed"
+            lineHeight={`${COMPOSER_LINE_HEIGHT_PX}px`}
             color={adwaitaColors.fg}
             _placeholder={{ color: adwaitaColors.fgMuted }}
             _focusVisible={{ boxShadow: 'none' }}
-            sx={{ '&::-webkit-scrollbar': { display: 'none' } }}
+            sx={{
+              transition: 'height 0.18s ease-out',
+              '&::-webkit-scrollbar': isAtMax ? { width: '6px' } : { display: 'none' },
+              '&::-webkit-scrollbar-track': { background: 'transparent' },
+              '&::-webkit-scrollbar-thumb': { background: '#5b5b67', borderRadius: '3px' },
+            }}
           />
+          {shouldRenderOverlay && (
+            <motion.div
+              // Align with the textarea's first text baseline. The parent
+              // applies `pt={4}` (16px) above the textarea so the controls
+              // row has breathing room; the overlay sits at the same offset
+              // so swapping between the rotating and native placeholder
+              // does not cause a vertical jump.
+              animate={{ opacity: overlayOpacity }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              style={{
+                position: 'absolute',
+                top: `${4 * 4}px`,
+                left: `${5 * 4}px`,
+                right: `${5 * 4}px`,
+                pointerEvents: 'none',
+                color: adwaitaColors.fgMuted,
+                fontSize: 'sm',
+                lineHeight: `${COMPOSER_LINE_HEIGHT_PX}px`,
+                // Suppress the enter animation on the very first render so
+                // the welcome state doesn't flash in on mount.
+                opacity: 0,
+              }}
+            >
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={overlayText}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.35, ease: 'easeOut' }}
+                  style={{ display: 'inline-block' }}
+                >
+                  {overlayText}
+                </motion.span>
+              </AnimatePresence>
+            </motion.div>
+          )}
         </Box>
 
         <HStack justify="space-between" px={4} py={3} gap={3}>
@@ -216,10 +328,11 @@ export function Composer(props: ComposerProps) {
                       bg={adwaitaColors.popoverBg}
                       border="1px solid"
                       borderColor={adwaitaColors.borderStrong}
-                      borderRadius="lg"
+                      borderRadius="24px"
                       px={3}
                       py={2}
                       shadow="lg"
+                      overflow="hidden"
                     >
                       <Text fontSize="xs" color={adwaitaColors.fg} fontWeight="medium" wordBreak="break-word">
                         {props.usedTokensLabel}

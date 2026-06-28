@@ -1,7 +1,7 @@
-import { HStack, Text } from '@chakra-ui/react';
+import { HStack } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import { useId } from 'react';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { adwaitaColors } from '@/lib/themeTokens';
 
 export interface ModeSwitchOption<T extends string> {
@@ -40,10 +40,41 @@ export function ModeSwitch<T extends string>({
   fullWidth = false,
 }: ModeSwitchProps<T>) {
   const baseId = useId();
-  const containerPadding = size === 'sm' ? '3px' : fullWidth ? '4px' : '4px';
-  const segmentPadding = size === 'sm' ? '4px 10px' : fullWidth ? '8px 14px' : '6px 14px';
-  const fontSize = size === 'sm' ? '11px' : fullWidth ? '13px' : '12.5px';
-  const minHeight = size === 'sm' ? '24px' : fullWidth ? '34px' : '30px';
+  const containerPadding = size === 'sm' ? '3px' : '3px';
+  const segmentPadding = size === 'sm' ? '4px 10px' : fullWidth ? '6px 12px' : '6px 12px';
+  const fontSize = size === 'sm' ? '11px' : '13px';
+  const minHeight = size === 'sm' ? '24px' : '30px';
+  const segmentRadius = '999px';
+  const segmentStyle: CSSProperties = {
+    position: 'relative',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    padding: segmentPadding,
+    minHeight,
+    flex: fullWidth ? 1 : '0 1 auto',
+    borderRadius: segmentRadius,
+    border: 'none',
+    cursor: 'pointer',
+    background: 'transparent',
+    color: adwaitaColors.fgSecondary,
+    font: 'inherit',
+    fontSize,
+    fontWeight: 500,
+    lineHeight: 1,
+    whiteSpace: 'nowrap',
+    transition: 'color 0.18s ease',
+  };
+  const contentStyle: CSSProperties = {
+    position: 'relative',
+    zIndex: 1,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    lineHeight: 1,
+  };
 
   return (
     <HStack
@@ -75,25 +106,10 @@ export function ModeSwitch<T extends string>({
             whileTap={{ scale: 0.97 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
             style={{
-              position: 'relative',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              padding: segmentPadding,
-              minHeight,
-              flex: fullWidth ? 1 : '0 1 auto',
-              borderRadius: '999px',
-              border: 'none',
+              ...segmentStyle,
               cursor: isActive ? 'default' : 'pointer',
-              background: 'transparent',
               color: isActive ? adwaitaColors.fg : adwaitaColors.fgSecondary,
-              font: 'inherit',
-              fontSize,
               fontWeight: isActive ? 600 : 500,
-              lineHeight: 1,
-              whiteSpace: 'nowrap',
-              transition: 'color 0.18s ease',
             }}
           >
             {isActive && (
@@ -103,18 +119,16 @@ export function ModeSwitch<T extends string>({
                 style={{
                   position: 'absolute',
                   inset: 0,
-                  borderRadius: '999px',
+                  borderRadius: segmentRadius,
                   background: adwaitaColors.cardBg,
                   boxShadow: '0 1px 2px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(255,255,255,0.04)',
                   zIndex: 0,
                 }}
               />
             )}
-            <span style={{ position: 'relative', zIndex: 1, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <span style={contentStyle}>
               {option.icon}
-              <Text as="span" fontSize={fontSize} fontWeight="inherit" lineHeight="1">
-                {option.label}
-              </Text>
+              <span style={{ lineHeight: 1 }}>{option.label}</span>
             </span>
           </motion.button>
         );

@@ -95,15 +95,34 @@
       "timeUnavailable": "時刻を取得できません",
       "exportTable": "表をエクスポート",
       "attachFile": "ファイルを添付"
-    }
+    },
+    "suggestion0": "Explain quantum computing in simple terms",
+    "suggestion1": "Write unit tests for this function",
+    "suggestion2": "Help me brainstorm a name for my startup",
+    "suggestion3": "Refactor this snippet to be more idiomatic",
+    "suggestion4": "Suggest 5 gift ideas for a coworker",
+    "suggestion5": "Translate this text to Japanese",
+    "suggestion6": "What does this stack trace mean?",
+    "suggestion7": "Plan a one-month Rust learning roadmap",
+    "suggestion8": "Help me draft an apology email",
+    "suggestion9": "Compare PostgreSQL and SQLite tradeoffs",
+    "suggestion10": "Sketch a README outline for a new project",
+    "suggestion11": "Pitch a weekend pet project idea"
   },
   "titlebar": {
     "appName": "Kurisu",
     "minimize": "最小化",
     "maximize": "最大化",
+    "restore": "元に戻す",
     "close": "閉じる",
+    "windowControls": "ウィンドウ操作",
     "toggleSidebar": "サイドバー切替",
     "menu": "メニュー"
+  },
+  "menu": {
+    "about": "情報",
+    "version": "バージョン",
+    "close": "閉じる"
   },
   "search": {
     "placeholder": "名前でセッションをフィルタリング...",
@@ -229,5 +248,80 @@
     "codePlaceholder": "ランタイム統合、IPC作業、レンダラー実装、またはkurisu互換性強化を要求します。",
     "chatAction": "コードセッションを開始",
     "codeAction": "コードワークフローを開く"
+  },
+  "settings": {
+    "title": "設定",
+    "close": "閉じる",
+    "comingSoon": "近日公開",
+    "back": "戻る",
+    "exitSearch": "検索を終了",
+    "searchPlaceholder": "設定を検索…",
+    "categories": {
+      "general": "一般",
+      "providers": "プロバイダー",
+      "voice": "音声",
+      "models": "モデル",
+      "privacy": "プライバシー",
+      "storage": "ストレージ",
+      "about": "情報"
+    },
+    "general": {
+      "appearance": "外観",
+      "colorScheme": "カラースキーム",
+      "themeOptions": {
+        "auto": "システムに従う",
+        "light": "ライト",
+        "dark": "ダーク"
+      },
+      "accent": "アクセントカラー",
+      "accentOptions": {
+        "blue": "ブルー",
+        "green": "グリーン",
+        "teal": "ティール",
+        "purple": "パープル"
+      },
+      "language": "言語",
+      "appLanguage": "アプリの言語"
+    },
+    "providers": {
+      "section": "プロバイダー接続",
+      "empty": "設定済みのプロバイダーはありません。",
+      "statusConnected": "接続済み",
+      "statusNotConfigured": "未設定",
+      "configure": "設定…"
+    },
+    "voice": {
+      "section": "音声入力",
+      "enableInput": "音声入力を有効化",
+      "enableInputCaption": "チャットの入力欄で音声入力を使用します。"
+    },
+    "models": {
+      "section": "モデル選択",
+      "usePowerful": "複雑な質問には自動的に高性能モデルを使用",
+      "usePowerfulCaption": "質問が複雑な場合、Kurisu はより強力なモデルを選択します。"
+    },
+    "privacy": {
+      "section": "レポートとデータ",
+      "errorReports": "匿名のエラー報告を送信",
+      "errorReportsCaption": "Kurisu の改善に役立ちます。プロンプトや個人データが送信されることはありません。",
+      "clearSessions": "ローカルセッションを削除"
+    },
+    "storage": {
+      "section": "パス",
+      "workspaceRoot": "ワークスペースのルート",
+      "runtimeBase": "ランタイム ベース",
+      "usedContext": "使用中のコンテキスト",
+      "openDataFolder": "データフォルダーを開く"
+    },
+    "about": {
+      "section": "情報",
+      "version": "バージョン",
+      "description": "完全にローカルな .NET ランタイムと React ベースのワークスペースを備えた AI 用のネイティブ デスクトップ シェル。"
+    },
+    "search": "設定を検索",
+    "minimize": "最小化",
+    "maximize": "最大化",
+    "restore": "元に戻す",
+    "clearSearch": "検索をクリア"
   }
 }

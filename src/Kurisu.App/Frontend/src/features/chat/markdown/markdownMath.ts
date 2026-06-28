@@ -50,7 +50,7 @@ export function looksLikeMathExpression(value: string): boolean {
   }
 
   const hasMathMarker = /(?:\\[a-zA-Z]+|[_^]\{|[A-Za-z]\s*[_^]|[A-Za-z]\([^)]*\)|[\u0370-\u03ff\u2070-\u209f\u2200-\u22ff])/.test(text);
-  const hasEquationShape = /=/.test(text) && /[A-Za-z0-9\)]\s*[+\-*/]\s*[A-Za-z0-9{\(]/.test(text);
+  const hasEquationShape = /=/.test(text) && /[A-Za-z0-9)]\s*[+\-*/]\s*[A-Za-z0-9{(]/.test(text);
   const hasProseSentence = /[\u0400-\u04ff]{3,}/.test(text);
   return (hasMathMarker || hasEquationShape) && !hasProseSentence;
 }

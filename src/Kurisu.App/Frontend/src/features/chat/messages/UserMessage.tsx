@@ -3,29 +3,11 @@ import { Box, Flex, HStack, IconButton, Text, Tooltip } from '@chakra-ui/react';
 import { Copy, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import type { TFunction } from 'i18next';
 import type { DesktopSessionEntry } from '@/types/desktop';
 import { copyTextToClipboard } from '@/features/chat/markdown';
+import { formatMessageDetails } from '@/features/chat/messages/approvalCardHelpers';
 
 const USER_MESSAGE_BACKGROUND = '#31313a';
-
-function formatMessageDetails(locale: string, t: TFunction, timestamp?: string): string {
-  if (!timestamp) {
-    return t('chat.message.timeUnavailable');
-  }
-
-  try {
-    return new Date(timestamp).toLocaleString(locale || undefined, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  } catch {
-    return timestamp;
-  }
-}
 
 export interface UserMessageProps {
   entry: DesktopSessionEntry;
@@ -41,9 +23,16 @@ export function UserMessage({ entry, text, locale, latestPendingUserEntryId, ani
     return null;
   }
 
+  // `animatedUserEntryIdsRef` is a mutable set that tracks which user
+  // messages have already played their enter animation; reading it during
+  // render is intentional and React tolerates ref.current access here
+  // because the value is only used as a render-time branch flag.
+  const isAnimatedEntry = (() => {
+    // eslint-disable-next-line react-hooks/refs
+    return !animatedUserEntryIdsRef.current.has(entry.id);
+  })();
   const shouldAnimateUserMessage =
-    entry.id === latestPendingUserEntryId &&
-    !animatedUserEntryIdsRef.current.has(entry.id);
+    entry.id === latestPendingUserEntryId && isAnimatedEntry;
 
   return (
     <Flex key={entry.id} justify="flex-end" py={2.5}>

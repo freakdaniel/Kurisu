@@ -6,6 +6,9 @@ export {
   MarkdownPre,
   MarkdownCode,
   MarkdownTable,
+} from '@/features/chat/markdown/Markdown';
+
+export {
   ASSISTANT_MARKDOWN_SX,
   INLINE_CODE_COLOR,
   INLINE_CODE_BACKGROUND,
@@ -13,7 +16,7 @@ export {
   SUPPORTED_HIGHLIGHT_LANGUAGES,
   flattenReactText,
   normalizeCodeLanguage,
-} from '@/features/chat/markdown/Markdown';
+} from '@/features/chat/markdown/markdownHelpers';
 
 export {
   normalizeMathSegments,
