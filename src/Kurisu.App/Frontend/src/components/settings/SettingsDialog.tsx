@@ -2,18 +2,19 @@ import {
   Box,
   Button,
   HStack,
-  Input,
   Text,
   VStack,
 } from '@chakra-ui/react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { motion } from 'framer-motion';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import '@gjsify/adwaita-web';
 import { AdwaitaIcon } from '@/components/ui/AdwaitaIcon';
 import { adwaitaIconSources } from '@/components/ui/adwaitaIconSources';
 import { adwaitaColors } from '@/lib/themeTokens';
 import { useBootstrap } from '@/hooks/useBootstrap';
+import type { ProviderStatusSnapshot } from '@/types/desktop';
+import { ProviderIcon } from '@/features/welcome/ProviderIcons';
 import { AccentColorRow } from './AccentColorRow';
 import {
   SETTINGS_CATEGORIES,
@@ -26,9 +27,6 @@ export interface SettingsDialogProps {
   onActiveChange: (next: SettingsCategoryKey) => void;
   /** Closes settings and returns to the chat workspace. */
   onClose: () => void;
-  /** Toggles the in-settings search bar. */
-  searchActive: boolean;
-  onExitSearch: () => void;
 }
 
 /** Fades the content panel in with a slight upward translate. */
@@ -43,39 +41,49 @@ const contentVariants = {
 
 /**
  * Modal settings dialog. Modeled on `AdwPreferencesDialog` (GNOME): a
- * centred floating sheet with a flat header, a row of wrapping tab-pills
- * (the categories), and a scrolled body of `AdwPreferencesGroup` rows.
+ * centred floating sheet with a flat header showing the dialog title, a
+ * scrolled body of `AdwPreferencesGroup` rows, and a row of category tabs
+ * pinned to the bottom (icon above label).
  *
- * The tab-pill row uses plain `display: flex; flex-wrap: wrap` so the
- * categories automatically wrap to a new line when the dialog is narrow
- * (matches image 1 — fits in one line on wide dialogs, wraps to a second
- * line on narrow ones, matching image 2).
+ * The category row uses a CSS grid so every tab gets equal width and the
+ * row never reflows when switching active categories; long labels ellipse
+ * rather than stretching the column.
  */
-export function SettingsDialog({ active, onActiveChange, onClose, searchActive, onExitSearch }: SettingsDialogProps) {
+export function SettingsDialog({ active, onActiveChange, onClose }: SettingsDialogProps) {
   const { t } = useTranslation();
   const { bootstrap } = useBootstrap();
-  const [searchQuery, setSearchQuery] = useState('');
 
   const [accent, setAccent] = useState('blue');
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [usePowerfulModel, setUsePowerfulModel] = useState(false);
   const [errorReports, setErrorReports] = useState(false);
 
+  // Split the provider list received from the desktop bridge into "configured
+  // (has API key)" and "available (still needs an API key)" so each can be
+  // rendered as its own preference group. Sorted alphabetically by display
+  // name so the lists stay stable across renders.
+  const providerLists = useMemo(() => {
+    const all: ProviderStatusSnapshot[] =
+      bootstrap?.kurisuProviders?.providers ?? [];
+    const byName = (a: ProviderStatusSnapshot, b: ProviderStatusSnapshot) =>
+      a.displayName.localeCompare(b.displayName);
+    return {
+      connected: all.filter((provider) => provider.hasApiKey).sort(byName),
+      available: all.filter((provider) => !provider.hasApiKey).sort(byName),
+    };
+  }, [bootstrap?.kurisuProviders?.providers]);
+
   const scrimRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (searchActive) {
-          onExitSearch();
-          return;
-        }
         onClose();
       }
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [onClose, onExitSearch, searchActive]);
+  }, [onClose]);
 
   return (
     <>
@@ -104,8 +112,12 @@ export function SettingsDialog({ active, onActiveChange, onClose, searchActive, 
           transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
           onClick={(e) => e.stopPropagation()}
           style={{
+            // Sizing depends exclusively on the application window: width and
+            // height scale with the viewport and never reflow when the number
+            // of settings rows changes (the body just scrolls).
             width: 'min(720px, calc(100vw - 48px))',
-            maxHeight: 'calc(100vh - 80px)',
+            height: 'min(680px, calc(100vh - 96px))',
+            maxHeight: 'calc(100vh - 96px)',
             display: 'flex',
             flexDirection: 'column',
             background: adwaitaColors.windowBg,
@@ -115,21 +127,21 @@ export function SettingsDialog({ active, onActiveChange, onClose, searchActive, 
             overflow: 'hidden',
           }}
         >
-          {/* Header — flat title bar mirroring AdwHeaderBar `centering-policy: strict` */}
+          {/* Top bar — centred dialog title. No buttons: dismissed via
+              Escape or scrim click. */}
           <HStack
             h="48px"
             minH="48px"
             px={3}
-            spacing={2}
+            spacing={0}
             align="center"
+            justify="center"
             borderBottom="1px solid"
             borderColor={adwaitaColors.border}
             bg={adwaitaColors.windowBg}
             sx={{ flexShrink: 0 }}
           >
             <Text
-              flex={1}
-              textAlign="center"
               fontSize="14px"
               fontWeight={600}
               color={adwaitaColors.fg}
@@ -137,145 +149,7 @@ export function SettingsDialog({ active, onActiveChange, onClose, searchActive, 
             >
               {t('settings.title')}
             </Text>
-            <Button
-              aria-label={t('settings.close')}
-              variant="ghost"
-              size="sm"
-              h="30px"
-              w="30px"
-              minW="30px"
-              p={0}
-              borderRadius="8px"
-              color={adwaitaColors.fgSecondary}
-              _hover={{ bg: adwaitaColors.destructive, color: '#fff' }}
-              onClick={onClose}
-            >
-              <AdwaitaIcon source={adwaitaIconSources.windowClose} size={14} />
-            </Button>
           </HStack>
-
-          {/* Search row (toggled) */}
-          <AnimatePresence>
-            {searchActive && (
-              <motion.div
-                key="settings-search"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.18, ease: 'easeOut' }}
-                style={{ overflow: 'hidden', flexShrink: 0 }}
-              >
-                <HStack
-                  h="44px"
-                  minH="44px"
-                  px={5}
-                  spacing={2}
-                  align="center"
-                  borderBottom="1px solid"
-                  borderColor={adwaitaColors.border}
-                  bg={adwaitaColors.windowBg}
-                >
-                  <AdwaitaIcon source={adwaitaIconSources.search} size={14} />
-                  <Input
-                    autoFocus
-                    variant="unstyled"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={t('settings.searchPlaceholder')}
-                    fontSize="13.5px"
-                    color={adwaitaColors.fg}
-                    _placeholder={{ color: adwaitaColors.fgMuted }}
-                    h="32px"
-                    flex={1}
-                  />
-                  {searchQuery && (
-                    <Button
-                      aria-label={t('settings.clearSearch')}
-                      onClick={() => setSearchQuery('')}
-                      variant="ghost"
-                      h="24px"
-                      w="24px"
-                      minW="24px"
-                      p={0}
-                      borderRadius="6px"
-                      color={adwaitaColors.fgMuted}
-                    >
-                      <AdwaitaIcon source={adwaitaIconSources.searchClear} size={12} />
-                    </Button>
-                  )}
-                </HStack>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Tab pills (categories). Plain flex-wrap so they automatically
-              wrap to a new line when the dialog is narrow. */}
-          <Box
-            px={5}
-            pt={3}
-            pb={2}
-            borderBottom="1px solid"
-            borderColor={adwaitaColors.border}
-            bg={adwaitaColors.windowBg}
-            sx={{ flexShrink: 0 }}
-          >
-            <Box
-              role="tablist"
-              aria-label={t('settings.title')}
-              sx={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '6px',
-              }}
-            >
-              {SETTINGS_CATEGORIES.map((category) => {
-                const isActive = active === category.key;
-                return (
-                  <button
-                    key={category.key}
-                    type="button"
-                    role="tab"
-                    aria-selected={isActive}
-                    onClick={() => onActiveChange(category.key)}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      height: '30px',
-                      padding: '0 12px',
-                      borderRadius: '999px',
-                      border: 'none',
-                      background: isActive ? adwaitaColors.accent : 'transparent',
-                      color: isActive ? '#fff' : adwaitaColors.fgSecondary,
-                      fontSize: '12.5px',
-                      fontWeight: isActive ? 600 : 500,
-                      cursor: 'pointer',
-                      outline: 'none',
-                      transition:
-                        'background 0.15s ease, color 0.15s ease',
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isActive) {
-                        e.currentTarget.style.background =
-                          'rgba(255,255,255,0.06)';
-                        e.currentTarget.style.color = adwaitaColors.fg;
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isActive) {
-                        e.currentTarget.style.background = 'transparent';
-                        e.currentTarget.style.color =
-                          adwaitaColors.fgSecondary;
-                      }
-                    }}
-                  >
-                    <AdwaitaIcon source={category.iconSource} size={13} />
-                    <span>{t(category.labelKey)}</span>
-                  </button>
-                );
-              })}
-            </Box>
-          </Box>
 
           {/* Scrolled body — pages of preferences groups. */}
           <Box
@@ -334,18 +208,39 @@ export function SettingsDialog({ active, onActiveChange, onClose, searchActive, 
               )}
 
               {active === 'providers' && (
-                <adw-preferences-group
-                  title={t('settings.providers.section')}
-                  description={t('settings.providers.empty')}
-                >
-                  <adw-action-row>
-                    <div slot="suffix">
-                      <Text fontSize="13px" color={adwaitaColors.fgMuted}>
-                        {t('settings.comingSoon')}
-                      </Text>
-                    </div>
-                  </adw-action-row>
-                </adw-preferences-group>
+                <VStack align="stretch" spacing={6}>
+                  <adw-preferences-group
+                    title={t('settings.providers.connectedSection')}
+                  >
+                    {providerLists.connected.length === 0 ? (
+                      <Box px={4} py={3}>
+                        <Text fontSize="12.5px" color={adwaitaColors.fgMuted}>
+                          {t('settings.providers.emptyConnected')}
+                        </Text>
+                      </Box>
+                    ) : (
+                      providerLists.connected.map((provider, idx) => (
+                        <ProviderRow
+                          key={provider.providerId}
+                          provider={provider}
+                          connected
+                          isLast={idx === providerLists.connected.length - 1}
+                        />
+                      ))
+                    )}
+                  </adw-preferences-group>
+                  <adw-preferences-group
+                    title={t('settings.providers.availableSection')}
+                  >
+                    {providerLists.available.map((provider, idx) => (
+                      <ProviderRow
+                        key={provider.providerId}
+                        provider={provider}
+                        isLast={idx === providerLists.available.length - 1}
+                      />
+                    ))}
+                  </adw-preferences-group>
+                </VStack>
               )}
 
               {active === 'voice' && (
@@ -447,6 +342,95 @@ export function SettingsDialog({ active, onActiveChange, onClose, searchActive, 
                 </adw-preferences-group>
               )}
             </motion.div>
+          </Box>
+
+          {/* Categories pinned to the bottom of the dialog. Each tab renders
+              the icon above its label (column layout); the row uses plain
+              flex-wrap so it keeps working when the dialog is narrow. */}
+          <Box
+            borderTop="1px solid"
+            borderColor={adwaitaColors.border}
+            bg={adwaitaColors.windowBg}
+            px={4}
+            py={2}
+            sx={{ flexShrink: 0 }}
+          >
+            <Box
+              role="tablist"
+              aria-label={t('settings.title')}
+              sx={{
+                display: 'grid',
+                // All 7 categories must fit in one row inside the 720px dialog.
+                // Container width is dialog_width - 32px horizontal padding;
+                // 7 cells * 78px + 6 * 4px gap = 570px, leaving headroom for
+                // longer labels (e.g. "О программе") at any reasonable
+                // viewport width.
+                gridTemplateColumns: 'repeat(7, minmax(0, 1fr))',
+                gap: '4px',
+              }}
+            >
+              {SETTINGS_CATEGORIES.map((category) => {
+                const isActive = active === category.key;
+                return (
+                  <button
+                    key={category.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => onActiveChange(category.key)}
+                    title={t(category.labelKey)}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '3px',
+                      width: '100%',
+                      minWidth: 0,
+                      minHeight: '52px',
+                      padding: '6px 4px',
+                      borderRadius: '10px',
+                      border: 'none',
+                      background: isActive ? adwaitaColors.accent : 'transparent',
+                      color: isActive ? '#fff' : adwaitaColors.fgSecondary,
+                      fontSize: '11px',
+                      fontWeight: isActive ? 600 : 500,
+                      lineHeight: 1.15,
+                      cursor: 'pointer',
+                      outline: 'none',
+                      transition:
+                        'background 0.15s ease, color 0.15s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.background =
+                          'rgba(255,255,255,0.06)';
+                        e.currentTarget.style.color = adwaitaColors.fg;
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.color =
+                          adwaitaColors.fgSecondary;
+                      }
+                    }}
+                  >
+                    <AdwaitaIcon source={category.iconSource} size={18} />
+                    <span
+                      style={{
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        maxWidth: '100%',
+                      }}
+                    >
+                      {t(category.labelKey)}
+                    </span>
+                  </button>
+                );
+              })}
+            </Box>
           </Box>
         </motion.div>
       </Box>
@@ -557,5 +541,87 @@ function SelectRow({ title, options, defaultValue = 0, onChange, suffix }: Selec
         </div>
       </div>
     </adw-action-row>
+  );
+}
+
+interface ProviderRowProps {
+  provider: ProviderStatusSnapshot;
+  /** True when the user has configured an API key for this provider. */
+  connected?: boolean;
+  /** Last row in its group — drops the trailing divider. */
+  isLast?: boolean;
+}
+
+/**
+ * Renders one row of the providers preferences group. Plain `HStack` (not
+ * `<adw-action-row>`) because we want a custom leading slot for the brand
+ * icon — the adwaita web component doesn't expose a configurable prefix
+ * slot through React in this version of `@gjsify/adwaita-web`.
+ */
+function ProviderRow({ provider, connected, isLast }: ProviderRowProps) {
+  const { t } = useTranslation();
+  return (
+    <HStack
+      px={4}
+      py={2.5}
+      spacing={3}
+      align="center"
+      borderBottom={isLast ? 'none' : '1px solid'}
+      borderColor={adwaitaColors.border}
+    >
+      <ProviderIcon id={provider.providerId} width={22} height={22} />
+      <Text
+        flex={1}
+        fontSize="13px"
+        fontWeight={500}
+        color={adwaitaColors.fg}
+        noOfLines={1}
+      >
+        {provider.displayName}
+      </Text>
+      {connected ? (
+        <HStack
+          px={2}
+          py="2px"
+          spacing={1}
+          align="center"
+          borderRadius="6px"
+          bg="rgba(78, 175, 105, 0.15)"
+          color="#4EAF69"
+        >
+          <Box
+            w="6px"
+            h="6px"
+            borderRadius="50%"
+            bg="#4EAF69"
+          />
+          <Text
+            fontSize="11px"
+            fontWeight={600}
+            lineHeight={1}
+            color="#4EAF69"
+          >
+            {t('settings.providers.statusConnected')}
+          </Text>
+        </HStack>
+      ) : (
+        <Button
+          variant="ghost"
+          size="sm"
+          h="28px"
+          px={3}
+          borderRadius="8px"
+          fontSize="12px"
+          fontWeight={500}
+          color={adwaitaColors.fgSecondary}
+          bg="rgba(255, 255, 255, 0.04)"
+          border="1px solid"
+          borderColor="rgba(255, 255, 255, 0.08)"
+          _hover={{ bg: 'rgba(255, 255, 255, 0.08)' }}
+        >
+          {t('settings.providers.configure')}
+        </Button>
+      )}
+    </HStack>
   );
 }

@@ -46,7 +46,6 @@ import {
   windowMaximizeSymbolic,
   windowMinimizeSymbolic,
   windowRestoreSymbolic,
-  focusTopBarSymbolic,
 } from '@gjsify/adwaita-icons/ui';
 import {
   accessoriesTextEditorSymbolic,
@@ -131,8 +130,6 @@ export const adwaitaIconSources = {
   openMenu: openMenuSymbolic,
   /** Crossed-out search — used to clear the settings search field. */
   searchClear: editClearSymbolic,
-  /** "Focus top bar" — alternative close glyph used in the settings header. */
-  focusTopBar: focusTopBarSymbolic,
   // Settings category icons.
   /** Appearance / theme. */
   appearance: preferencesDesktopAppearanceSymbolic,

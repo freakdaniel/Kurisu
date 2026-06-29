@@ -45,7 +45,8 @@
     "chatModePromptPlaceholder": "무엇이 궁금한가요?",
     "demoResponse": "요청을 받았습니다: \"{{prompt}}\". 이것은 데모 응답입니다.",
     "disclaimer": "Kurisu은 AI이며 실수를 할 수 있습니다. 중요한 변경, 명령 및 답변을 확인하세요",
-    "contextUsed": "{{used}} / {{total}} 토큰 사용됨",
+    "contextTitle": "토큰 사용량",
+    "contextUsed": "{{used}} / {{total}}",
     "contextCompression": "제한 초과 시 Kurisu이 자동으로 컨텍스트를 압축합니다",
     "projectPicker": {
       "noProject": "프로젝트 없음",
@@ -250,11 +251,7 @@
   },
   "settings": {
     "title": "설정",
-    "close": "닫기",
     "comingSoon": "곧 제공 예정",
-    "back": "뒤로",
-    "exitSearch": "검색 종료",
-    "searchPlaceholder": "설정 검색…",
     "categories": {
       "general": "일반",
       "providers": "공급자",
@@ -283,11 +280,13 @@
       "appLanguage": "앱 언어"
     },
     "providers": {
-      "section": "공급자 연결",
-      "empty": "설정된 공급자가 아직 없습니다.",
-      "statusConnected": "연결됨",
-      "statusNotConfigured": "설정되지 않음",
-      "configure": "설정…"
+      "section": "Provider connections",
+      "connectedSection": "연결된 공급자",
+      "availableSection": "사용 가능한 공급자",
+      "emptyConnected": "연결된 공급자가 여기에 표시됩니다.",
+      "statusConnected": "Connected",
+      "statusNotConfigured": "Not configured",
+      "configure": "Configure…"
     },
     "voice": {
       "section": "음성 입력",
@@ -316,11 +315,6 @@
       "section": "정보",
       "version": "버전",
       "description": "완전히 로컬한 .NET 런타임과 React 기반 작업 공간을 갖춘 AI용 네이티브 데스크톱 셸."
-    },
-    "search": "설정 검색",
-    "minimize": "최소화",
-    "maximize": "최대화",
-    "restore": "복원",
-    "clearSearch": "검색 지우기"
+    }
   }
 }

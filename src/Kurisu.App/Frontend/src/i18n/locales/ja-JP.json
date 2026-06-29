@@ -45,7 +45,8 @@
     "chatModePromptPlaceholder": "何を知りたいですか？",
     "demoResponse": "リクエストを受け付けました：「{{prompt}}」。これはデモの返信です。",
     "disclaimer": "KurisuはAIであり、間違いをする場合があります。重要な変更、コマンド、回答を確認してください。",
-    "contextUsed": "{{used}} / {{total}} トークン使用済み",
+    "contextTitle": "トークン使用量",
+    "contextUsed": "{{used}} / {{total}}",
     "contextCompression": "制限超過時、Kurisuは自動的にコンテキストを圧縮します",
     "projectPicker": {
       "noProject": "プロジェクトなし",
@@ -251,11 +252,7 @@
   },
   "settings": {
     "title": "設定",
-    "close": "閉じる",
     "comingSoon": "近日公開",
-    "back": "戻る",
-    "exitSearch": "検索を終了",
-    "searchPlaceholder": "設定を検索…",
     "categories": {
       "general": "一般",
       "providers": "プロバイダー",
@@ -284,11 +281,13 @@
       "appLanguage": "アプリの言語"
     },
     "providers": {
-      "section": "プロバイダー接続",
-      "empty": "設定済みのプロバイダーはありません。",
-      "statusConnected": "接続済み",
-      "statusNotConfigured": "未設定",
-      "configure": "設定…"
+      "section": "Provider connections",
+      "connectedSection": "接続済みのプロバイダー",
+      "availableSection": "利用可能なプロバイダー",
+      "emptyConnected": "接続済みのプロバイダーがここに表示されます。",
+      "statusConnected": "Connected",
+      "statusNotConfigured": "Not configured",
+      "configure": "Configure…"
     },
     "voice": {
       "section": "音声入力",
@@ -317,11 +316,6 @@
       "section": "情報",
       "version": "バージョン",
       "description": "完全にローカルな .NET ランタイムと React ベースのワークスペースを備えた AI 用のネイティブ デスクトップ シェル。"
-    },
-    "search": "設定を検索",
-    "minimize": "最小化",
-    "maximize": "最大化",
-    "restore": "元に戻す",
-    "clearSearch": "検索をクリア"
+    }
   }
 }

@@ -27,6 +27,11 @@ export interface AdwaitaIconProps {
  *     scaled via the wrapper element,
  *   * sets `fill="currentColor"` on the root `<svg>` so descendants inherit
  *     the wrapper text colour,
+ *   * strips nested `color="..."` attributes and any hardcoded `fill="..."`
+ *     so individual elements can't override the wrapper's `currentColor`
+ *     (e.g. `preferences-system-network-symbolic` ships with
+ *     `<g color="#bebebe" fill="currentColor">` which would otherwise
+ *     lock the icon at a fixed grey regardless of theme / hover state),
  *   * collapses whitespace to keep the rendered DOM small.
  *
  * The SVG string originates from a vetted upstream package (@gjsify/adwaita-
@@ -37,6 +42,17 @@ function normalizeAdwaitaSvg(svg: string): string {
   let normalized = svg.replace(/\s+/g, ' ').trim();
   normalized = normalized.replace(/\swidth="[^"]*"/gi, '');
   normalized = normalized.replace(/\sheight="[^"]*"/gi, '');
+  // Remove `color="..."` on any nested element. SVG's `color` attribute
+  // controls `currentColor` for the subtree, so a hardcoded value (commonly
+  // `#bebebe` or `#000`) would override the wrapper's colour and make the
+  // icon unresponsive to theme / hover changes.
+  normalized = normalized.replace(/\scolor="[^"]*"/gi, '');
+  // Replace any hardcoded `fill="<colour>"` with `fill="currentColor"`.
+  // Leaves `fill="currentColor"` and `fill="none"` / `fill-rule` etc. alone.
+  normalized = normalized.replace(
+    /\sfill="(?!currentColor|none|inherit)([^"]*)"/gi,
+    ' fill="currentColor"',
+  );
   normalized = normalized.replace(
     /<svg\b/i,
     '<svg width="100%" height="100%" preserveAspectRatio="xMidYMid meet" fill="currentColor"',

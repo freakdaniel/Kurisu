@@ -40,7 +40,6 @@ export default function MainLayout() {
   const [aboutOpen, setAboutOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsActiveCategory, setSettingsActiveCategory] = useState<SettingsCategoryKey>('general');
-  const [settingsSearchActive, setSettingsSearchActive] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const { bootstrap, activeTurnSessions, setBootstrap, setSessionCache } = useBootstrap();
@@ -73,16 +72,8 @@ export default function MainLayout() {
   const closeSettings = useCallback(() => {
     setSettingsOpen(false);
     setSettingsActiveCategory('general');
-    setSettingsSearchActive(false);
   }, []);
 
-  const toggleSettingsSearch = useCallback(() => {
-    setSettingsSearchActive((current) => !current);
-  }, []);
-
-  const exitSettingsSearch = useCallback(() => {
-    setSettingsSearchActive(false);
-  }, []);
   const openSkills = useCallback(() => {
     console.log('Skills & Integrations opened');
   }, []);
@@ -250,13 +241,9 @@ export default function MainLayout() {
         onToggleMaximize={handleToggleMaximize}
         onClose={handleClose}
         isMaximized={isMaximized}
-        productName={t('titlebar.appName')}
         menuButtonRef={menuButtonRef}
         isMenuOpen={appMenuOpen}
         mode={settingsOpen ? 'settings' : 'workspace'}
-        onExitSettings={settingsSearchActive ? exitSettingsSearch : closeSettings}
-        onSearchClick={toggleSettingsSearch}
-        searchActive={settingsSearchActive}
       />
       <Box h="calc(100% - 40px)" w="100%" position="relative" overflow="hidden">
         {/* Chat workspace */}
@@ -331,8 +318,6 @@ export default function MainLayout() {
               active={settingsActiveCategory}
               onActiveChange={setSettingsActiveCategory}
               onClose={closeSettings}
-              searchActive={settingsSearchActive}
-              onExitSearch={exitSettingsSearch}
             />
           </motion.div>
         )}

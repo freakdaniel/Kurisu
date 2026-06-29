@@ -64,7 +64,8 @@
     "chatModePromptPlaceholder": "Что хочешь узнать?",
     "demoResponse": "Получил ваш запрос: \"{{prompt}}\". Это демонстрационный ответ.",
     "disclaimer": "Kurisu это ИИ, и он может допускать ошибки. Проверяй важные изменения, команды и ответы",
-    "contextUsed": "Использовано {{used}} / {{total}} токенов",
+    "contextTitle": "Использование токенов",
+    "contextUsed": "{{used}} / {{total}}",
     "contextCompression": "Kurisu автоматически сожмёт контекст при переполнении лимита",
     "noMessages": "Сообщений пока нет",
     "noReadableMessages": "Сообщения есть, но эту историю пока не удалось прочитать",
@@ -274,17 +275,13 @@
   },
   "settings": {
     "title": "Настройки",
-    "close": "Закрыть",
     "comingSoon": "Скоро",
-    "back": "Назад",
-    "exitSearch": "Выйти из поиска",
-    "searchPlaceholder": "Поиск настроек…",
     "categories": {
       "general": "Общее",
       "providers": "Провайдеры",
       "voice": "Голос",
       "models": "Модели",
-      "privacy": "Конфиденциальность",
+      "privacy": "Приватность",
       "storage": "Хранилище",
       "about": "О программе"
     },
@@ -307,8 +304,10 @@
       "appLanguage": "Язык приложения"
     },
     "providers": {
-      "section": "Подключения провайдеров",
-      "empty": "Пока нет настроенных провайдеров.",
+      "section": "Подключения к провайдерам",
+      "connectedSection": "Подключённые",
+      "availableSection": "Доступные",
+      "emptyConnected": "Подключённые провайдеры появятся здесь.",
       "statusConnected": "Подключён",
       "statusNotConfigured": "Не настроен",
       "configure": "Настроить…"
@@ -340,11 +339,6 @@
       "section": "Информация",
       "version": "Версия",
       "description": "Нативная десктопная оболочка для ИИ с полностью локальной средой .NET и React-интерфейсом."
-    },
-    "search": "Поиск настроек",
-    "minimize": "Свернуть",
-    "maximize": "Развернуть",
-    "restore": "Восстановить",
-    "clearSearch": "Очистить поиск"
+    }
   }
 }

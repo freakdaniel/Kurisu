@@ -45,7 +45,8 @@
     "chatModePromptPlaceholder": "O que você quer saber?",
     "demoResponse": "Recebi sua solicitação: \"{{prompt}}\". Esta é uma resposta de demonstração.",
     "disclaimer": "Kurisu é IA e pode cometer erros. Verifique mudanças, comandos e respostas importantes",
-    "contextUsed": "Usados {{used}} / {{total}} tokens",
+    "contextTitle": "Uso de tokens",
+    "contextUsed": "{{used}} / {{total}}",
     "contextCompression": "Kurisu comprimirá automaticamente o contexto ao exceder o limite",
     "projectPicker": {
       "noProject": "Sem projeto",
@@ -250,11 +251,7 @@
   },
   "settings": {
     "title": "Configurações",
-    "close": "Fechar",
     "comingSoon": "Em breve",
-    "back": "Voltar",
-    "exitSearch": "Sair da pesquisa",
-    "searchPlaceholder": "Pesquisar configurações…",
     "categories": {
       "general": "Geral",
       "providers": "Provedores",
@@ -283,11 +280,13 @@
       "appLanguage": "Idioma do aplicativo"
     },
     "providers": {
-      "section": "Conexões de provedores",
-      "empty": "Nenhum provedor configurado ainda.",
-      "statusConnected": "Conectado",
-      "statusNotConfigured": "Não configurado",
-      "configure": "Configurar…"
+      "section": "Provider connections",
+      "connectedSection": "Provedores conectados",
+      "availableSection": "Provedores disponíveis",
+      "emptyConnected": "Os provedores conectados aparecerão aqui.",
+      "statusConnected": "Connected",
+      "statusNotConfigured": "Not configured",
+      "configure": "Configure…"
     },
     "voice": {
       "section": "Entrada de voz",
@@ -316,11 +315,6 @@
       "section": "Informações",
       "version": "Versão",
       "description": "Um shell de desktop nativo para IA com runtime .NET totalmente local e workspace baseado em React."
-    },
-    "search": "Pesquisar configurações",
-    "minimize": "Minimizar",
-    "maximize": "Maximizar",
-    "restore": "Restaurar",
-    "clearSearch": "Limpar pesquisa"
+    }
   }
 }

@@ -64,7 +64,8 @@
     "chatModePromptPlaceholder": "What do you want to know?",
     "demoResponse": "Received your request: \"{{prompt}}\". This is a demo response.",
     "disclaimer": "Kurisu is AI and may make mistakes. Verify important changes, commands, and answers",
-    "contextUsed": "Used {{used}} / {{total}} tokens",
+    "contextTitle": "Token usage",
+    "contextUsed": "{{used}} / {{total}}",
     "contextCompression": "Kurisu will automatically compress context when limit is exceeded",
     "noMessages": "No messages yet",
     "noReadableMessages": "Messages exist, but this transcript could not be read yet",
@@ -271,11 +272,7 @@
   },
   "settings": {
     "title": "Settings",
-    "close": "Close",
     "comingSoon": "Coming soon",
-    "back": "Back",
-    "exitSearch": "Exit search",
-    "searchPlaceholder": "Search settings…",
     "categories": {
       "general": "General",
       "providers": "Providers",
@@ -305,7 +302,9 @@
     },
     "providers": {
       "section": "Provider connections",
-      "empty": "No providers configured yet.",
+      "connectedSection": "Connected providers",
+      "availableSection": "Available providers",
+      "emptyConnected": "Connected providers will appear here.",
       "statusConnected": "Connected",
       "statusNotConfigured": "Not configured",
       "configure": "Configure…"
@@ -337,11 +336,6 @@
       "section": "Information",
       "version": "Version",
       "description": "A native desktop shell for AI with a fully local .NET runtime and React-based workspace."
-    },
-    "search": "Search settings",
-    "minimize": "Minimize",
-    "maximize": "Maximize",
-    "restore": "Restore",
-    "clearSearch": "Clear search"
+    }
   }
 }

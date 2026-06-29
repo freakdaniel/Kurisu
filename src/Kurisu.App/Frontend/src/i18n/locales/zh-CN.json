@@ -45,7 +45,8 @@
     "chatModePromptPlaceholder": "你想知道什么？",
     "demoResponse": "收到您的请求：\"{{prompt}}\"。这是一个演示回复。",
     "disclaimer": "Kurisu是AI，可能会犯错。请验证重要的更改、命令和回答。",
-    "contextUsed": "已使用 {{used}} / {{total}} 令牌",
+    "contextTitle": "令牌使用情况",
+    "contextUsed": "{{used}} / {{total}}",
     "contextCompression": "超出限制时Kurisu将自动压缩上下文",
     "projectPicker": {
       "noProject": "无项目",
@@ -250,11 +251,7 @@
   },
   "settings": {
     "title": "设置",
-    "close": "关闭",
     "comingSoon": "即将推出",
-    "back": "返回",
-    "exitSearch": "退出搜索",
-    "searchPlaceholder": "搜索设置…",
     "categories": {
       "general": "通用",
       "providers": "提供商",
@@ -283,11 +280,13 @@
       "appLanguage": "应用语言"
     },
     "providers": {
-      "section": "提供商连接",
-      "empty": "尚未配置提供商。",
-      "statusConnected": "已连接",
-      "statusNotConfigured": "未配置",
-      "configure": "配置…"
+      "section": "Provider connections",
+      "connectedSection": "已连接的提供商",
+      "availableSection": "可用的提供商",
+      "emptyConnected": "已连接的提供商将在此处显示。",
+      "statusConnected": "Connected",
+      "statusNotConfigured": "Not configured",
+      "configure": "Configure…"
     },
     "voice": {
       "section": "语音输入",
@@ -316,11 +315,6 @@
       "section": "信息",
       "version": "版本",
       "description": "一个使用完全本地 .NET 运行时和基于 React 的工作区的 AI 原生桌面外壳。"
-    },
-    "search": "搜索设置",
-    "minimize": "最小化",
-    "maximize": "最大化",
-    "restore": "还原",
-    "clearSearch": "清除搜索"
+    }
   }
 }

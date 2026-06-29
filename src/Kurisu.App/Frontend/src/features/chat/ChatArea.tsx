@@ -225,6 +225,7 @@ export default function ChatArea({
   }, [scrollToBottom, selectedSessionId]);
 
   const contextPercent = totalTokens > 0 ? Math.min(100, Math.round((usedTokens / totalTokens) * 100)) : 0;
+  const contextTitleLabel = t('chat.contextTitle');
   const usedTokensLabel = t('chat.contextUsed', { used: usedTokens.toLocaleString(), total: totalTokens.toLocaleString() });
   const compressionLabel = t('chat.contextCompression');
 
@@ -275,6 +276,7 @@ export default function ChatArea({
         contextTooltipVisible={showContextTooltip}
         onContextTooltipEnter={() => setShowContextTooltip(true)}
         onContextTooltipLeave={() => setShowContextTooltip(false)}
+        contextTitleLabel={contextTitleLabel}
         usedTokensLabel={usedTokensLabel}
         compressionLabel={compressionLabel}
         isStopHighlighted={isStopHighlighted}

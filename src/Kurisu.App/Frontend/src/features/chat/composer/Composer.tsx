@@ -89,6 +89,9 @@ export interface ComposerProps {
   contextTooltipVisible: boolean;
   onContextTooltipEnter: () => void;
   onContextTooltipLeave: () => void;
+  /** Title of the token-usage popover (e.g. "Token usage" / "Использование токенов"). */
+  contextTitleLabel: string;
+  /** The "used / total" count line that sits under the title. */
   usedTokensLabel: string;
   compressionLabel: string;
   isStopHighlighted: boolean;
@@ -329,12 +332,26 @@ export function Composer(props: ComposerProps) {
                       border="1px solid"
                       borderColor={adwaitaColors.borderStrong}
                       borderRadius="24px"
-                      px={3}
+                      px={5}
                       py={2}
                       shadow="lg"
                       overflow="hidden"
                     >
-                      <Text fontSize="xs" color={adwaitaColors.fg} fontWeight="medium" wordBreak="break-word">
+                      <Text
+                        fontSize="xs"
+                        fontWeight="semibold"
+                        color={adwaitaColors.fg}
+                        noOfLines={1}
+                      >
+                        {props.contextTitleLabel}
+                      </Text>
+                      <Text
+                        fontSize="xs"
+                        color={adwaitaColors.fg}
+                        fontWeight="medium"
+                        mt="2px"
+                        wordBreak="break-word"
+                      >
                         {props.usedTokensLabel}
                       </Text>
                       <Text fontSize="xs" color={props.contextColor} mt={1}>
