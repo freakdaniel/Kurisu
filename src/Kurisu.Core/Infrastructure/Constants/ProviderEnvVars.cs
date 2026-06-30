@@ -83,6 +83,8 @@ public static class ProviderEnvVars
     public const string OpenRouterApiKey = "OPENROUTER_API_KEY";
     /// <summary>Env var for <c>ollama</c> local provider.</summary>
     public const string Ollama = "OLLAMA_API_KEY";
+    /// <summary>Env var for <c>minimax</c> provider (Anthropic-compatible endpoint).</summary>
+    public const string MiniMax = "MINIMAX_API_KEY";
     /// <summary>Env var for Tavily web search provider.</summary>
     public const string Tavily = "TAVILY_API_KEY";
     /// <summary>Generic web-search API key env var.</summary>

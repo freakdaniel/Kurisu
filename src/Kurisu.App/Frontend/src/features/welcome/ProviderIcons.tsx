@@ -19,7 +19,7 @@ import kilocodeUrl from '@/assets/brands/kilo.png';
 import kimiUrl from '@/assets/brands/kimi-ai-icon.svg';
 import litellmUrl from '@/assets/brands/litellm.png';
 import lmstudioUrl from '@/assets/brands/lm-studio.png';
-import customUrl from '@/assets/brands/minimax-icon.svg';
+import minimaxUrl from '@/assets/brands/minimax-icon.svg';
 import mistralUrl from '@/assets/brands/mistral-ai-icon.svg';
 import nebiusUrl from '@/assets/brands/nebius.png';
 import nousUrl from '@/assets/brands/nous.png';
@@ -39,9 +39,22 @@ import xaiUrl from '@/assets/brands/grok-ai-icon.svg';
 import xiaomiUrl from '@/assets/brands/xiaomi.png';
 import zaiUrl from '@/assets/brands/z-ai-icon.svg';
 
+import { AdwaitaIcon } from '@/components/ui/AdwaitaIcon';
+import { adwaitaIconSources, type AdwaitaIconKey } from '@/components/ui/adwaitaIconSources';
+
 import { needsLightTile } from './providerTheme';
 
 type ImgProps = ImgHTMLAttributes<HTMLImageElement>;
+
+/**
+ * Resolves a provider wire-id to either a bundled brand asset URL or an
+ * Adwaita icon key. Image-backed providers render via `<img src>` so the
+ * brand mark is crisp at any size; Adwaita-keyed providers render via
+ * `<AdwaitaIcon>` so the icon follows the active theme/foreground colour.
+ */
+type BrandIcon =
+  | { kind: 'image'; src: string }
+  | { kind: 'adwaita'; key: AdwaitaIconKey };
 
 /**
  * Maps a provider wire-id (matches `Kurisu.Core.Infrastructure.Constants.
@@ -54,56 +67,59 @@ type ImgProps = ImgHTMLAttributes<HTMLImageElement>;
  *   • `claude-code` shares the Anthropic mark.
  *   • `dashscope` shares the Qwen mark (DashScope is the Alibaba endpoint
  *     that serves Qwen via the OpenAI-compatible path).
+ *   • `custom` uses the Adwaita `network-server` symbol — a "bring your own
+ *     server" affordance for users connecting to a hand-rolled endpoint.
  */
-const brandIcons: Record<string, string> = {
+const brandIcons: Record<string, BrandIcon> = {
   // First-party — OpenAI family
-  openai: openaiUrl,
-  'openai-native': openaiUrl,
-  'openai-codex': openaiUrl,
+  openai: { kind: 'image', src: openaiUrl },
+  'openai-native': { kind: 'image', src: openaiUrl },
+  'openai-codex': { kind: 'image', src: openaiUrl },
   // First-party — Anthropic family
-  anthropic: anthropicUrl,
-  'claude-code': anthropicUrl,
+  anthropic: { kind: 'image', src: anthropicUrl },
+  'claude-code': { kind: 'image', src: anthropicUrl },
   // Cloud
-  bedrock: bedrockUrl,
-  vertex: vertexUrl,
-  gemini: geminiUrl,
+  bedrock: { kind: 'image', src: bedrockUrl },
+  vertex: { kind: 'image', src: vertexUrl },
+  gemini: { kind: 'image', src: geminiUrl },
   // Local
-  ollama: ollamaUrl,
-  lmstudio: lmstudioUrl,
+  ollama: { kind: 'image', src: ollamaUrl },
+  lmstudio: { kind: 'image', src: lmstudioUrl },
   // Aggregators / gateways
-  openrouter: openrouterUrl,
-  'vercel-ai-gateway': vercelUrl,
+  openrouter: { kind: 'image', src: openrouterUrl },
+  'vercel-ai-gateway': { kind: 'image', src: vercelUrl },
+  minimax: { kind: 'image', src: minimaxUrl },
   // Major vendors
-  deepseek: deepseekUrl,
-  xai: xaiUrl,
-  groq: groqUrl,
-  mistral: mistralUrl,
-  together: togetherUrl,
-  fireworks: fireworksUrl,
-  moonshot: kimiUrl,
-  huggingface: huggingfaceUrl,
-  litellm: litellmUrl,
-  requesty: requestyUrl,
-  zai: zaiUrl,
-  cerebras: cerebrasUrl,
-  sambanova: sambanovaUrl,
-  nebius: nebiusUrl,
-  baseten: basetenUrl,
-  poolside: poolsideUrl,
-  hicap: hicapUrl,
-  aihubmix: aihubmixUrl,
-  nousResearch: nousUrl,
-  wandb: wandbUrl,
-  xiaomi: xiaomiUrl,
-  kilocode: kilocodeUrl,
-  qwen: qwenUrl,
-  dashscope: qwenUrl,
-  doubao: doubaoUrl,
-  asksage: asksageUrl,
-  dify: difyUrl,
-  sapaicore: sapaicoreUrl,
-  'huawei-cloud-maas': huaweiUrl,
-  custom: customUrl,
+  deepseek: { kind: 'image', src: deepseekUrl },
+  xai: { kind: 'image', src: xaiUrl },
+  groq: { kind: 'image', src: groqUrl },
+  mistral: { kind: 'image', src: mistralUrl },
+  together: { kind: 'image', src: togetherUrl },
+  fireworks: { kind: 'image', src: fireworksUrl },
+  moonshot: { kind: 'image', src: kimiUrl },
+  huggingface: { kind: 'image', src: huggingfaceUrl },
+  litellm: { kind: 'image', src: litellmUrl },
+  requesty: { kind: 'image', src: requestyUrl },
+  zai: { kind: 'image', src: zaiUrl },
+  cerebras: { kind: 'image', src: cerebrasUrl },
+  sambanova: { kind: 'image', src: sambanovaUrl },
+  nebius: { kind: 'image', src: nebiusUrl },
+  baseten: { kind: 'image', src: basetenUrl },
+  poolside: { kind: 'image', src: poolsideUrl },
+  hicap: { kind: 'image', src: hicapUrl },
+  aihubmix: { kind: 'image', src: aihubmixUrl },
+  nousResearch: { kind: 'image', src: nousUrl },
+  wandb: { kind: 'image', src: wandbUrl },
+  xiaomi: { kind: 'image', src: xiaomiUrl },
+  kilocode: { kind: 'image', src: kilocodeUrl },
+  qwen: { kind: 'image', src: qwenUrl },
+  dashscope: { kind: 'image', src: qwenUrl },
+  doubao: { kind: 'image', src: doubaoUrl },
+  asksage: { kind: 'image', src: asksageUrl },
+  dify: { kind: 'image', src: difyUrl },
+  sapaicore: { kind: 'image', src: sapaicoreUrl },
+  'huawei-cloud-maas': { kind: 'image', src: huaweiUrl },
+  custom: { kind: 'adwaita', key: 'networkServer' },
   // `v0` and `oca` have no bundled asset — render the "?" letter avatar.
 };
 
@@ -117,7 +133,7 @@ const brandIcons: Record<string, string> = {
 export function ProviderIcon({ id, style, ...props }: ImgProps & { id: string }) {
   const width = typeof props.width === 'number' ? props.width : 22;
   const height = typeof props.height === 'number' ? props.height : 22;
-  const url = brandIcons[id];
+  const icon = brandIcons[id];
   const onLightTile = needsLightTile(id);
 
   const wrapperStyle: CSSProperties = {
@@ -133,19 +149,26 @@ export function ProviderIcon({ id, style, ...props }: ImgProps & { id: string })
     ...style,
   };
 
-  if (url) {
+  if (icon) {
+    if (icon.kind === 'image') {
+      return (
+        <span {...(props as Record<string, unknown>)} style={wrapperStyle}>
+          <img
+            src={icon.src}
+            alt={id}
+            style={{
+              width: '100%',
+              height: '100%',
+              display: 'block',
+              objectFit: 'contain',
+            }}
+          />
+        </span>
+      );
+    }
     return (
       <span {...(props as Record<string, unknown>)} style={wrapperStyle}>
-        <img
-          src={url}
-          alt={id}
-          style={{
-            width: '100%',
-            height: '100%',
-            display: 'block',
-            objectFit: 'contain',
-          }}
-        />
+        <AdwaitaIcon source={adwaitaIconSources[icon.key]} size={Math.min(width, height)} />
       </span>
     );
   }

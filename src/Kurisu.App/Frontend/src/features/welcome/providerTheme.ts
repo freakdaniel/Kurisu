@@ -15,6 +15,7 @@ export const providerAccent: Record<string, string> = {
   litellm: '#7C3AED',
   requesty: '#06B6D4',
   ollama: '#FFFFFF',
+  minimax: '#E2167E',
   custom: '#FFFFFF',
 };
 

@@ -40,6 +40,7 @@ import {
   folderDocumentsSymbolic,
   userHomeSymbolic,
   userTrashSymbolic,
+  networkServerSymbolic,
 } from '@gjsify/adwaita-icons/places';
 import {
   windowCloseSymbolic,
@@ -145,6 +146,8 @@ export const adwaitaIconSources = {
   notifications: preferencesSystemNotificationsSymbolic,
   /** Folder with document — storage / data. */
   folderDocuments: folderDocumentsSymbolic,
+  /** Networked stack — generic "bring-your-own" server (custom provider). */
+  networkServer: networkServerSymbolic,
   /** Audio / sound. */
   audio: audioVolumeHighSymbolic,
   /** Voice sensitivity indicator. */
